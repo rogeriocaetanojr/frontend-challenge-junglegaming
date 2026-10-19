@@ -1,0 +1,110 @@
+:root {
+  /* Cores de fundo e superfícies */
+  --background: #0e0907;
+  --ink-deep: #0e0907;
+  --ink: #140d0a;
+  --ink-soft: #1c110c;
+  --surface-card: #241612;
+  --surface-raised: #2f1d15;
+  --surface-dark: #38220f;
+  --background-elevated: #fbfbfb;
+
+  /* Destaque e primárias */
+  --primary: #d28a4c;
+  --primary-light: #dd9a5f;
+  --primary-dark: #c47b3e;
+  --amber: #e3a44e;
+
+  /* Textos e tipografia */
+  --foreground: #f5f1eb;
+  --text-primary: #f7f3ec;
+  --text-secondary: #cfb28c;
+  --text-coral: #f0805f;
+  --text-muted: #b0916a;
+  --text-accent: #e89b55;
+  --secondary: #b39463;
+
+  /* Bordas e divisores */
+  --border: #3f2319;
+  --border-soft: #55321f;
+
+  /* Status e utilitários */
+  --success: #00a66c;
+  --error: #ed1b2e;
+  --white: #ffffff;
+  --black: #000000;
+  --gray-light: #ededed;
+
+  /* Marcas e logos */
+  --logo-orange: #ff641a;
+  --logo-facebook: #3b5999;
+  --logo-google-blue: #4086f4;
+  --logo-google-green: #59c36a;
+  --logo-google-yellow: #ffda2d;
+  --logo-blue: #4175df;
+  --logo-light-blue: #03a9f4;
+  --logo-indigo: #283593;
+
+  /* Raios de borda (border-radius) */
+  --radius-card: 0.75rem; /* 12px */
+  --radius-button: 0.5rem; /* 8px */
+  --radius-badge: 9999px; /* full */
+}
+
+@theme {
+  /* Cores de fundo e superfícies */
+  --color-background: var(--background);
+  --color-ink-deep: var(--ink-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-surface-card: var(--surface-card);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-dark: var(--surface-dark);
+  --color-background-elevated: var(--background-elevated);
+
+  /* Destaque e primárias */
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-amber: var(--amber);
+
+  /* Textos e tipografia */
+  --color-foreground: var(--foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-coral: var(--text-coral);
+  --color-text-muted: var(--text-muted);
+  --color-text-accent: var(--text-accent);
+  --color-secondary: var(--secondary);
+
+  /* Bordas e divisores */
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+
+  /* Status e utilitários */
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-white: var(--white);
+  --color-black: var(--black);
+  --color-gray-light: var(--gray-light);
+
+  /* Marcas e logos */
+  --color-logo-orange: var(--logo-orange);
+  --color-logo-facebook: var(--logo-facebook);
+  --color-logo-google-blue: var(--logo-google-blue);
+  --color-logo-google-green: var(--logo-google-green);
+  --color-logo-google-yellow: var(--logo-google-yellow);
+  --color-logo-blue: var(--logo-blue);
+  --color-logo-light-blue: var(--logo-light-blue);
+  --color-logo-indigo: var(--logo-indigo);
+
+  /* Raios de borda */
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-badge: var(--radius-badge);
+
+  /* Breakpoints do edital */
+  --breakpoint-sm: 390px;
+  --breakpoint-md: 768px;
+  --breakpoint-xl: 1440px;
+}
