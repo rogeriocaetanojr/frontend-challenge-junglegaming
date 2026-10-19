@@ -46,4 +46,5 @@ pnpm lint
 - `pnpm build`: Executa a verificação de tipos e compilação da aplicação.
 - `pnpm typecheck`: Executa a checagem estática de tipos com o compilador TypeScript.
 - `pnpm preview`: Executa a prévia local do build de produção.
-- `pnpm lint`: Executa a análise estática com o Oxlint.
+- `pnpm lint`: Executa a análise estática com o ESLint.
+- `pnpm format`: Formata o código do projeto com o Prettier.
