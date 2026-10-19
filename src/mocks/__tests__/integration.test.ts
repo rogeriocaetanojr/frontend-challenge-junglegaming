@@ -7,15 +7,15 @@ import type { NftListResponse } from "@/contracts/catalog";
 import type { Cart, Order, Quote } from "@/contracts/commerce";
 import type { ApiErrorBody } from "@/contracts/common";
 import type { Session } from "@/contracts/identity";
-import { db, resetDb } from "@/mocks/db";
-import { scenarioEngine } from "@/mocks/scenarios";
-import { server } from "@/mocks/server";
+import { db, resetDb } from "../db";
+import { scenarioEngine } from "../scenarios";
+import { server } from "../server";
 
 const BASE_URL = "http://localhost/api";
 
 describe("MSW End-to-End Integration Tests (src/mocks/__tests__/integration.test.ts)", () => {
   beforeAll(() => {
-    server.listen();
+    server.listen({ onUnhandledFrame: "error" });
   });
 
   afterEach(() => {
