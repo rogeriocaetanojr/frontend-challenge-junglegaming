@@ -1,8 +1,10 @@
 import { http, HttpResponse } from "msw";
 
+import { cartHandlers } from "./cart.handlers";
 import { catalogHandlers } from "./catalog.handlers";
 import { identityHandlers } from "./identity.handlers";
 
+export * from "./cart.handlers";
 export * from "./catalog.handlers";
 export * from "./identity.handlers";
 
@@ -16,4 +18,5 @@ export const handlers = [
   }),
   ...catalogHandlers,
   ...identityHandlers,
+  ...cartHandlers,
 ];
