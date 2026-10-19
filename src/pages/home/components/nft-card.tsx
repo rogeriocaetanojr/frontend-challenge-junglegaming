@@ -11,6 +11,25 @@ interface NftCardProps {
 }
 
 export function NftCard({ nft }: NftCardProps) {
+  const rawNft = nft as unknown as {
+    id: string;
+    name?: string;
+    title?: string;
+    priceEth?: number;
+    price?: string;
+    originalPriceEth?: number;
+    image?: string;
+    images?: Array<{ url: string; alt?: string }>;
+    collection?: { name?: string };
+    creator?: { address?: string };
+  };
+
+  const title = rawNft.title ?? rawNft.name ?? "NFT";
+  const image = rawNft.images?.[0]?.url ?? rawNft.image ?? "";
+  const price = rawNft.priceEth ?? rawNft.price ?? "0";
+  const collectionName = rawNft.collection?.name ?? "Collection";
+  const creatorAddress = rawNft.creator?.address ?? "";
+
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const isInCart = useCartStore((state) => state.isInCart(nft.id));
@@ -23,11 +42,11 @@ export function NftCard({ nft }: NftCardProps) {
     } else {
       addItem({
         id: nft.id,
-        name: nft.name,
-        collection: nft.collection.name,
-        priceEth: nft.priceEth,
-        image: nft.image,
-        creator: nft.creator.address,
+        name: title,
+        collection: collectionName,
+        priceEth: Number(price),
+        image,
+        creator: creatorAddress,
         quantity: 1,
       });
     }
@@ -41,11 +60,11 @@ export function NftCard({ nft }: NftCardProps) {
           <Link
             to={`/nft/${nft.id}`}
             className="block size-full"
-            aria-label={`Ver detalhes de ${nft.name}`}
+            aria-label={`Ver detalhes de ${title}`}
           >
             <img
-              src={nft.image}
-              alt={nft.name}
+              src={image}
+              alt={title}
               className="size-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
               loading="lazy"
             />
@@ -55,9 +74,7 @@ export function NftCard({ nft }: NftCardProps) {
           <button
             type="button"
             onClick={handleToggleCart}
-            aria-label={
-              isInCart ? `Remover ${nft.name} do carrinho` : `Comprar ${nft.name}`
-            }
+            aria-label={isInCart ? `Remover ${title} do carrinho` : `Comprar ${title}`}
             className={`absolute bottom-2.5 right-2.5 p-2 rounded-full transition-all duration-200 cursor-pointer shadow-lg ${
               isInCart
                 ? "bg-[#D28A4C] text-[#0E0907]"
@@ -76,15 +93,15 @@ export function NftCard({ nft }: NftCardProps) {
       {/* Informações: Título e Preço */}
       <div className="space-y-1 px-1">
         <h4 className="text-sm sm:text-base font-normal text-white tracking-tight truncate group-hover:text-[#D28A4C] transition-colors">
-          <Link to={`/nft/${nft.id}`}>{nft.name}</Link>
+          <Link to={`/nft/${nft.id}`}>{title}</Link>
         </h4>
 
         <div className="flex items-center gap-2 font-mono text-sm">
-          <span className="font-bold text-[#D28A4C]">{formatEth(nft.priceEth)}</span>
+          <span className="font-bold text-[#D28A4C]">{formatEth(price)}</span>
 
-          {nft.originalPriceEth && (
+          {rawNft.originalPriceEth && (
             <span className="text-xs text-[#CFB28C]/60 line-through">
-              {formatEth(nft.originalPriceEth)}
+              {formatEth(rawNft.originalPriceEth)}
             </span>
           )}
         </div>
