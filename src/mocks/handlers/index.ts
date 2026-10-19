@@ -1,6 +1,8 @@
 import { http, HttpResponse } from "msw";
 
-import { nftHandlers } from "./nft-handlers";
+import { catalogHandlers } from "./catalog.handlers";
+
+export * from "./catalog.handlers";
 
 export const handlers = [
   http.get("/api/health", () => {
@@ -10,5 +12,5 @@ export const handlers = [
       service: "NFT Marketplace Mock API",
     });
   }),
-  ...nftHandlers,
+  ...catalogHandlers,
 ];
