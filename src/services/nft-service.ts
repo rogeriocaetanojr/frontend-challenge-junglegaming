@@ -14,6 +14,7 @@ export async function getNfts(
     limit,
     ...(filters?.search && { search: filters.search }),
     ...(filters?.category && { category: filters.category }),
+    ...(filters?.network && { network: filters.network }),
     ...(filters?.minPrice !== undefined && { minPrice: filters.minPrice }),
     ...(filters?.maxPrice !== undefined && { maxPrice: filters.maxPrice }),
     ...(filters?.sortBy && { sortBy: filters.sortBy }),

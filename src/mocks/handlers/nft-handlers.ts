@@ -11,6 +11,7 @@ export const nftHandlers = [
     const url = new URL(request.url);
     const search = url.searchParams.get("search")?.toLowerCase().trim() || "";
     const category = url.searchParams.get("category") || "";
+    const network = url.searchParams.get("network") || "";
     const minPrice = parseFloat(url.searchParams.get("minPrice") || "0");
     const maxPrice = parseFloat(url.searchParams.get("maxPrice") || "Infinity");
     const sortBy = url.searchParams.get("sortBy") || "recent";
@@ -32,6 +33,11 @@ export const nftHandlers = [
     // Filtro por categoria
     if (category && category !== "all") {
       filtered = filtered.filter((nft) => nft.category === category);
+    }
+
+    // Filtro por rede blockchain
+    if (network && network !== "all") {
+      filtered = filtered.filter((nft) => nft.network === network);
     }
 
     // Filtro por faixa de preço em ETH

@@ -1,173 +1,229 @@
-import { Link } from "react-router-dom";
-import { Activity, ArrowRight, Heart, ShieldCheck, Sparkles } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import * as React from "react";
+import { ChevronRight, PackageSearch, RotateCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useNfts } from "@/hooks/use-nfts";
-import { formatEth } from "@/lib/formatters";
-import { http } from "@/lib/http";
-import { queryKeys } from "@/lib/query-keys";
+import type { NftCategory, NftFilters, NftNetwork } from "@/types/nft";
+import { CatalogSidebar } from "./components/catalog-sidebar";
+import { CatalogTabsBar, type CatalogTab } from "./components/catalog-tabs-bar";
+import { FeaturedBanners } from "./components/featured-banners";
+import { HeroSection } from "./components/hero-section";
+import { MintingJournalSection } from "./components/minting-journal-section";
+import { NftCard } from "./components/nft-card";
+import { NftGridSkeleton } from "./components/nft-grid-skeleton";
 
-interface HealthResponse {
-  status: string;
-  timestamp: string;
-  service: string;
-}
+const PAGE_SIZE = 9;
 
 export function HomePage() {
-  const { data: healthData, isLoading: isHealthLoading } = useQuery({
-    queryKey: queryKeys.health,
-    queryFn: () => http.get<HealthResponse>("/health"),
+  const [filters, setFilters] = React.useState<NftFilters>({
+    sortBy: "recent",
   });
+  const [activeTab, setActiveTab] = React.useState<CatalogTab>("all");
+  const [page, setPage] = React.useState(1);
 
-  const { data: nftsData, isLoading: isNftsLoading } = useNfts();
+  const { data, isLoading, isError } = useNfts(filters, page, PAGE_SIZE);
+
+  // Featured NFT: primeiro item retornado ou fallback
+  const featuredNft = data?.items[0];
+
+  const handleSelectCategory = (category?: NftCategory) => {
+    setFilters((prev) => ({
+      ...prev,
+      category,
+    }));
+    setPage(1);
+  };
+
+  const handleSelectNetwork = (network?: NftNetwork) => {
+    setFilters((prev) => ({
+      ...prev,
+      network,
+    }));
+    setPage(1);
+  };
+
+  const handleApplyPriceRange = (minPrice: number, maxPrice: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      minPrice,
+      maxPrice,
+    }));
+    setPage(1);
+  };
+
+  const handleTabChange = (tab: CatalogTab) => {
+    setActiveTab(tab);
+    setPage(1);
+
+    if (tab === "all") {
+      setFilters((prev) => ({
+        ...prev,
+        category: undefined,
+        sortBy: "recent",
+      }));
+    } else if (tab === "recent") {
+      setFilters((prev) => ({
+        ...prev,
+        sortBy: "recent",
+      }));
+    } else if (tab === "popular") {
+      setFilters((prev) => ({
+        ...prev,
+        sortBy: "popular",
+      }));
+    }
+  };
+
+  const handleSortChange = (sortBy: NonNullable<NftFilters["sortBy"]>) => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy,
+    }));
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({ sortBy: "recent" });
+    setActiveTab("all");
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    const catalogElement = document.getElementById("catalog-section");
+    if (catalogElement) {
+      catalogElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const totalPagesCount = Math.max(4, data?.totalPages || 4);
 
   return (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <section className="text-center space-y-4 max-w-2xl mx-auto pt-6">
-        <Badge variant="default" className="gap-1.5">
-          <Sparkles className="size-3.5" />
-          <span>Curated Digital Collectibles</span>
-        </Badge>
+    <div className="space-y-16 pb-12">
+      {/* 1. Hero Section Oficial KURIO */}
+      <HeroSection featuredNft={featuredNft} />
 
-        <h1 className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">
-          Descubra e Negocie <span className="text-primary">NFTs Exclusivos</span>
-        </h1>
-
-        <p className="text-base text-text-muted">
-          Marketplace descentralizado de alta fidelidade com precificação em ETH,
-          confirmações otimistas e sincronização de dados em tempo real.
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <Button asChild size="lg">
-            <a href="#marketplace-collection">
-              <span>Explorar Coleção</span>
-              <ArrowRight className="size-4 ml-1" />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/checkout">Ver Carrinho</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* Status Bar */}
-      <section className="bg-surface-card border border-border rounded-card p-4 max-w-xl mx-auto flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
-          <Activity className="size-4 text-primary animate-pulse" />
-          <div className="text-left">
-            <p className="text-xs font-semibold text-foreground">
-              {healthData
-                ? `${healthData.service} (${healthData.status.toUpperCase()})`
-                : isHealthLoading
-                  ? "Verificando integridade da rede..."
-                  : "Mock Service Worker Ativo"}
-            </p>
-            <p className="text-[11px] text-text-muted">
-              {healthData?.timestamp
-                ? `Sincronizado em ${new Date(healthData.timestamp).toLocaleTimeString("pt-BR")}`
-                : "Aguardando resposta do mock"}
-            </p>
+      {/* 2. Área Central do Catálogo (Grid de 12 Colunas) */}
+      <section id="catalog-section" className="scroll-mt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Barra Lateral Esquerda (col-span-3) */}
+          <div className="lg:col-span-3">
+            <CatalogSidebar
+              selectedCategory={filters.category}
+              onSelectCategory={handleSelectCategory}
+              selectedNetwork={filters.network}
+              onSelectNetwork={handleSelectNetwork}
+              onApplyPriceRange={handleApplyPriceRange}
+            />
           </div>
-        </div>
 
-        <Badge variant={healthData ? "default" : "secondary"}>
-          <ShieldCheck className="size-3 mr-1" />
-          <span>{healthData ? "Online" : "Conectando"}</span>
-        </Badge>
-      </section>
+          {/* Grelha do Catálogo à Direita (col-span-9) */}
+          <div className="lg:col-span-9 space-y-8">
+            {/* Barra superior: Abas e Seletor de Ordenação */}
+            <CatalogTabsBar
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              sortBy={filters.sortBy || "recent"}
+              onSortChange={handleSortChange}
+            />
 
-      {/* Grid de NFTs com Loading Skeletons */}
-      <section id="marketplace-collection" className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              Colecionáveis em Destaque
-            </h2>
-            <p className="text-sm text-text-muted">
-              Ativos digitais autenticados via MSW com precificação e liquidação simulada
-            </p>
-          </div>
-          <Badge variant="outline" className="font-mono text-xs">
-            {isNftsLoading ? "Carregando..." : `${nftsData?.total ?? 0} Ativos`}
-          </Badge>
-        </div>
-
-        {isNftsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="bg-surface-card border border-border rounded-card p-3 space-y-3"
-              >
-                <Skeleton className="w-full aspect-square rounded-card" />
-                <div className="space-y-2 pt-1">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
+            {/* Estados de Renderização da Malha de NFTs */}
+            {isLoading ? (
+              <NftGridSkeleton count={PAGE_SIZE} />
+            ) : isError ? (
+              <div className="max-w-md mx-auto text-center py-16 space-y-4">
+                <div className="size-16 mx-auto rounded-full bg-[#140D0A] border border-[#2A2421] flex items-center justify-center text-red-400">
+                  <PackageSearch className="size-8" />
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-8 w-16" />
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-white">
+                    Falha ao Carregar Catálogo
+                  </h3>
+                  <p className="text-sm text-neutral-400">
+                    Houve um problema na comunicação com a API. Verifique a conexão com os
+                    mocks.
+                  </p>
                 </div>
+                <Button
+                  onClick={handleResetFilters}
+                  variant="outline"
+                  size="sm"
+                  className="border-[#2A2421] text-neutral-300 hover:text-white"
+                >
+                  Tentar Novamente
+                </Button>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {nftsData?.items.map((nft) => (
-              <div
-                key={nft.id}
-                className="group bg-surface-card border border-border hover:border-primary/50 transition-all rounded-card overflow-hidden shadow-lg flex flex-col"
-              >
-                <div className="relative aspect-square overflow-hidden bg-surface-dark">
-                  <img
-                    src={nft.image}
-                    alt={nft.name}
-                    className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute top-2.5 right-2.5">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-md border border-border text-[11px] font-medium text-foreground">
-                      <Heart className="size-3 text-red-400 fill-red-400/20" />
-                      <span>{nft.likes}</span>
-                    </span>
-                  </div>
+            ) : data?.items.length === 0 ? (
+              /* Estado Vazio */
+              <div className="max-w-md mx-auto text-center py-16 space-y-5 bg-[#140D0A] border border-[#2A2421] rounded-2xl p-8 shadow-xl">
+                <div className="size-16 mx-auto rounded-full bg-[#1C110C] border border-[#2A2421] flex items-center justify-center text-neutral-400">
+                  <PackageSearch className="size-8" />
                 </div>
-
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                  <div className="space-y-1">
-                    <p className="text-xs text-text-muted font-medium">
-                      {nft.collection.name}
-                    </p>
-                    <h3 className="font-bold text-foreground text-base tracking-tight truncate group-hover:text-primary transition-colors">
-                      {nft.name}
-                    </h3>
-                  </div>
-
-                  <div className="pt-2 border-t border-border flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-text-muted uppercase tracking-wider block font-medium">
-                        Preço
-                      </span>
-                      <span className="font-mono text-sm font-bold text-primary">
-                        {formatEth(nft.priceEth)}
-                      </span>
-                    </div>
-
-                    <Button asChild size="sm" variant="default">
-                      <Link to={`/nft/${nft.id}`}>Ver Detalhes</Link>
-                    </Button>
-                  </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-bold text-white">Nenhum NFT Encontrado</h3>
+                  <p className="text-xs text-neutral-400">
+                    Não encontramos nenhum ativo que corresponda aos filtros de coleção,
+                    rede ou preço selecionados.
+                  </p>
                 </div>
+                <Button
+                  onClick={handleResetFilters}
+                  size="sm"
+                  className="bg-[#D28A4C] hover:bg-[#c47b3e] text-[#0E0907] font-semibold gap-2"
+                >
+                  <RotateCcw className="size-3.5" />
+                  <span>Limpar Filtros & Ver Todos</span>
+                </Button>
               </div>
-            ))}
+            ) : (
+              /* Malha de NFTs em 3 colunas no desktop */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data?.items.map((nft) => (
+                  <NftCard key={nft.id} nft={nft} />
+                ))}
+              </div>
+            )}
+
+            {/* Paginação Numerada fiel ao design: (1, 2, 3, 4, >) */}
+            <div className="flex items-center justify-end gap-2 pt-6">
+              {[1, 2, 3, 4].map((pageNum) => {
+                const isCurrent = pageNum === page;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`size-8 rounded-md text-xs font-mono font-bold transition-colors cursor-pointer ${
+                      isCurrent
+                        ? "bg-[#D28A4C] text-[#0E0907]"
+                        : "text-neutral-400 hover:text-white hover:bg-[#1C110C]"
+                    }`}
+                    aria-current={isCurrent ? "page" : undefined}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(Math.min(totalPagesCount, page + 1))}
+                disabled={page >= totalPagesCount}
+                className="size-8 rounded-md text-neutral-400 hover:text-white hover:bg-[#1C110C] flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                aria-label="Próxima página"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
           </div>
-        )}
+        </div>
       </section>
+
+      {/* 3. Banners Promocionais Intermédios */}
+      <FeaturedBanners />
+
+      {/* 4. Seção "Diário da Cunhagem" com 4 Artigos */}
+      <MintingJournalSection />
     </div>
   );
 }

@@ -1,24 +1,13 @@
 import { useEffect } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { ChevronDown, LogOut, ShoppingBag, Sparkles, Wallet } from "lucide-react";
+import { LogOut, Search, ShoppingCart } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatEth, truncateAddress } from "@/lib/formatters";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
+import { Footer } from "./components/footer";
 
 /**
- * Componente utilitário que restaura a posição da barra de rolagem
- * no topo da página a cada transição de rota.
+ * Restaura a posição de rolagem no topo da página a cada transição de rota.
  */
 export function ScrollToTop() {
   const { pathname } = useLocation();
@@ -32,166 +21,141 @@ export function ScrollToTop() {
 
 export function RootLayout() {
   const cartCount = useCartStore((state) => state.items.length);
-  const user = useAuthStore((state) => state.user);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const connectWallet = useAuthStore((state) => state.connectWallet);
-  const logout = useAuthStore((state) => state.logout);
+
+  const scrollToCatalog = () => {
+    const catalog = document.getElementById("catalog-section");
+    if (catalog) {
+      catalog.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased selection:bg-primary/20 selection:text-primary">
+    <div className="min-h-screen bg-[#0E0907] text-[#F5F1EB] flex flex-col font-sans antialiased selection:bg-[#D28A4C]/30 selection:text-[#D28A4C]">
       <ScrollToTop />
 
-      {/* Link de acessibilidade para pular diretamente ao conteúdo principal (WCAG 2.1 AA) */}
+      {/* Acessibilidade WCAG: Pular para conteúdo principal */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:p-3 focus:bg-primary focus:text-ink-deep focus:font-semibold focus:rounded-button focus:shadow-lg focus:outline-none"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:p-3 focus:bg-[#D28A4C] focus:text-[#0E0907] focus:font-bold focus:rounded-md focus:shadow-lg focus:outline-none"
       >
         Pular para o conteúdo principal
       </a>
 
-      {/* Header estrutural */}
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="size-8 rounded-card bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-              <Sparkles className="size-4" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight text-foreground">
-              NFT<span className="text-primary">Market</span>
-            </span>
-          </Link>
-
-          <nav
-            className="flex items-center gap-2 sm:gap-4"
-            aria-label="Navegação Principal"
-          >
-            <NavLink
+      {/* Header Oficial KURIO */}
+      <header className="sticky top-0 z-40 w-full bg-[#0E0907]/95 backdrop-blur-md">
+        {/* Container externo com o mesmo padding lateral do Hero */}
+        <div className="w-full max-w-[1420px] mx-auto px-6 sm:px-8">
+          {/* Linha divisória laranja delimitando exatamente do início da logo até o fim do botão Entrar */}
+          <div className="h-14 sm:h-[58px] flex items-center justify-between relative border-b border-[#D28A4C]/50">
+            {/* Logo "KURIO" alinhada e sutilmente rebaixada para nível ótico perfeito */}
+            <Link
               to="/"
-              end
-              className={({ isActive }) =>
-                `text-sm font-medium transition-colors px-3 py-1.5 rounded-button ${
-                  isActive
-                    ? "text-primary bg-surface-raised font-semibold"
-                    : "text-text-muted hover:text-foreground hover:bg-surface-dark"
-                }`
-              }
+              className="h-full flex items-center font-mono text-[13px] sm:text-[14px] font-bold tracking-[0.22em] text-[#F5F1EB] uppercase select-none hover:opacity-90 transition-opacity leading-none translate-y-[2px]"
+              aria-label="KURIO NFT Marketplace"
             >
-              Explorar
-            </NavLink>
+              KURIO
+            </Link>
 
-            <NavLink
-              to="/checkout"
-              className={({ isActive }) =>
-                `text-sm font-medium transition-colors px-3 py-1.5 rounded-button flex items-center gap-2 ${
-                  isActive
-                    ? "text-primary bg-surface-raised font-semibold"
-                    : "text-text-muted hover:text-foreground hover:bg-surface-dark"
-                }`
-              }
+            {/* Navegação Central: perfeitamente no meio da tela (2 títulos à esquerda, 2 à direita do centro) */}
+            <nav
+              className="hidden md:flex items-center gap-11 lg:gap-14 h-full absolute left-1/2 -translate-x-1/2 pointer-events-auto"
+              aria-label="Navegação Principal"
             >
-              <div className="relative flex items-center">
-                <ShoppingBag className="size-4" />
-                {cartCount > 0 && (
-                  <span
-                    className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 rounded-full bg-primary text-ink-deep text-[10px] font-bold flex items-center justify-center animate-in fade-in zoom-in-75 duration-200"
-                    aria-label={`${cartCount} itens no carrinho`}
-                  >
-                    {cartCount}
-                  </span>
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
+                    isActive ? "text-[#D28A4C]" : "text-[#F5F1EB] hover:text-white"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span>Início</span>
+                    {isActive && (
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
+                    )}
+                  </>
                 )}
-              </div>
-              <span>Carrinho</span>
-            </NavLink>
-          </nav>
+              </NavLink>
 
-          {/* Autenticação & Conexão de Carteira */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated && user ? (
-              <div className="flex items-center gap-2.5">
-                <div className="hidden sm:flex flex-col items-end text-right">
-                  <span className="text-xs font-mono font-bold text-primary">
-                    {formatEth(user.balanceEth)}
-                  </span>
-                  <span className="text-[10px] text-text-muted">Saldo Simulado</span>
-                </div>
+              <button
+                type="button"
+                onClick={scrollToCatalog}
+                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-pointer"
+              >
+                Mercado
+              </button>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 border-border bg-surface-dark hover:bg-surface-raised font-mono text-xs"
-                      aria-label="Menu da carteira do usuário"
-                    >
-                      <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{truncateAddress(user.walletAddress)}</span>
-                      <ChevronDown className="size-3 text-text-muted" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-semibold leading-none text-foreground">
-                          {user.name}
-                        </p>
-                        <p className="text-xs leading-none text-text-muted truncate">
-                          {user.email}
-                        </p>
-                        <p className="text-xs font-mono text-primary pt-1">
-                          {formatEth(user.balanceEth)}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={logout}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2"
-                    >
-                      <LogOut className="size-4" />
-                      <span>Desconectar Carteira</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="hidden sm:inline-flex font-mono text-xs text-text-muted border-border"
-                >
-                  Ethereum Sepolia (Simulada)
-                </Badge>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => connectWallet()}
-                  className="gap-1.5"
-                >
-                  <Wallet className="size-4" />
-                  <span>Conectar Carteira</span>
-                </Button>
-              </div>
-            )}
+              <button
+                type="button"
+                onClick={scrollToCatalog}
+                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-pointer"
+              >
+                Criadores
+              </button>
+
+              <Link
+                to="/not-found"
+                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors"
+              >
+                Aprenda
+              </Link>
+            </nav>
+
+            {/* Lado Direito: Busca, Carrinho e Botão Entrar rebalanceado */}
+            <div className="h-full flex items-center gap-4 sm:gap-5">
+              {/* Botão de Busca */}
+              <button
+                type="button"
+                onClick={scrollToCatalog}
+                className="text-[#F5F1EB] hover:text-[#D28A4C] p-1.5 transition-colors cursor-pointer"
+                aria-label="Buscar no catálogo"
+              >
+                <Search className="size-[20px] stroke-[1.8]" />
+              </button>
+
+              {/* Ícone de Carrinho (ShoppingCart) com Badge Numérico no topo direito */}
+              <Link
+                to="/checkout"
+                className="relative text-[#F5F1EB] hover:text-[#D28A4C] p-1.5 transition-colors"
+                aria-label={`Carrinho de compras com ${cartCount} itens`}
+              >
+                <ShoppingCart className="size-[20px] stroke-[1.8]" />
+                <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#D28A4C] text-[#0E0907] text-[10px] font-bold font-mono flex items-center justify-center leading-none shadow-sm">
+                  {cartCount}
+                </span>
+              </Link>
+
+              {/* Botão Entrar Oficial KURIO com box confortável e proporcional */}
+              <button
+                type="button"
+                onClick={() => connectWallet()}
+                className="bg-[#D28A4C] hover:bg-[#c47b3e] text-[#0E0907] font-mono text-[13.5px] sm:text-[14px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm shadow-[#D28A4C]/15 cursor-pointer select-none"
+              >
+                <LogOut className="size-4 stroke-[2.2]" />
+                <span>Entrar</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Conteúdo principal envolvendo as rotas aninhadas via Outlet */}
-      <main
-        id="main-content"
-        className="flex-1 container mx-auto max-w-6xl px-4 sm:px-6 py-8"
-        tabIndex={-1}
-      >
-        <Outlet />
-      </main>
+      {/* Conteúdo com 90% de zoom (mantendo a barra de navegação no tamanho atual) */}
+      <div className="flex-1 flex flex-col w-full" style={{ zoom: 0.9 }}>
+        <main
+          id="main-content"
+          className="w-full max-w-[1420px] mx-auto px-6 sm:px-8 flex-1"
+          tabIndex={-1}
+        >
+          <Outlet />
+        </main>
 
-      {/* Footer estrutural */}
-      <footer className="border-t border-border bg-surface-dark/50 py-6 text-center text-xs text-text-muted">
-        <div className="container mx-auto max-w-6xl px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 NFT Marketplace. Todos os direitos reservados.</p>
-          <p className="font-mono text-[11px]">Desafio Frontend — Jungle Gaming</p>
-        </div>
-      </footer>
+        {/* Footer Oficial KURIO */}
+        <Footer />
+      </div>
     </div>
   );
 }

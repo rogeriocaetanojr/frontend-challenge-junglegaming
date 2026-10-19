@@ -1,4 +1,16 @@
-export type NftCategory = "art" | "gaming" | "collectibles" | "virtual-worlds";
+export type NftCategory =
+  | "art"
+  | "photography"
+  | "music"
+  | "3d-art"
+  | "collectibles"
+  | "generative"
+  | "gaming"
+  | "memberships"
+  | "utility"
+  | "virtual-worlds";
+
+export type NftNetwork = "ethereum" | "polygon" | "solana";
 
 export interface NftCreator {
   name: string;
@@ -24,10 +36,12 @@ export interface NftItem {
   name: string;
   description: string;
   priceEth: number;
+  originalPriceEth?: number;
   image: string;
   creator: NftCreator;
   collection: NftCollection;
   category: NftCategory;
+  network?: NftNetwork;
   attributes: NftAttribute[];
   likes: number;
   verified: boolean;
@@ -35,11 +49,12 @@ export interface NftItem {
 }
 
 /**
- * Critérios de busca, categorização, faixa de preço e ordenação para listagens de NFTs.
+ * Critérios de busca, categorização, faixa de preço, rede e ordenação para listagens de NFTs.
  */
 export interface NftFilters {
   search?: string;
   category?: string;
+  network?: NftNetwork;
   minPrice?: number;
   maxPrice?: number;
   sortBy?: "price-asc" | "price-desc" | "recent" | "popular";

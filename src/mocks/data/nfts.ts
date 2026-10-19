@@ -3,339 +3,329 @@ import type { NftItem } from "@/types/nft";
 export const MOCK_NFTS: NftItem[] = [
   {
     id: "1",
-    name: "Cyber Sentinel #001",
+    name: "Emerald Ape #042",
     description:
-      "Guardião cibernético autônomo forjado em ligas de titânio digital com núcleo neural quântico.",
-    priceEth: 0.45,
-    image:
-      "https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&w=800&q=80",
+      "Chimpanzé icônico estilizado em 3D com jaqueta bomber verde esmeralda, óculos escuros e medalhão de ouro.",
+    priceEth: 1.19,
+    image: "/images/nfts/emerald-ape.png",
     creator: {
-      name: "Aethelgard Labs",
+      name: "Kurio Studios",
       address: "0x71C8364437a9C27779976872A42F340a6B233921",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      avatar: "/images/nfts/emerald-ape.png",
     },
     collection: {
-      name: "Cyber Sentinels",
-      slug: "cyber-sentinels",
+      name: "Genesis Apes",
+      slug: "genesis-apes",
     },
-    category: "gaming",
+    category: "art",
+    network: "ethereum",
     attributes: [
-      { trait_type: "Classe", value: "Guardião Pesado" },
-      { trait_type: "Núcleo", value: "Quântico" },
+      { trait_type: "Roupa", value: "Jaqueta Bomber Esmeralda" },
+      { trait_type: "Acessório", value: "Óculos Escuros Retrô" },
+      { trait_type: "Colar", value: "Medalhão Ouro 24k" },
       { trait_type: "Raridade", value: "Lendário" },
-      { trait_type: "Armadura", value: "Titânio 98%" },
     ],
-    likes: 142,
+    likes: 342,
     verified: true,
-    createdAt: "2026-09-15T10:00:00Z",
+    createdAt: "2026-10-18T10:00:00Z",
   },
   {
     id: "2",
-    name: "Neural Nexus Prism",
+    name: "Sage Nomad #009",
     description:
-      "Escultura geométrica generativa representando as sinapses entre inteligência artificial e arte sensorial.",
-    priceEth: 1.25,
-    image:
-      "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80",
+      "Explorador digital em moletom roxo violeta com chapéu bucket oliva e feição contemplativa serena.",
+    priceEth: 1.69,
+    image: "/images/nfts/sage-nomad.png",
     creator: {
-      name: "Nova Synthetics",
+      name: "Nomad Collective",
       address: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      avatar: "/images/nfts/sage-nomad.png",
     },
     collection: {
-      name: "Abstract Dimensions",
-      slug: "abstract-dimensions",
+      name: "Nomad Wanderers",
+      slug: "nomad-wanderers",
     },
-    category: "art",
+    category: "collectibles",
+    network: "ethereum",
     attributes: [
-      { trait_type: "Forma", value: "Prisma Octaédrico" },
-      { trait_type: "Paleta", value: "Bronze Neon" },
-      { trait_type: "Complexidade", value: "Nível 5" },
+      { trait_type: "Chapéu", value: "Bucket Hat Oliva" },
+      { trait_type: "Roupa", value: "Moletom Roxo Clássico" },
+      { trait_type: "Humor", value: "Sereno" },
+      { trait_type: "Raridade", value: "Épico" },
     ],
-    likes: 89,
+    likes: 289,
     verified: true,
-    createdAt: "2026-09-20T14:30:00Z",
+    createdAt: "2026-10-17T14:30:00Z",
   },
   {
     id: "3",
-    name: "Aether Void Runner",
+    name: "Noct Vessel #552",
     description:
-      "Veículo de exploração espacial desenhado para navegação em anomalias gravitacionais hiperdimensionais.",
-    priceEth: 0.85,
-    image:
-      "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=800&q=80",
+      "Figura aristocrática com blazer marfim de alta alfaiataria sobre gola alta escura e postura imponente.",
+    priceEth: 1.98,
+    originalPriceEth: 2.29,
+    image: "/images/nfts/noct-vessel.png",
     creator: {
-      name: "Starlight Forge",
+      name: "High Society Art",
       address: "0x28C6c06298d514Db089934071355E5743bf21d60",
-      avatar:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
+      avatar: "/images/nfts/noct-vessel.png",
     },
     collection: {
-      name: "Void Drifters",
-      slug: "void-drifters",
+      name: "Ivory Nobility",
+      slug: "ivory-nobility",
     },
-    category: "gaming",
+    category: "3d-art",
+    network: "polygon",
     attributes: [
-      { trait_type: "Propulsão", value: "Antimatéria" },
-      { trait_type: "Velocidade", value: "Mach 14" },
-      { trait_type: "Geração", value: "Mk III" },
+      { trait_type: "Traje", value: "Blazer Marfim Sob Medida" },
+      { trait_type: "Gola", value: "Suéter Canelado Ébano" },
+      { trait_type: "Expressão", value: "Solenidade" },
+      { trait_type: "Edição", value: "Gênesis 1/1" },
     ],
-    likes: 215,
+    likes: 415,
     verified: true,
-    createdAt: "2026-09-22T08:15:00Z",
+    createdAt: "2026-10-16T08:15:00Z",
   },
   {
     id: "4",
-    name: "Golden Mirage Sphere",
+    name: "Cosmic Bloom #118",
     description:
-      "Esfera de fusão dourada renderizada com simulação física de partículas em ambiente de gravidade zero.",
-    priceEth: 2.4,
-    image:
-      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=800&q=80",
+      "Mente generativa expressa em cores serenas, simbolizando a fusão de algoritmos e consciência visual.",
+    priceEth: 1.23,
+    image: "/images/nfts/sage-nomad.png",
     creator: {
-      name: "Aura Creative",
+      name: "Nomad Collective",
       address: "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-      avatar:
-        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80",
+      avatar: "/images/nfts/sage-nomad.png",
     },
     collection: {
-      name: "Celestial Orbs",
-      slug: "celestial-orbs",
+      name: "Nomad Wanderers",
+      slug: "nomad-wanderers",
     },
-    category: "collectibles",
+    category: "generative",
+    network: "ethereum",
     attributes: [
-      { trait_type: "Material", value: "Ouro Quântico" },
-      { trait_type: "Refração", value: "Cromática" },
-      { trait_type: "Edição", value: "1 de 1" },
-    ],
-    likes: 310,
-    verified: true,
-    createdAt: "2026-09-25T19:40:00Z",
-  },
-  {
-    id: "5",
-    name: "Obsidian Citadel Realm",
-    description:
-      "Terreno virtual exclusivo situado no epicentro da metrópole de Neon Genesis com direitos de construção descentralizados.",
-    priceEth: 3.8,
-    image:
-      "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "MetaVerse Architects",
-      address: "0xdd922d57aA8b19124CEF2B484e55E3a0f757dD2A",
-      avatar:
-        "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Genesis Worlds",
-      slug: "genesis-worlds",
-    },
-    category: "virtual-worlds",
-    attributes: [
-      { trait_type: "Setor", value: "Distrito Central" },
-      { trait_type: "Área", value: "2500m² Virtuais" },
-      { trait_type: "Zoneamento", value: "Comercial / Lazer" },
-    ],
-    likes: 184,
-    verified: true,
-    createdAt: "2026-09-28T11:20:00Z",
-  },
-  {
-    id: "6",
-    name: "Chrono Shard #42",
-    description:
-      "Fragmento temporal cristalizado que reflete timelines alternativos sob iluminação infravermelha.",
-    priceEth: 0.15,
-    image:
-      "https://images.unsplash.com/photo-1638803040283-7a5ffd48dad5?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "TimeForge Guild",
-      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Chrono Relics",
-      slug: "chrono-relics",
-    },
-    category: "collectibles",
-    attributes: [
-      { trait_type: "Linha Temporal", value: "Alpha-7" },
-      { trait_type: "Densidade", value: "Alta" },
-      { trait_type: "Pureza", value: "99.4%" },
-    ],
-    likes: 67,
-    verified: false,
-    createdAt: "2026-10-01T15:00:00Z",
-  },
-  {
-    id: "7",
-    name: "Fluido Cósmico Primordial",
-    description:
-      "Ondas fluidas geradas proceduralmente utilizando shaders de dinâmica de fluidos Navier-Stokes em tempo real.",
-    priceEth: 0.65,
-    image:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "Nova Synthetics",
-      address: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Abstract Dimensions",
-      slug: "abstract-dimensions",
-    },
-    category: "art",
-    attributes: [
-      { trait_type: "Algoritmo", value: "Navier-Stokes" },
-      { trait_type: "Viscosidade", value: "Baixa" },
-      { trait_type: "Tom", value: "Cobre & Ébano" },
-    ],
-    likes: 122,
-    verified: true,
-    createdAt: "2026-10-03T18:10:00Z",
-  },
-  {
-    id: "8",
-    name: "Valkyrie Core Mech",
-    description:
-      "Exoesqueleto de combate aéreo blindado com sensores táteis integrados à rede neural de combate descentralizada.",
-    priceEth: 1.85,
-    image:
-      "https://images.unsplash.com/photo-1635322966219-b75ed372eb01?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "Aethelgard Labs",
-      address: "0x71C8364437a9C27779976872A42F340a6B233921",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Cyber Sentinels",
-      slug: "cyber-sentinels",
-    },
-    category: "gaming",
-    attributes: [
-      { trait_type: "Potência", value: "4800 kW" },
-      { trait_type: "Blindagem", value: "Nanotubos" },
-      { trait_type: "Raridade", value: "Mítico" },
-    ],
-    likes: 278,
-    verified: true,
-    createdAt: "2026-10-06T09:45:00Z",
-  },
-  {
-    id: "9",
-    name: "Nebula Sanctuary Island",
-    description:
-      "Ilha flutuante no metaverso com ecossistema biológico luminescente e portal de teletransporte interoperável.",
-    priceEth: 4.2,
-    image:
-      "https://images.unsplash.com/photo-1618172193763-c511deb635ca?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "MetaVerse Architects",
-      address: "0xdd922d57aA8b19124CEF2B484e55E3a0f757dD2A",
-      avatar:
-        "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Genesis Worlds",
-      slug: "genesis-worlds",
-    },
-    category: "virtual-worlds",
-    attributes: [
-      { trait_type: "Altitude", value: "850m" },
-      { trait_type: "Bioma", value: "Cristalino" },
-      { trait_type: "Conectividade", value: "WebXR Nativo" },
-    ],
-    likes: 412,
-    verified: true,
-    createdAt: "2026-10-08T13:20:00Z",
-  },
-  {
-    id: "10",
-    name: "Ethereal Helix Helix",
-    description:
-      "Representação helicoidal da fita de DNA digital codificada com hashes criptográficos imutáveis na blockchain.",
-    priceEth: 0.95,
-    image:
-      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "Aura Creative",
-      address: "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-      avatar:
-        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Abstract Dimensions",
-      slug: "abstract-dimensions",
-    },
-    category: "art",
-    attributes: [
-      { trait_type: "Estrutura", value: "Dupla Hélice" },
-      { trait_type: "Renderizador", value: "Octane Render" },
-      { trait_type: "Brilho", value: "Fosforescente" },
-    ],
-    likes: 95,
-    verified: true,
-    createdAt: "2026-10-10T16:00:00Z",
-  },
-  {
-    id: "11",
-    name: "Cybernetic Kintsugi Mask",
-    description:
-      "Máscara ancestral reparada com ouro líquido condutivo e circuitos de cobre em tributo à filosofia Kintsugi.",
-    priceEth: 1.6,
-    image:
-      "https://images.unsplash.com/photo-1620121692029-d088224ddc74?auto=format&fit=crop&w=800&q=80",
-    creator: {
-      name: "Starlight Forge",
-      address: "0x28C6c06298d514Db089934071355E5743bf21d60",
-      avatar:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
-    },
-    collection: {
-      name: "Chrono Relics",
-      slug: "chrono-relics",
-    },
-    category: "collectibles",
-    attributes: [
-      { trait_type: "Origem", value: "Neo Kyoto" },
-      { trait_type: "Técnica", value: "Kintsugi Digital" },
-      { trait_type: "Circuito", value: "Cobre 99.9%" },
+      { trait_type: "Algoritmo", value: "Neural Bloom v4" },
+      { trait_type: "Matiz", value: "Índigo Profundo" },
+      { trait_type: "Raridade", value: "Raro" },
     ],
     likes: 198,
     verified: true,
-    createdAt: "2026-10-12T20:30:00Z",
+    createdAt: "2026-10-15T19:40:00Z",
+  },
+  {
+    id: "5",
+    name: "Violet Nomad #314",
+    description:
+      "Avatar representativo da tribo nômade espacial, em trajes confortáveis para viagens interplanetárias.",
+    priceEth: 1.39,
+    image: "/images/nfts/sage-nomad.png",
+    creator: {
+      name: "Nomad Collective",
+      address: "0xdd922d57aA8b19124CEF2B484e55E3a0f757dD2A",
+      avatar: "/images/nfts/sage-nomad.png",
+    },
+    collection: {
+      name: "Nomad Wanderers",
+      slug: "nomad-wanderers",
+    },
+    category: "collectibles",
+    network: "solana",
+    attributes: [
+      { trait_type: "Rede", value: "Solana High-Speed" },
+      { trait_type: "Capa", value: "Capuz Violeta" },
+      { trait_type: "Acessório", value: "Gorro Tático" },
+    ],
+    likes: 247,
+    verified: true,
+    createdAt: "2026-10-14T11:20:00Z",
+  },
+  {
+    id: "6",
+    name: "Ivory Baron #888",
+    description:
+      "Membro honorário da confraria dos primatas distintas, com terno bege e acabamento textural hiper-realista.",
+    priceEth: 1.75,
+    image: "/images/nfts/noct-vessel.png",
+    creator: {
+      name: "High Society Art",
+      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+      avatar: "/images/nfts/noct-vessel.png",
+    },
+    collection: {
+      name: "Ivory Nobility",
+      slug: "ivory-nobility",
+    },
+    category: "art",
+    network: "ethereum",
+    attributes: [
+      { trait_type: "Corte", value: "Alfaiataria Italiana" },
+      { trait_type: "Tecido", value: "Linho Puro" },
+      { trait_type: "Raridade", value: "Lendário" },
+    ],
+    likes: 312,
+    verified: true,
+    createdAt: "2026-10-13T15:00:00Z",
+  },
+  {
+    id: "7",
+    name: "Golden Bear #207",
+    description:
+      "Campeão gamer em agasalho esportivo creme e fones de ouvido acústicos com cancelamento de ruído.",
+    priceEth: 0.99,
+    image: "/images/nfts/golden-bear.png",
+    creator: {
+      name: "Pulse Gaming",
+      address: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
+      avatar: "/images/nfts/golden-bear.png",
+    },
+    collection: {
+      name: "Audio Warriors",
+      slug: "audio-warriors",
+    },
+    category: "gaming",
+    network: "polygon",
+    attributes: [
+      { trait_type: "Headphones", value: "Pro Audio Studio A" },
+      { trait_type: "Agasalho", value: "Bege Esportivo" },
+      { trait_type: "Pelagem", value: "Dourada Brilhante" },
+    ],
+    likes: 189,
+    verified: true,
+    createdAt: "2026-10-12T18:10:00Z",
+  },
+  {
+    id: "8",
+    name: "Golden Signal #140",
+    description:
+      "Produtor musical com fones de monitoramento de estúdio e sorriso contagiante, emitindo ondas sonoras raras.",
+    priceEth: 0.89,
+    image: "/images/nfts/golden-bear.png",
+    creator: {
+      name: "Sonic Realms",
+      address: "0x71C8364437a9C27779976872A42F340a6B233921",
+      avatar: "/images/nfts/golden-bear.png",
+    },
+    collection: {
+      name: "Audio Warriors",
+      slug: "audio-warriors",
+    },
+    category: "music",
+    network: "solana",
+    attributes: [
+      { trait_type: "Gênero", value: "Synthwave / Lo-Fi" },
+      { trait_type: "Freqüência", value: "432 Hz" },
+      { trait_type: "Áudio", value: "Stems Desbloqueáveis" },
+    ],
+    likes: 275,
+    verified: true,
+    createdAt: "2026-10-11T09:45:00Z",
+  },
+  {
+    id: "9",
+    name: "Golden Signal #160",
+    description:
+      "Edição especial da série de primatas sonoros em sintonia com a rede Ethereum e trilha sonora imersiva.",
+    priceEth: 0.89,
+    image: "/images/nfts/golden-bear.png",
+    creator: {
+      name: "Sonic Realms",
+      address: "0x28C6c06298d514Db089934071355E5743bf21d60",
+      avatar: "/images/nfts/golden-bear.png",
+    },
+    collection: {
+      name: "Audio Warriors",
+      slug: "audio-warriors",
+    },
+    category: "music",
+    network: "ethereum",
+    attributes: [
+      { trait_type: "Fone", value: "Ouro Acústico" },
+      { trait_type: "Beats", value: "Masterizados em Abbey Road" },
+      { trait_type: "Raridade", value: "Raro" },
+    ],
+    likes: 219,
+    verified: true,
+    createdAt: "2026-10-10T12:00:00Z",
+  },
+  {
+    id: "10",
+    name: "Emerald Visionary #088",
+    description:
+      "Retrato fotográfico de alta precisão capturando os detalhes finos da textura têxtil e reflexo dos óculos.",
+    priceEth: 1.45,
+    image: "/images/nfts/emerald-ape.png",
+    creator: {
+      name: "Kurio Studios",
+      address: "0x71C8364437a9C27779976872A42F340a6B233921",
+      avatar: "/images/nfts/emerald-ape.png",
+    },
+    collection: {
+      name: "Genesis Apes",
+      slug: "genesis-apes",
+    },
+    category: "photography",
+    network: "polygon",
+    attributes: [
+      { trait_type: "Lente", value: "85mm f/1.4" },
+      { trait_type: "Iluminação", value: "Estúdio Rembrandt" },
+      { trait_type: "Resolução", value: "8K UHD" },
+    ],
+    likes: 160,
+    verified: true,
+    createdAt: "2026-10-09T16:20:00Z",
+  },
+  {
+    id: "11",
+    name: "Noct Vessel #701",
+    description:
+      "Elegante primata em traje de gala com traços arquitetônicos clássicos e expressão nobre.",
+    priceEth: 2.1,
+    image: "/images/nfts/noct-vessel.png",
+    creator: {
+      name: "High Society Art",
+      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+      avatar: "/images/nfts/noct-vessel.png",
+    },
+    collection: {
+      name: "Ivory Nobility",
+      slug: "ivory-nobility",
+    },
+    category: "memberships",
+    network: "ethereum",
+    attributes: [
+      { trait_type: "Nível", value: "Tier 1 Founder" },
+      { trait_type: "Benefício", value: "Zero Taxa de Mercado" },
+      { trait_type: "Airdrops", value: "Garantidos" },
+    ],
+    likes: 520,
+    verified: true,
+    createdAt: "2026-10-08T11:00:00Z",
   },
   {
     id: "12",
-    name: "Singularity Portal Core",
+    name: "Sage Nomad #022",
     description:
-      "Vórtice interestelar de dobra espacial com simulação de lente gravitacional e horizonte de eventos estocástico.",
-    priceEth: 3.15,
-    image:
-      "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80",
+      "Nômade das planícies digitais com gorro tático e moletom texturizado em tons terrosos.",
+    priceEth: 1.55,
+    image: "/images/nfts/sage-nomad.png",
     creator: {
-      name: "TimeForge Guild",
-      address: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      name: "Nomad Collective",
+      address: "0xdd922d57aA8b19124CEF2B484e55E3a0f757dD2A",
+      avatar: "/images/nfts/sage-nomad.png",
     },
     collection: {
-      name: "Void Drifters",
-      slug: "void-drifters",
+      name: "Nomad Wanderers",
+      slug: "nomad-wanderers",
     },
-    category: "art",
+    category: "utility",
+    network: "ethereum",
     attributes: [
-      { trait_type: "Dobra Espacial", value: "Gravitacional" },
-      { trait_type: "Horizonte", value: "Ergosfera Ativa" },
-      { trait_type: "Singularidade", value: "Kerr-Newman" },
+      { trait_type: "Protocolo", value: "ERC-6551" },
+      { trait_type: "Permissão", value: "Root Admin" },
     ],
-    likes: 340,
+    likes: 143,
     verified: true,
-    createdAt: "2026-10-15T12:00:00Z",
+    createdAt: "2026-10-07T09:30:00Z",
   },
 ];

@@ -1,8 +1,31 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 16.5px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 18.5px;
+  }
+}
+
 body {
   margin: 0;
+  font-family: var(--font-sans);
   background-color: var(--background);
   color: var(--foreground);
   min-height: 100vh;

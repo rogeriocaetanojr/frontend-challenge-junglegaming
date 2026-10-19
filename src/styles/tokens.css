@@ -52,6 +52,12 @@
 }
 
 @theme {
+  /* Tipografia oficial KURIO */
+  --font-sans:
+    "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono:
+    "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
   /* Cores de fundo e superfícies */
   --color-background: var(--background);
   --color-ink-deep: var(--ink-deep);
