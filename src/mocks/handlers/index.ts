@@ -3,11 +3,13 @@ import { http, HttpResponse } from "msw";
 import { cartHandlers } from "./cart.handlers";
 import { catalogHandlers } from "./catalog.handlers";
 import { identityHandlers } from "./identity.handlers";
+import { orderHandlers } from "./order.handlers";
 import { quoteHandlers } from "./quote.handlers";
 
 export * from "./cart.handlers";
 export * from "./catalog.handlers";
 export * from "./identity.handlers";
+export * from "./order.handlers";
 export * from "./quote.handlers";
 
 export const handlers = [
@@ -22,4 +24,5 @@ export const handlers = [
   ...identityHandlers,
   ...cartHandlers,
   ...quoteHandlers,
+  ...orderHandlers,
 ];
