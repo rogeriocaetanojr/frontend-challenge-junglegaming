@@ -13,6 +13,7 @@ Aplicação desenvolvida para o desafio técnico de frontend da Jungle Gaming.
 - TypeScript
 - Vite
 - PNPM
+- Tailwind CSS v4
 - ESLint (Flat Config) & Prettier
 - Husky, lint-staged & Commitlint
 - TanStack Query (previsto)
