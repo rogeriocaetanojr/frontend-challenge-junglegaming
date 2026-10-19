@@ -14,10 +14,14 @@ src/
 ├── components/      # Componentes de UI genéricos (Design System e Primitivos)
 ├── features/        # Módulos de domínio de negócio isolados (auth, marketplace, cart, etc.)
 ├── hooks/           # Hooks React reutilizáveis de escopo transversal
+├── layouts/         # Layouts estruturais da aplicação (RootLayout com Outlet e ScrollToTop)
 ├── lib/             # Adaptadores de bibliotecas terceiras e clientes de infraestrutura
 │   ├── http/        # Cliente HTTP encapsulado (Axios)
 │   └── realtime/    # Cliente de WebSocket encapsulado (Socket.IO)
 ├── mocks/           # Camada de interceptação e simulação de rede (MSW)
+├── pages/           # Páginas e views de rotas (home, nft-detail, checkout, not-found)
+├── routes/          # Configuração declarativa de rotas SPA (createBrowserRouter)
+├── styles/          # Tokens CSS, Tailwind v4 e estilos globais
 ├── types/           # Declarações e contratos globais de tipos TypeScript
 └── utils/           # Funções utilitárias puras
 ```
@@ -130,4 +134,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `9af98ed` | Adoção do bignumber.js para aritmética e formatação de criptoativos (ETH/USD)      | Eliminar vulnerabilidades e inconsistências de ponto flutuante (IEEE 754) em operações financeiras e checkout, garantindo precisão arbitrária exata.                          |
 | 2026-10-19 | `f5ea535` | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.              |
 | 2026-10-19 | `b81c179` | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |
-| 2026-10-19 | Pendente  | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
+| 2026-10-19 | `acb5951` | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
+| 2026-10-19 | Pendente  | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                        |
