@@ -1,8 +1,10 @@
 import { http, HttpResponse } from "msw";
 
 import { catalogHandlers } from "./catalog.handlers";
+import { identityHandlers } from "./identity.handlers";
 
 export * from "./catalog.handlers";
+export * from "./identity.handlers";
 
 export const handlers = [
   http.get("/api/health", () => {
@@ -13,4 +15,5 @@ export const handlers = [
     });
   }),
   ...catalogHandlers,
+  ...identityHandlers,
 ];
