@@ -16,7 +16,8 @@ export function HeroSection({ featuredNft }: HeroSectionProps) {
 
   return (
     <section
-      className="pt-4 lg:pt-6 pb-12 lg:pb-16 relative"
+      className="pt-4 sm:pt-5 lg:pt-7 pb-8 sm:pb-10 lg:pb-[50px] relative"
+      style={{ zoom: 1.12 }}
       aria-label="Apresentação Kurio"
     >
       {/* Container com a grid e os 3 pontinhos posicionados acima da linha final da foto */}
@@ -24,17 +25,16 @@ export function HeroSection({ featuredNft }: HeroSectionProps) {
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Coluna da Esquerda (span 7): Subtítulo, Título, Descrição, Botão EXPLORAR subido sutilmente */}
           <div className="lg:col-span-7 space-y-6 text-left -translate-y-2 lg:-translate-y-4">
-            <p className="font-mono text-sm sm:text-base font-normal text-[#C5BCAD]">
+            <p className="font-mono text-sm sm:text-base font-normal text-white">
               Bem-vindo à Kurio
             </p>
 
-            <h1 className="font-mono text-3xl sm:text-4xl lg:text-[50px] font-bold text-white uppercase leading-[1.12] tracking-tight">
-              SEJA DONO DO FUTURO
-              <br />
-              DA ARTE DIGITAL
+            <h1 className="font-mono text-3xl sm:text-4xl lg:text-[50px] font-bold text-white uppercase leading-[1.20] tracking-tight">
+              <span className="block">SEJA DONO DO FUTURO</span>
+              <span className="block mt-1 sm:mt-1.5 lg:mt-2">DA ARTE DIGITAL</span>
             </h1>
 
-            <p className="font-mono text-sm sm:text-[14.5px] lg:text-[15px] text-[#A89F91] leading-relaxed max-w-[650px]">
+            <p className="font-mono text-sm sm:text-[14.5px] lg:text-[15px] text-[#CFB28C] leading-relaxed max-w-[650px]">
               <span className="block">
                 Descubra NFTs selecionados de criadores emergentes e consagrados.
               </span>

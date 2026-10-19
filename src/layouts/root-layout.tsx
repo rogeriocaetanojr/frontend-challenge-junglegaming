@@ -47,7 +47,7 @@ export function RootLayout() {
         {/* Container externo com o mesmo padding lateral do Hero */}
         <div className="w-full max-w-[1420px] mx-auto px-6 sm:px-8">
           {/* Linha divisória laranja delimitando exatamente do início da logo até o fim do botão Entrar */}
-          <div className="h-14 sm:h-[58px] flex items-center justify-between relative border-b border-[#D28A4C]/50">
+          <div className="h-[58px] sm:h-[62px] flex items-center justify-between relative border-b border-[#D28A4C]/50">
             {/* Logo "KURIO" alinhada e sutilmente rebaixada para nível ótico perfeito */}
             <Link
               to="/"

@@ -37,7 +37,7 @@ export function CatalogTabsBar({
   onSortChange,
 }: CatalogTabsBarProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#3F2319]/70 pb-4">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#3F2319]/70">
       {/* Abas à esquerda */}
       <div
         className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none font-mono"
@@ -53,7 +53,7 @@ export function CatalogTabsBar({
               role="tab"
               aria-selected={isActive}
               onClick={() => onTabChange(tab.id)}
-              className={`pb-3 text-sm sm:text-base transition-all relative cursor-pointer whitespace-nowrap ${
+              className={`pb-3 sm:pb-3.5 text-sm sm:text-base transition-all relative cursor-pointer whitespace-nowrap ${
                 isActive
                   ? "text-[#D28A4C] font-bold"
                   : "text-[#F5F1EB] hover:text-[#D28A4C]"
@@ -75,12 +75,12 @@ export function CatalogTabsBar({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-[#F5F1EB] hover:text-[#D28A4C] transition-colors cursor-pointer select-none py-1 focus:outline-none"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-[#F5F1EB] hover:text-[#D28A4C] transition-colors cursor-pointer select-none pb-3 sm:pb-3.5 pt-0 focus:outline-none"
               aria-label="Opções de ordenação"
             >
-              <span className="text-[#F5F1EB]/70">Ordenar por:</span>
+              <span className="text-[#F5F1EB]">Ordenar por:</span>
               <span className="font-medium text-[#F5F1EB]">{SORT_LABELS[sortBy]}</span>
-              <ChevronDown className="size-3.5 text-[#F5F1EB]/70 ml-0.5" />
+              <ChevronDown className="size-3.5 text-[#F5F1EB] ml-0.5" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
