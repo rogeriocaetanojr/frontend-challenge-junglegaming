@@ -8,6 +8,15 @@
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
+    /* Strict & Type Checking */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Path Resolution */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

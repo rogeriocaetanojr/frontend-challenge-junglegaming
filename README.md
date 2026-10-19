@@ -1,32 +1,49 @@
-# React + TypeScript + Vite
+# NFT Marketplace
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Desafio técnico de frontend para a Jungle Gaming.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- TypeScript
+- Vite
+- PNPM
 
-## React Compiler
+## Pré-requisitos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js >= 20
+- PNPM >= 9
 
-## Expanding the Oxlint configuration
+## Instalação e Execução
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Instalar dependências:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Iniciar ambiente de desenvolvimento:
+
+```bash
+pnpm dev
+```
+
+Compilar para produção:
+
+```bash
+pnpm build
+```
+
+Executar o linter:
+
+```bash
+pnpm lint
+```
+
+## Scripts
+
+- `pnpm dev`: Inicia o servidor local de desenvolvimento.
+- `pnpm build`: Executa a verificação de tipos e compilação da aplicação.
+- `pnpm typecheck`: Executa a checagem estática de tipos com o compilador TypeScript.
+- `pnpm preview`: Executa a prévia local do build de produção.
+- `pnpm lint`: Executa a análise estática com o Oxlint.
