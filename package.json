@@ -7,10 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc -b",
-    "lint": "eslint .",
-    "format": "prettier --write .",
     "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "check": "pnpm typecheck && pnpm lint",
+    "test": "node -e \"console.log('vitest pendente')\"",
+    "test:e2e": "node -e \"console.log('playwright pendente')\"",
+    "test:e2e:update": "node -e \"console.log('playwright update pendente')\"",
+    "lighthouse": "node -e \"console.log('lighthouse pendente')\"",
     "prepare": "husky"
   },
   "dependencies": {

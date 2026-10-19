@@ -11,7 +11,7 @@ Desafio técnico de frontend para a Jungle Gaming.
 
 ## Pré-requisitos
 
-- Node.js >= 20
+- Node.js >= 22
 - PNPM >= 9
 
 ## Instalação e Execução
@@ -47,4 +47,5 @@ pnpm lint
 - `pnpm typecheck`: Executa a checagem estática de tipos com o compilador TypeScript.
 - `pnpm preview`: Executa a prévia local do build de produção.
 - `pnpm lint`: Executa a análise estática com o ESLint.
+- `pnpm check`: Executa a checagem combinada de tipos (typecheck) e linting.
 - `pnpm format`: Formata o código do projeto com o Prettier.
