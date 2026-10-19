@@ -123,4 +123,11 @@ export default tseslint.config(
       ],
     },
   },
+  // Permite exportar variantes junto a componentes no shadcn/ui
+  {
+    files: ["src/components/ui/**", "**/src/components/ui/**"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );
