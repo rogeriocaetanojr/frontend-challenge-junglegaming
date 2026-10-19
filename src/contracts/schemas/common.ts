@@ -49,6 +49,7 @@ export const apiErrorCodeSchema = z.enum([
   "not_found",
   "conflict_availability",
   "conflict_price_changed",
+  "conflict_version_mismatch",
   "idempotency_conflict",
   "email_taken",
   "coupon_invalid",
