@@ -1,0 +1,56 @@
+# Dependências e saídas de compilação
+node_modules/
+.pnp
+.pnpm-store/
+dist/
+dist-ssr/
+
+# Builds locais e arquivos de cache
+*.local
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Logs e arquivos de depuração (debug)
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Variáveis de ambiente sensíveis
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos de sistema e IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Cobertura de testes
+coverage/
+*.lcov
+
+# Playwright e testes de ponta a ponta (E2E)
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Relatórios do Lighthouse
+reports/lighthouse/html/
+reports/lighthouse/json/
+reports/lighthouse/
+.lighthouseci/
