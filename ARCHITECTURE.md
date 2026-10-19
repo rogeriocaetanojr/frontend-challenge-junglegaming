@@ -21,6 +21,7 @@ src/
 ├── mocks/           # Camada de interceptação e simulação de rede (MSW)
 ├── pages/           # Páginas e views de rotas (home, nft-detail, checkout, not-found)
 ├── routes/          # Configuração declarativa de rotas SPA (createBrowserRouter)
+├── store/           # Stores de estado global de cliente (Zustand com persist)
 ├── styles/          # Tokens CSS, Tailwind v4 e estilos globais
 ├── types/           # Declarações e contratos globais de tipos TypeScript
 └── utils/           # Funções utilitárias puras
@@ -67,10 +68,16 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 ## 4. Estado do Carrinho, Precisão Decimal (ETH) e Merge de Visitante
 
-- **Precisão Numérica**: Todos os cálculos monetários e agregações de preços (ex: total do carrinho, lances e conversões USD) utilizam estritamente a biblioteca `bignumber.js` (`src/lib/formatters.ts`), garantindo imunidade absoluta a inconsistências de arredondamento inerentes ao padrão _IEEE 754_ do JavaScript (ex: `0.1 + 0.2 = 0.3`).
-- **Formatação de Criptoativos**: Os valores são exibidos via `formatEth` com controle explícito de casas decimais e sem zeros desnecessários à direita.
-- **Persistência do Carrinho**: Armazenamento local para usuários não autenticados.
-- **Merge de Visitante**: Ao autenticar, os itens do carrinho anônimo serão conciliados com o carrinho da conta do usuário.
+- **Gerenciamento de Estado Global (`src/store/cart-store.ts`)**:
+  - Implementado com **Zustand** e middleware `persist` gravando no `localStorage` sob a chave `@nft-marketplace:cart`.
+  - **Unicidade de NFTs (1 de 1)**: Por serem ativos digitais não-fungíveis únicos, a quantidade por item é rigidamente fixada em `1`. A ação `addItem` rejeita automaticamente duplicações de um mesmo identificador.
+  - **Ações Atômicas e Seletores**: Prover `addItem`, `removeItem`, `clearCart`, `isInCart`, `getItemCount`, `getTotalEth` e `getTotalUsd`.
+- **Precisão Numérica Rigorosa (IEEE 754)**:
+  - Todo cálculo de soma e conversão monetária é computado por meio de `calculateTotalEth` e `BigNumber.js` (`src/lib/formatters.ts`), eliminando anomalias decimais comuns de ponto flutuante em JavaScript (`0.1 + 0.2 = 0.30000000000000004`).
+- **Formatação de Criptoativos**:
+  - Valores exibidos através de `formatEth` (com precisão configurável e sem zeros residuais) e `formatUsd` com separadores monetários padronizados.
+- **Merge de Visitante (Previsto)**:
+  - Ao autenticar a sessão Web3 ou conta de usuário, os itens armazenados localmente no estado de visitante serão sincronizados com o backend antes do checkout definitivo.
 
 ---
 
@@ -135,4 +142,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `f5ea535` | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.              |
 | 2026-10-19 | `b81c179` | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |
 | 2026-10-19 | `acb5951` | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
-| 2026-10-19 | Pendente  | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                        |
+| 2026-10-19 | `b419f5a` | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                        |
+| 2026-10-19 | Pendente  | Gerenciamento de estado do carrinho (`cartStore`) com Zustand e persistência       | Store global com middleware `persist` (`localStorage`), garantia de unicidade de NFTs 1/1 e totalização imune a IEEE 754 via `bignumber.js`.                                  |

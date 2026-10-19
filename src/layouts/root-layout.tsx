@@ -4,6 +4,7 @@ import { ShoppingBag, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/store/cart-store";
 
 /**
  * Componente utilitário que restaura a posição da barra de rolagem
@@ -20,6 +21,8 @@ export function ScrollToTop() {
 }
 
 export function RootLayout() {
+  const cartCount = useCartStore((state) => state.items.length);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased selection:bg-primary/20 selection:text-primary">
       <ScrollToTop />
@@ -65,14 +68,24 @@ export function RootLayout() {
             <NavLink
               to="/checkout"
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors px-3 py-1.5 rounded-button flex items-center gap-1.5 ${
+                `text-sm font-medium transition-colors px-3 py-1.5 rounded-button flex items-center gap-2 ${
                   isActive
                     ? "text-primary bg-surface-raised font-semibold"
                     : "text-text-muted hover:text-foreground hover:bg-surface-dark"
                 }`
               }
             >
-              <ShoppingBag className="size-4" />
+              <div className="relative flex items-center">
+                <ShoppingBag className="size-4" />
+                {cartCount > 0 && (
+                  <span
+                    className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 rounded-full bg-primary text-ink-deep text-[10px] font-bold flex items-center justify-center animate-in fade-in zoom-in-75 duration-200"
+                    aria-label={`${cartCount} itens no carrinho`}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </div>
               <span>Carrinho</span>
             </NavLink>
           </nav>

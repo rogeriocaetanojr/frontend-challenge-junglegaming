@@ -1,16 +1,38 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ShoppingCart, Tag } from "lucide-react";
+import { ArrowLeft, Check, ShoppingCart, Tag } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatEth, formatUsd } from "@/lib/formatters";
+import { useCartStore } from "@/store/cart-store";
 
 export function NftDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const nftId = id ?? "1";
+
+  const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const inCart = useCartStore((state) => state.isInCart(nftId));
 
   // Dados fictícios simulados para o esqueleto da rota
   const simulatedPriceEth = 0.45;
   const simulatedPriceUsd = simulatedPriceEth * 3200;
+
+  const handleToggleCart = () => {
+    if (inCart) {
+      removeItem(nftId);
+    } else {
+      addItem({
+        id: nftId,
+        name: `Cyber Sentinel #${nftId}`,
+        collection: "Cyber Sentinels",
+        priceEth: simulatedPriceEth,
+        image: "",
+        creator: "0x71C8364437a9C27779976872A42F340a6B233921",
+        quantity: 1,
+      });
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -34,7 +56,7 @@ export function NftDetailPage() {
         <div className="aspect-square bg-surface-dark border border-border rounded-card flex items-center justify-center p-8">
           <div className="text-center space-y-2">
             <Tag className="size-12 text-primary mx-auto opacity-80" />
-            <p className="text-sm text-text-muted">Visualização do Item #{id}</p>
+            <p className="text-sm text-text-muted">Visualização do Item #{nftId}</p>
           </div>
         </div>
 
@@ -43,7 +65,7 @@ export function NftDetailPage() {
           <div className="space-y-2">
             <Badge variant="default">Coleção Principal</Badge>
             <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
-              Cyber Sentinel #{id}
+              Cyber Sentinel #{nftId}
             </h1>
             <p className="text-sm text-text-muted">
               Item único autenticado em rede simulada com proveniência imutável e
@@ -65,15 +87,28 @@ export function NftDetailPage() {
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button asChild className="flex-1 gap-2">
-              <Link to="/checkout">
-                <ShoppingCart className="size-4" />
-                <span>Comprar Agora</span>
-              </Link>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={handleToggleCart}
+              variant={inCart ? "secondary" : "default"}
+              className="flex-1 gap-2"
+              size="lg"
+            >
+              {inCart ? (
+                <>
+                  <Check className="size-4 text-primary" />
+                  <span>No Carrinho</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="size-4" />
+                  <span>Adicionar ao Carrinho</span>
+                </>
+              )}
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/">Outros Itens</Link>
+
+            <Button asChild variant="outline" size="lg">
+              <Link to="/checkout">Ir ao Carrinho</Link>
             </Button>
           </div>
         </div>
