@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Activity,
   CheckCircle2,
@@ -39,6 +38,8 @@ import {
   truncateAddress,
 } from "@/lib/formatters";
 import { http } from "@/lib/http";
+import { queryKeys } from "@/lib/query-keys";
+import { useQuery } from "@tanstack/react-query";
 
 interface HealthResponse {
   status: string;
@@ -53,14 +54,10 @@ function App() {
   const ethFormatted = formatEth(totalEthValue);
   const usdFormatted = formatUsd(Number(totalEthValue) * 3200);
 
-  const [healthData, setHealthData] = React.useState<HealthResponse | null>(null);
-
-  React.useEffect(() => {
-    http
-      .get<HealthResponse>("/health")
-      .then((data) => setHealthData(data))
-      .catch((err) => console.error("Falha ao consultar health check:", err));
-  }, []);
+  const { data: healthData, isLoading: isHealthLoading } = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => http.get<HealthResponse>("/health"),
+  });
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -100,18 +97,20 @@ function App() {
           </p>
         </div>
 
-        {/* Status da Camada de Mocks (MSW) */}
+        {/* Status da Camada de Mocks e TanStack Query */}
         <div className="p-3 bg-surface-dark border border-border rounded-button flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="size-4 text-primary animate-pulse" />
             <span className="text-xs font-medium text-foreground">
               {healthData
                 ? `${healthData.service} (${healthData.status.toUpperCase()})`
-                : "Interceptando via MSW..."}
+                : isHealthLoading
+                  ? "Carregando via TanStack Query..."
+                  : "Interceptando via MSW..."}
             </span>
           </div>
           <Badge variant={healthData ? "default" : "secondary"}>
-            {healthData ? "Online (MSW)" : "Conectando"}
+            {healthData ? "Online (Query + MSW)" : "Carregando"}
           </Badge>
         </div>
 

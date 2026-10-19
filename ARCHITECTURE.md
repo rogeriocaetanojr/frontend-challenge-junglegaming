@@ -72,12 +72,17 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 ## 5. Estratégia de Cache, Invalidação, Retries e Atualização Otimista (TanStack Query)
 
-[Pendente - Será detalhado na integração com TanStack Query]
-
-- Centralização de _query keys_ tipadas e estruturadas por domínio.
-- Configuração de políticas de `staleTime` e `gcTime` conforme a volatilidade dos dados.
-- Atualizações otimistas para ações críticas de usuário (ex: favoritos, carrinho).
-- Políticas de retries exponenciais com fallback para erros de rede.
+- **Instância Centralizada (`src/lib/query-client.ts`)**:
+  - `staleTime`: 30 segundos (`1000 * 30`) como padrão, equilibrando atualização frequente de dados do marketplace com consumo de rede.
+  - `gcTime`: 5 minutos (`1000 * 60 * 5`) para retenção em cache antes da liberação de memória de queries inativas.
+  - `retry`: Política defensiva de 1 retry para falhas transitórias, com bypass imediato (retorno `false`) para erros determinísticos como `401 Unauthorized` e `404 Not Found` identificados via `ApiError`.
+  - `refetchOnWindowFocus`: desativado (`false`) para evitar refetches acidentais e tráfego redundante ao alternar janelas locais.
+  - `mutations`: `retry: 0` para preservar integridade e idempotência de transações Web3 e operações de carrinho.
+- **Fábrica Padronizada de Chaves (`src/lib/query-keys.ts`)**:
+  - Estrutura hierárquica e imutável (`as const`) dividida por domínios (`nfts`, `cart`, `user`, `health`).
+  - Facilita a invalidação cirúrgica de cache (ex: invalidar todas as listas de NFTs sem descartar detalhes específicos em cache).
+- **Ferramentas de Diagnóstico (`ReactQueryDevtools`)**:
+  - Carregado exclusivamente em desenvolvimento (`import.meta.env.DEV`) na raiz da aplicação (`src/main.tsx`), garantindo zero impacto no bundle final de produção.
 
 ---
 
@@ -124,4 +129,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `d584a24` | Inclusão das primitivas Radix UI (Dialog, DropdownMenu, Separator, Slot)           | Garantir conformidade rigorosa com diretrizes de acessibilidade WCAG 2.1 AA (foco, trap, navegação por teclado e semântica ARIA) em componentes compostos interativos.        |
 | 2026-10-19 | `9af98ed` | Adoção do bignumber.js para aritmética e formatação de criptoativos (ETH/USD)      | Eliminar vulnerabilidades e inconsistências de ponto flutuante (IEEE 754) em operações financeiras e checkout, garantindo precisão arbitrária exata.                          |
 | 2026-10-19 | `f5ea535` | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.              |
-| 2026-10-19 | Pendente  | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |
+| 2026-10-19 | `b81c179` | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |
+| 2026-10-19 | Pendente  | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
