@@ -1,9 +1,19 @@
 import { useEffect } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { ShoppingBag, Sparkles } from "lucide-react";
+import { ChevronDown, LogOut, ShoppingBag, Sparkles, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { formatEth, truncateAddress } from "@/lib/formatters";
+import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
 
 /**
@@ -22,6 +32,10 @@ export function ScrollToTop() {
 
 export function RootLayout() {
   const cartCount = useCartStore((state) => state.items.length);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const connectWallet = useAuthStore((state) => state.connectWallet);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased selection:bg-primary/20 selection:text-primary">
@@ -90,16 +104,74 @@ export function RootLayout() {
             </NavLink>
           </nav>
 
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="hidden sm:inline-flex font-mono text-xs text-text-muted border-border"
-            >
-              Ethereum Sepolia (Simulada)
-            </Badge>
-            <Button size="sm" variant="default">
-              Conectar
-            </Button>
+          {/* Autenticação & Conexão de Carteira */}
+          <div className="flex items-center gap-3">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2.5">
+                <div className="hidden sm:flex flex-col items-end text-right">
+                  <span className="text-xs font-mono font-bold text-primary">
+                    {formatEth(user.balanceEth)}
+                  </span>
+                  <span className="text-[10px] text-text-muted">Saldo Simulado</span>
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 border-border bg-surface-dark hover:bg-surface-raised font-mono text-xs"
+                      aria-label="Menu da carteira do usuário"
+                    >
+                      <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{truncateAddress(user.walletAddress)}</span>
+                      <ChevronDown className="size-3 text-text-muted" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-semibold leading-none text-foreground">
+                          {user.name}
+                        </p>
+                        <p className="text-xs leading-none text-text-muted truncate">
+                          {user.email}
+                        </p>
+                        <p className="text-xs font-mono text-primary pt-1">
+                          {formatEth(user.balanceEth)}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2"
+                    >
+                      <LogOut className="size-4" />
+                      <span>Desconectar Carteira</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="hidden sm:inline-flex font-mono text-xs text-text-muted border-border"
+                >
+                  Ethereum Sepolia (Simulada)
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => connectWallet()}
+                  className="gap-1.5"
+                >
+                  <Wallet className="size-4" />
+                  <span>Conectar Carteira</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </header>

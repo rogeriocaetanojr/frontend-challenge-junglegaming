@@ -58,11 +58,16 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 ## 3. Política de Sessão, Autenticação e Expiração
 
-[Pendente - Será detalhado no módulo de autenticação]
-
-- Estrutura baseada em tokens com renovação e controle de expiração.
-- Tratamento centralizado de erros de autorização (401/403) no interceptor HTTP.
-- Limpeza de estado e redirecionamento elegante em caso de sessão expirada.
+- **Store de Autenticação (`src/store/auth-store.ts`)**:
+  - Implementado com **Zustand** e persistência local sob a chave `@nft-marketplace:auth`.
+  - Gerencia o ciclo de vida da sessão (`UserSession` contendo `id`, `name`, `email`, `walletAddress`, `balanceEth` e `token`).
+  - Provedor de ações: `login`, `connectWallet`, `disconnectWallet` e `logout`.
+- **Sincronização com o Cliente HTTP (`src/lib/http/client.ts`)**:
+  - Na autenticação ou reidratação do store (`onRehydrateStorage`), o token JWT Bearer é automaticamente repassado para `setAuthToken(token)`.
+  - As requisições HTTP subjacentes injetam `Authorization: Bearer <token>` de maneira centralizada via interceptor do Axios.
+- **Auto-Logout e Tratamento Reativo de Expiração (401)**:
+  - O interceptor de resposta do Axios emite o evento global da janela `window.dispatchEvent(new CustomEvent("http:unauthorized"))` sempre que um código `401 Unauthorized` é retornado pela API.
+  - O `authStore` registra um listener para o evento `http:unauthorized`, executando imediatamente `logout()` (limpeza de estado e `setAuthToken(null)`), evitando estados inconsistentes de autenticação.
 
 ---
 
@@ -143,4 +148,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `b81c179` | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |
 | 2026-10-19 | `acb5951` | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
 | 2026-10-19 | `b419f5a` | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                        |
-| 2026-10-19 | Pendente  | Gerenciamento de estado do carrinho (`cartStore`) com Zustand e persistência       | Store global com middleware `persist` (`localStorage`), garantia de unicidade de NFTs 1/1 e totalização imune a IEEE 754 via `bignumber.js`.                                  |
+| 2026-10-19 | `b079894` | Gerenciamento de estado do carrinho (`cartStore`) com Zustand e persistência       | Store global com middleware `persist` (`localStorage`), garantia de unicidade de NFTs 1/1 e totalização imune a IEEE 754 via `bignumber.js`.                                  |
+| 2026-10-19 | Pendente  | Autenticação e carteira Web3 (`authStore`) com auto-logout e sincronização HTTP    | Gerenciamento de sessão com Zustand (`persist`), injeção automática de Bearer token no cliente HTTP e auto-logout reativo para o evento `http:unauthorized`.                  |
