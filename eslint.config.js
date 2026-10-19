@@ -68,6 +68,7 @@ export default tseslint.config(
       "playwright-report",
       "node_modules",
       ".pnpm-store",
+      "public",
     ],
   },
   js.configs.recommended,

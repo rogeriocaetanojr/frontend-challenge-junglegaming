@@ -93,11 +93,10 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 ## 7. Camada de Mocks (MSW), Persistência e Limitações Conhecidas
 
-[Pendente - Será detalhado na implementação do MSW]
-
-- Interceptação a nível de Service Worker em desenvolvimento e testes.
-- Suporte a alternância de cenários em tempo de execução via parâmetros de configuração.
-- Persistência volátil em memória/SessionStorage para permitir reset fácil do estado da simulação.
+- **Arquitetura Isolada**: Todo o código e handlers do Mock Service Worker estão restritos a `src/mocks/**`, protegidos pela barreira arquitetural do ESLint (`no-restricted-imports`).
+- **Interceptação no Navegador e Node**: `src/mocks/browser.ts` para runtime do browser via Service Worker (`public/mockServiceWorker.js`) e `src/mocks/server.ts` para testes automatizados.
+- **Inicialização Condicional**: Controlada pela variável `VITE_ENABLE_MOCKS=true` via função assíncrona `enableMocking()`, postergando a renderização da UI até o registro do worker.
+- **Modo de Operação**: Configurado com `bypass` em requisições não interceptadas (`onUnhandledFrame: 'bypass'`) para não interferir em assets estáticos ou chamadas externas.
 
 ---
 
@@ -124,4 +123,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens de design do Figma                 | Prover componentes atômicos primitivos (Button, Badge, Input) acessíveis (WAI-ARIA), extensíveis com CVA e integrados com precisão cirúrgica aos tokens da aplicação.         |
 | 2026-10-19 | `d584a24` | Inclusão das primitivas Radix UI (Dialog, DropdownMenu, Separator, Slot)           | Garantir conformidade rigorosa com diretrizes de acessibilidade WCAG 2.1 AA (foco, trap, navegação por teclado e semântica ARIA) em componentes compostos interativos.        |
 | 2026-10-19 | `9af98ed` | Adoção do bignumber.js para aritmética e formatação de criptoativos (ETH/USD)      | Eliminar vulnerabilidades e inconsistências de ponto flutuante (IEEE 754) em operações financeiras e checkout, garantindo precisão arbitrária exata.                          |
-| 2026-10-19 | Pendente  | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.              |
+| 2026-10-19 | `f5ea535` | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.              |
+| 2026-10-19 | Pendente  | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                      |

@@ -1,4 +1,6 @@
+import * as React from "react";
 import {
+  Activity,
   CheckCircle2,
   Filter,
   MoreVertical,
@@ -36,6 +38,13 @@ import {
   formatUsd,
   truncateAddress,
 } from "@/lib/formatters";
+import { http } from "@/lib/http";
+
+interface HealthResponse {
+  status: string;
+  timestamp: string;
+  service: string;
+}
 
 function App() {
   const sampleWallet = "0x71C8364437a9C27779976872A42F340a6B233921";
@@ -43,6 +52,15 @@ function App() {
   const totalEthValue = calculateTotalEth(cartItems);
   const ethFormatted = formatEth(totalEthValue);
   const usdFormatted = formatUsd(Number(totalEthValue) * 3200);
+
+  const [healthData, setHealthData] = React.useState<HealthResponse | null>(null);
+
+  React.useEffect(() => {
+    http
+      .get<HealthResponse>("/health")
+      .then((data) => setHealthData(data))
+      .catch((err) => console.error("Falha ao consultar health check:", err));
+  }, []);
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -80,6 +98,21 @@ function App() {
               {truncateAddress(sampleWallet)}
             </span>
           </p>
+        </div>
+
+        {/* Status da Camada de Mocks (MSW) */}
+        <div className="p-3 bg-surface-dark border border-border rounded-button flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="size-4 text-primary animate-pulse" />
+            <span className="text-xs font-medium text-foreground">
+              {healthData
+                ? `${healthData.service} (${healthData.status.toUpperCase()})`
+                : "Interceptando via MSW..."}
+            </span>
+          </div>
+          <Badge variant={healthData ? "default" : "secondary"}>
+            {healthData ? "Online (MSW)" : "Conectando"}
+          </Badge>
         </div>
 
         {/* Input & Search */}
