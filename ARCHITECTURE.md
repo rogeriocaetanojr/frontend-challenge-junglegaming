@@ -19,8 +19,11 @@ src/
 │   ├── http/        # Cliente HTTP encapsulado (Axios)
 │   └── realtime/    # Cliente de WebSocket encapsulado (Socket.IO)
 ├── mocks/           # Camada de interceptação e simulação de rede (MSW)
+│   ├── data/        # Bases de dados mockadas em memória (nfts, etc.)
+│   └── handlers/    # Handlers unificados de rotas simuladas
 ├── pages/           # Páginas e views de rotas (home, nft-detail, checkout, not-found)
 ├── routes/          # Configuração declarativa de rotas SPA (createBrowserRouter)
+├── services/        # Camada de serviços desacoplada de chamadas à API (nft-service, etc.)
 ├── store/           # Stores de estado global de cliente (Zustand com persist)
 ├── styles/          # Tokens CSS, Tailwind v4 e estilos globais
 ├── types/           # Declarações e contratos globais de tipos TypeScript
@@ -41,10 +44,19 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 [Pendente - Será detalhado durante a especificação da API e dos mocks]
 
-### Contratos REST Previstos
+### Contratos REST Implementados
 
-- `GET /api/nfts`: Listagem paginada de NFTs com suporte a filtros e ordenação.
-- `GET /api/nfts/:id`: Detalhes de um NFT específico e histórico de transações.
+- `GET /api/nfts`: Listagem paginada de NFTs com suporte a parâmetros de query:
+  - `search`: busca textual por nome, descrição ou coleção.
+  - `category`: filtro categórico (`art`, `gaming`, `collectibles`, `virtual-worlds`).
+  - `minPrice` e `maxPrice`: filtragem por faixa de preço em ETH.
+  - `sortBy`: ordenação (`price-asc`, `price-desc`, `recent`, `popular`).
+  - `page` e `limit`: controle de paginação retornando envelope `PaginatedResponse<NftItem>`.
+- `GET /api/nfts/:id`: Detalhes completos do token com atributos e metadados de criador; retorna `404 Not Found` caso o ID não exista.
+- `GET /api/health`: Verificação de integridade da camada de interceptação do mock.
+
+### Contratos REST Futuros Previstos
+
 - `POST /api/auth/login`: Autenticação e obtenção de token de sessão.
 - `POST /api/checkout`: Criação de pedido com suporte a cabeçalho de idempotência.
 
@@ -149,4 +161,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `acb5951` | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                               |
 | 2026-10-19 | `b419f5a` | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                        |
 | 2026-10-19 | `b079894` | Gerenciamento de estado do carrinho (`cartStore`) com Zustand e persistência       | Store global com middleware `persist` (`localStorage`), garantia de unicidade de NFTs 1/1 e totalização imune a IEEE 754 via `bignumber.js`.                                  |
-| 2026-10-19 | Pendente  | Autenticação e carteira Web3 (`authStore`) com auto-logout e sincronização HTTP    | Gerenciamento de sessão com Zustand (`persist`), injeção automática de Bearer token no cliente HTTP e auto-logout reativo para o evento `http:unauthorized`.                  |
+| 2026-10-19 | `b24b412` | Autenticação e carteira Web3 (`authStore`) com auto-logout e sincronização HTTP    | Gerenciamento de sessão com Zustand (`persist`), injeção automática de Bearer token no cliente HTTP e auto-logout reativo para o evento `http:unauthorized`.                  |
+| 2026-10-19 | Pendente  | Modelo de dados de NFTs, handlers MSW (filtros/paginação) e camada de serviço      | Definição de `NftItem`, `NftFilters` e `PaginatedResponse`, handlers com latência simulada de 300ms, serviço isolado (`nft-service`) e hooks TanStack Query.                  |
