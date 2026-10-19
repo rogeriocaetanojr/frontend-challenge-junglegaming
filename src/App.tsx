@@ -1,4 +1,11 @@
-import { Filter, MoreVertical, Search, Sparkles, Wallet } from "lucide-react";
+import {
+  CheckCircle2,
+  Filter,
+  MoreVertical,
+  Search,
+  Sparkles,
+  Wallet,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,8 +30,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  calculateTotalEth,
+  formatEth,
+  formatUsd,
+  truncateAddress,
+} from "@/lib/formatters";
 
 function App() {
+  const sampleWallet = "0x71C8364437a9C27779976872A42F340a6B233921";
+  const cartItems = [{ price: 0.1 }, { price: 0.2 }];
+  const totalEthValue = calculateTotalEth(cartItems);
+  const ethFormatted = formatEth(totalEthValue);
+  const usdFormatted = formatUsd(Number(totalEthValue) * 3200);
+
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
       <div className="bg-surface-card border border-border rounded-card p-8 max-w-lg w-full shadow-2xl space-y-6">
@@ -32,7 +51,7 @@ function App() {
         <div className="flex items-center justify-between">
           <Badge variant="default" className="gap-1">
             <Sparkles className="size-3" />
-            <span>Design System</span>
+            <span>Web3 Precision</span>
           </Badge>
 
           <DropdownMenu>
@@ -56,7 +75,10 @@ function App() {
             NFT Marketplace
           </h1>
           <p className="text-sm text-text-muted mt-1">
-            Componentes compostos com Radix UI, Tailwind v4 e Design Tokens
+            Carteira:{" "}
+            <span className="font-mono text-foreground font-medium">
+              {truncateAddress(sampleWallet)}
+            </span>
           </p>
         </div>
 
@@ -73,11 +95,31 @@ function App() {
 
         <Separator />
 
+        {/* Validação de Precisão Decimal (IEEE 754 vs BigNumber) */}
+        <div className="p-4 bg-surface-dark border border-border rounded-button space-y-2">
+          <div className="flex items-center justify-between text-xs font-semibold text-text-muted uppercase tracking-wider">
+            <span>Precisão Aritmética (0.1 + 0.2)</span>
+            <Badge variant="default" className="gap-1">
+              <CheckCircle2 className="size-3" />
+              <span>Imune a IEEE 754</span>
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-sm text-text-muted">Total Calculado:</span>
+            <div className="text-right">
+              <span className="font-mono text-base font-bold text-primary">
+                {ethFormatted}
+              </span>
+              <span className="block text-xs text-text-muted">aprox. {usdFormatted}</span>
+            </div>
+          </div>
+        </div>
+
         {/* Skeleton Preview */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-text-muted">
-            <span>Prévia de Carregamento (Skeleton)</span>
-            <span className="font-mono text-primary">0.45 ETH</span>
+            <span>Carregamento Otimista</span>
+            <span className="font-mono text-primary">0.05 ETH</span>
           </div>
           <div className="flex items-center gap-4">
             <Skeleton className="size-16 rounded-card shrink-0" />
@@ -109,19 +151,20 @@ function App() {
               </DialogHeader>
               <div className="py-4 space-y-3">
                 <div className="p-3 bg-surface-dark border border-border rounded-button flex items-center justify-between">
-                  <span className="text-sm font-medium">MetaMask (Simulada)</span>
-                  <Badge variant="default">Ativa</Badge>
-                </div>
-                <div className="p-3 bg-surface-dark border border-border rounded-button flex items-center justify-between opacity-60">
-                  <span className="text-sm font-medium">Coinbase Wallet</span>
-                  <Badge variant="secondary">Em breve</Badge>
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium">MetaMask (Simulada)</span>
+                    <span className="block text-xs font-mono text-text-muted">
+                      {truncateAddress(sampleWallet, 8, 6)}
+                    </span>
+                  </div>
+                  <Badge variant="default">Conectado</Badge>
                 </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Cancelar</Button>
+                  <Button variant="outline">Fechar</Button>
                 </DialogClose>
-                <Button variant="default">Confirmar Conexão</Button>
+                <Button variant="default">Ver Histórico</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

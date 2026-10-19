@@ -63,9 +63,8 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 ## 4. Estado do Carrinho, Precisão Decimal (ETH) e Merge de Visitante
 
-[Pendente - Será detalhado no módulo de carrinho]
-
-- **Precisão Numérica**: Valores em criptomoeda (ETH) serão manipulados com precisão arbitrária ou convertidos para menores frações (Wei/inteiros) para evitar imprecisões de ponto flutuante (_IEEE 754_).
+- **Precisão Numérica**: Todos os cálculos monetários e agregações de preços (ex: total do carrinho, lances e conversões USD) utilizam estritamente a biblioteca `bignumber.js` (`src/lib/formatters.ts`), garantindo imunidade absoluta a inconsistências de arredondamento inerentes ao padrão _IEEE 754_ do JavaScript (ex: `0.1 + 0.2 = 0.3`).
+- **Formatação de Criptoativos**: Os valores são exibidos via `formatEth` com controle explícito de casas decimais e sem zeros desnecessários à direita.
 - **Persistência do Carrinho**: Armazenamento local para usuários não autenticados.
 - **Merge de Visitante**: Ao autenticar, os itens do carrinho anônimo serão conciliados com o carrinho da conta do usuário.
 
@@ -123,4 +122,5 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 | 2026-10-19 | `8602956` | Adoção do Tailwind CSS v4 com plugin `@tailwindcss/vite`                           | Performance de build superior com engine Oxide, configuração CSS-first simplificada sem PostCSS e integração nativa ao Vite.                                                  |
 | 2026-10-19 | `d4b7930` | Mapeamento cirúrgico dos design tokens do Figma (paleta Dark Mode Bronze-Caramelo) | Extração precisa do arquivo oficial `figma-tokens.json` em `tokens.css` com variáveis CSS e mapeamento `@theme` no Tailwind v4, garantindo fidelidade visual e temática Web3. |
 | 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens de design do Figma                 | Prover componentes atômicos primitivos (Button, Badge, Input) acessíveis (WAI-ARIA), extensíveis com CVA e integrados com precisão cirúrgica aos tokens da aplicação.         |
-| 2026-10-19 | Pendente  | Inclusão das primitivas Radix UI (Dialog, DropdownMenu, Separator, Slot)           | Garantir conformidade rigorosa com diretrizes de acessibilidade WCAG 2.1 AA (foco, trap, navegação por teclado e semântica ARIA) em componentes compostos interativos.        |
+| 2026-10-19 | `d584a24` | Inclusão das primitivas Radix UI (Dialog, DropdownMenu, Separator, Slot)           | Garantir conformidade rigorosa com diretrizes de acessibilidade WCAG 2.1 AA (foco, trap, navegação por teclado e semântica ARIA) em componentes compostos interativos.        |
+| 2026-10-19 | Pendente  | Adoção do bignumber.js para aritmética e formatação de criptoativos (ETH/USD)      | Eliminar vulnerabilidades e inconsistências de ponto flutuante (IEEE 754) em operações financeiras e checkout, garantindo precisão arbitrária exata.                          |
