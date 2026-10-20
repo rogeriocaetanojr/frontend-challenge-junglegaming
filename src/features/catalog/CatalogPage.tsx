@@ -10,12 +10,11 @@
  * - Grid responsivo com skeletons e tratamento de estados de erro/vazio (NftGrid).
  * - Controles de paginação semânticos e acessíveis WCAG 2.1 AA.
  */
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CatalogFilters } from "./CatalogFilters";
+import { CatalogPagination } from "./CatalogPagination";
 import { CatalogToolbar } from "./CatalogToolbar";
 import { NftGrid } from "./NftGrid";
 import { useCatalog } from "./queries";
@@ -80,23 +79,6 @@ export function CatalogPage({
   const { data, isLoading, error, refetch } = useCatalog(queryFilters);
 
   const totalPages = data?.totalPages ?? 1;
-
-  // Gera páginas para os botões de navegação numérica
-  const pageNumbers = useMemo(() => {
-    const pages: number[] = [];
-    const windowSize = 5;
-    let start = Math.max(1, page - Math.floor(windowSize / 2));
-    const end = Math.min(totalPages, start + windowSize - 1);
-
-    if (end - start + 1 < windowSize) {
-      start = Math.max(1, end - windowSize + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }, [page, totalPages]);
 
   return (
     <div
@@ -170,61 +152,18 @@ export function CatalogPage({
           />
 
           {/* Paginação Acessível */}
-          {!isLoading && !error && totalPages > 1 && (
-            <nav
-              aria-label="Paginação do catálogo"
-              data-testid="catalog-pagination"
-              className="flex flex-wrap items-center justify-center gap-2 pt-6"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="pagination-prev"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-                aria-label="Ir para a página anterior"
-                className="gap-1 cursor-pointer"
-              >
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Anterior</span>
-              </Button>
-
-              <div className="flex items-center gap-1">
-                {pageNumbers.map((p) => {
-                  const isCurrent = p === page;
-                  return (
-                    <Button
-                      key={p}
-                      variant={isCurrent ? "default" : "outline"}
-                      size="sm"
-                      data-testid={`pagination-page-${p}`}
-                      onClick={() => setPage(p)}
-                      aria-current={isCurrent ? "page" : undefined}
-                      aria-label={`Página ${p}`}
-                      className={cn(
-                        "h-8 min-w-8 px-2 cursor-pointer text-xs font-medium sm:text-sm",
-                        isCurrent && "pointer-events-none",
-                      )}
-                    >
-                      {p}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="pagination-next"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-                aria-label="Ir para a próxima página"
-                className="gap-1 cursor-pointer"
-              >
-                <span className="hidden sm:inline">Próxima</span>
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </nav>
+          {!isLoading && !error && (
+            <CatalogPagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                const section = document.getElementById("catalog-section");
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+            />
           )}
         </section>
       </div>
