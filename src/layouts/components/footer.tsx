@@ -4,7 +4,7 @@ import { NewsletterFeaturesSection } from "@/pages/home/components/newsletter-fe
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#0E0907] pt-2 pb-16 text-[#F5F1EB] text-xs font-mono">
+    <footer className="w-full bg-[#140D0A] pt-2 pb-16 text-[#F5F1EB] text-xs font-mono">
       <div className="w-full max-w-[1420px] mx-auto px-6 sm:px-8">
         <div className="bg-[#241612] border border-[#38220F] rounded-[24px] overflow-hidden shadow-lg shadow-black/40">
           {/* 1. Topo: Diferenciais W, C, D e Newsletter grudados no topo */}

@@ -142,7 +142,7 @@ export function RootLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0E0907] text-[#F5F1EB] flex flex-col font-sans antialiased selection:bg-[#D28A4C]/30 selection:text-[#D28A4C]">
+    <div className="min-h-screen bg-[#140D0A] text-[#F5F1EB] flex flex-col font-sans antialiased selection:bg-[#D28A4C]/30 selection:text-[#D28A4C]">
       <ScrollToTop />
 
       {/* Acessibilidade WCAG: Pular para conteúdo principal */}
@@ -154,7 +154,7 @@ export function RootLayout() {
       </a>
 
       {/* Header Oficial KURIO */}
-      <header className="sticky top-0 z-40 w-full bg-[#0E0907]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full bg-[#140D0A]/95 backdrop-blur-md">
         {/* Container externo com o mesmo padding lateral do Hero */}
         <div className="w-full max-w-[1420px] mx-auto px-6 sm:px-8">
           {/* Linha divisória laranja delimitando exatamente do início da logo até o fim do botão Entrar */}
