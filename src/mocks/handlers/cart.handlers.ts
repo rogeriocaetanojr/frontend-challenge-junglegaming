@@ -322,4 +322,66 @@ export const cartHandlers = [
 
     return HttpResponse.json<Cart>(cart, { status: 200 });
   }),
+
+  // 6. Merge idempotente de carrinho guest para usuário autenticado
+  http.post("*/api/cart/merge", async ({ request }) => {
+    const fault = await scenarioEngine.executeMiddleware(request.url);
+    if (fault) {
+      return fault;
+    }
+
+    const user = extractUserFromHeader(request);
+    if (!user) {
+      return HttpResponse.json<ApiErrorBody>(
+        {
+          code: "unauthorized",
+          message: "Autenticação obrigatória para mesclar o carrinho.",
+        },
+        { status: 401 },
+      );
+    }
+
+    let body: { guestCartId?: string } = {};
+    try {
+      body = (await request.json()) as { guestCartId?: string };
+    } catch {
+      // Aceita payload vazio caso o id venha no header
+    }
+
+    const guestCartId =
+      body.guestCartId ||
+      request.headers.get("x-cart-id")?.trim() ||
+      "cart_guest_default";
+
+    const userCart = getOrCreateCart(request);
+    const guestCart = db.carts.get(guestCartId);
+
+    if (guestCart && guestCart.lines.length > 0) {
+      for (const guestLine of guestCart.lines) {
+        const existingLine = userCart.lines.find(
+          (l) => l.nftId === guestLine.nftId && l.editionId === guestLine.editionId,
+        );
+
+        if (existingLine) {
+          existingLine.quantity += guestLine.quantity;
+        } else {
+          userCart.lines.push({
+            nftId: guestLine.nftId,
+            editionId: guestLine.editionId,
+            quantity: guestLine.quantity,
+          });
+        }
+      }
+
+      // Esvazia o carrinho anônimo para garantir idempotência em chamadas subsequentes
+      guestCart.lines = [];
+      guestCart.version += 1;
+      db.carts.set(guestCart.id, guestCart);
+
+      userCart.version += 1;
+      db.carts.set(userCart.id, userCart);
+    }
+
+    return HttpResponse.json<Cart>(userCart, { status: 200 });
+  }),
 ];
