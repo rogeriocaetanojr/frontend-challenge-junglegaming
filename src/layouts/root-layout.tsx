@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
-  NavLink,
   Outlet,
   useLocation,
   useNavigate,
@@ -73,6 +72,17 @@ export function RootLayout() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isSearchOpen]);
+
+  const scrollToHero = () => {
+    if (pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const scrollToCatalog = () => {
     if (pathname !== "/") {
@@ -176,28 +186,18 @@ export function RootLayout() {
               className="hidden md:flex items-center gap-11 lg:gap-14 h-full absolute left-1/2 -translate-x-1/2 pointer-events-auto"
               aria-label="Navegação Principal"
             >
-              <NavLink
-                to="/"
-                end
-                className={({ isActive }) => {
-                  const isActuallyHome = isActive && !pathname.startsWith("/nft");
-                  return `font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
-                    isActuallyHome ? "text-[#D28A4C]" : "text-[#F5F1EB] hover:text-white"
-                  }`;
-                }}
+              <button
+                type="button"
+                onClick={scrollToHero}
+                className={`font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
+                  pathname === "/" ? "text-[#D28A4C]" : "text-[#F5F1EB] hover:text-white"
+                }`}
               >
-                {({ isActive }) => {
-                  const isActuallyHome = isActive && !pathname.startsWith("/nft");
-                  return (
-                    <>
-                      <span>Início</span>
-                      {isActuallyHome && (
-                        <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
-                      )}
-                    </>
-                  );
-                }}
-              </NavLink>
+                <span>Início</span>
+                {pathname === "/" && (
+                  <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
+                )}
+              </button>
 
               {(() => {
                 const isMarketActive = pathname.startsWith("/nft");
@@ -221,18 +221,21 @@ export function RootLayout() {
 
               <button
                 type="button"
-                onClick={scrollToCatalog}
-                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-pointer"
+                onClick={(e) => e.preventDefault()}
+                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-default"
+                aria-disabled="true"
               >
                 Criadores
               </button>
 
-              <Link
-                to="/not-found"
-                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors"
+              <button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-default"
+                aria-disabled="true"
               >
                 Aprenda
-              </Link>
+              </button>
             </nav>
 
             {/* Lado Direito: Busca, Carrinho e Botão Entrar rebalanceado */}
