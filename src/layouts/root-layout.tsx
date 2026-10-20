@@ -176,29 +176,45 @@ export function RootLayout() {
               <NavLink
                 to="/"
                 end
-                className={({ isActive }) =>
-                  `font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
-                    isActive ? "text-[#D28A4C]" : "text-[#F5F1EB] hover:text-white"
-                  }`
-                }
+                className={({ isActive }) => {
+                  const isActuallyHome = isActive && !pathname.startsWith("/nft");
+                  return `font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
+                    isActuallyHome ? "text-[#D28A4C]" : "text-[#F5F1EB] hover:text-white"
+                  }`;
+                }}
               >
-                {({ isActive }) => (
-                  <>
-                    <span>Início</span>
-                    {isActive && (
-                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
-                    )}
-                  </>
-                )}
+                {({ isActive }) => {
+                  const isActuallyHome = isActive && !pathname.startsWith("/nft");
+                  return (
+                    <>
+                      <span>Início</span>
+                      {isActuallyHome && (
+                        <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
+                      )}
+                    </>
+                  );
+                }}
               </NavLink>
 
-              <button
-                type="button"
-                onClick={scrollToCatalog}
-                className="font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center text-[#F5F1EB] hover:text-white transition-colors cursor-pointer"
-              >
-                Mercado
-              </button>
+              {(() => {
+                const isMarketActive = pathname.startsWith("/nft");
+                return (
+                  <button
+                    type="button"
+                    onClick={scrollToCatalog}
+                    className={`font-mono text-[14.5px] sm:text-[15px] font-normal leading-normal h-full flex items-center relative transition-colors cursor-pointer ${
+                      isMarketActive
+                        ? "text-[#D28A4C]"
+                        : "text-[#F5F1EB] hover:text-white"
+                    }`}
+                  >
+                    <span>Mercado</span>
+                    {isMarketActive && (
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2.5px] bg-[#D28A4C]" />
+                    )}
+                  </button>
+                );
+              })()}
 
               <button
                 type="button"

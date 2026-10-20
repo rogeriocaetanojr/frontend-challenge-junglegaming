@@ -94,21 +94,29 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-8 space-y-8">
-      {/* Botão de retorno */}
-      <div>
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 text-text-muted hover:text-foreground"
-        >
-          <Link to="/">
-            <ArrowLeft className="size-4" />
-            <span>Voltar ao Catálogo</span>
-          </Link>
-        </Button>
-      </div>
+    <div className="max-w-6xl mx-auto py-6 sm:py-8 space-y-6">
+      {/* Breadcrumb idêntico à referência: Início / Mercado */}
+      <nav
+        aria-label="Navegação estrutural"
+        className="font-mono text-sm sm:text-[15px] font-normal"
+      >
+        <ol className="flex items-center gap-2 text-[#F5F1EB]">
+          <li>
+            <Link
+              to="/"
+              className="text-[#F5F1EB]/80 hover:text-[#F5F1EB] transition-colors"
+            >
+              Início
+            </Link>
+          </li>
+          <li className="text-[#F5F1EB]/50" aria-hidden="true">
+            /
+          </li>
+          <li className="text-[#F5F1EB] font-medium" aria-current="page">
+            Mercado
+          </li>
+        </ol>
+      </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
         {/* Painel Esquerdo: Galeria de Imagens com Zoom/Fullscreen */}
