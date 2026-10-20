@@ -87,6 +87,10 @@ export function createRouter(
           element: <NftDetailPage />,
         },
         {
+          path: "nfts/:id",
+          element: <NftDetailPage />,
+        },
+        {
           path: "checkout",
           element: <CheckoutPage />,
         },

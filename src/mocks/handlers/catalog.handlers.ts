@@ -282,13 +282,28 @@ export const catalogHandlers = [
       return fault;
     }
 
-    const { id } = params;
-    const nft = dbHelpers.findNftById(String(id));
+    const rawId = String(params.id ?? "");
+    let nft = dbHelpers.findNftById(rawId);
+
+    if (!nft) {
+      // Coerção flexível: tenta comparar por string exata ou prefixos comuns (ex: nft-1 vs 1)
+      const allNfts = Array.from(db.nfts.values());
+      nft = allNfts.find((item) => {
+        const itemId = String(item.id);
+        return (
+          itemId === rawId ||
+          itemId.toLowerCase() === rawId.toLowerCase() ||
+          itemId === `nft-${rawId}` ||
+          itemId === `nft_${rawId}` ||
+          rawId === itemId.replace(/^nft[-_]/, "")
+        );
+      });
+    }
 
     if (!nft) {
       const errorBody: ApiErrorBody = {
         code: "not_found",
-        message: `NFT com id '${String(id)}' não encontrado.`,
+        message: `NFT com id '${rawId}' não encontrado.`,
       };
       return HttpResponse.json(errorBody, { status: 404 });
     }
