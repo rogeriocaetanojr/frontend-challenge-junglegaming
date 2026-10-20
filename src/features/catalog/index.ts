@@ -1,4 +1,5 @@
 export { CatalogFilters, type CatalogFiltersProps } from "./CatalogFilters";
+export { CatalogPage, type CatalogPageProps } from "./CatalogPage";
 export { CatalogToolbar, type CatalogToolbarProps } from "./CatalogToolbar";
 export * from "./NftCard";
 export * from "./NftCardSkeleton";
