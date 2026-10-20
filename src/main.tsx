@@ -10,14 +10,13 @@ import App from "./App.tsx";
 /**
  * Prepara o ambiente da aplicação antes da renderização do React.
  * Se mocks estiverem habilitados via VITE_ENABLE_MOCKS=true, inicializa
- * o Mock Service Worker (MSW) de forma assíncrona evitando condições de corrida.
+ * o Mock Service Worker (MSW) de forma assíncrona e bloqueante antes do primeiro
+ * render da raiz do React, prevenindo que requisições iniciais escapem do interceptor.
  */
 async function prepareApp(): Promise<void> {
   if (import.meta.env.VITE_ENABLE_MOCKS === "true") {
-    const { worker } = await import("./mocks/browser");
-    await worker.start({
-      onUnhandledFrame: "bypass",
-    });
+    const { startWorker } = await import("./mocks/browser");
+    await startWorker();
   }
 }
 
