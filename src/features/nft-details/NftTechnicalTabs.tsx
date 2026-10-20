@@ -2,7 +2,7 @@ import { type KeyboardEvent, useRef, useState } from "react";
 import { Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import type { NftDetail } from "./types";
+import type { CollectorReview, NftDetail } from "./types";
 
 export type TabKey = "details" | "reviews";
 
@@ -52,6 +52,26 @@ export function NftTechnicalTabs({
     ? nft.network.charAt(0).toUpperCase() + nft.network.slice(1)
     : "Ethereum";
   const tokenStandard = nft?.tokenStandard || "ERC-721";
+
+  const defaultReviews: CollectorReview[] = [
+    {
+      id: "rev-1",
+      author: "0x9b8...4a2",
+      rating: 5,
+      comment:
+        "Arte incrível e finalização impecável. A resolução e os detalhes dos óculos e do colar são de outro nível!",
+    },
+    {
+      id: "rev-2",
+      author: "CryptoK",
+      rating: 5,
+      comment:
+        "Procedência verificada na Ethereum certinha e metadados no IPFS. Kurio nunca decepciona.",
+    },
+  ];
+
+  const reviewsList = nft?.reviews ?? defaultReviews;
+  const reviewsCount = reviewsList.length;
 
   return (
     <section
@@ -106,7 +126,7 @@ export function NftTechnicalTabs({
               : "text-[#F5F1EB] hover:text-[#D28A4C]",
           )}
         >
-          Avaliações de colecionadores (19)
+          Avaliações de colecionadores ({reviewsCount > 0 ? reviewsCount : 0})
           {activeTab === "reviews" && (
             <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#D28A4C] rounded-full" />
           )}
@@ -173,38 +193,46 @@ export function NftTechnicalTabs({
           aria-labelledby="tab-reviews"
           className="pt-5 space-y-3.5 max-w-[1280px]"
         >
-          <div className="p-4.5 rounded-xl bg-[#1E1410] border border-[#3F2319]/60 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[#F5F1EB] font-bold text-sm sm:text-[15px]">
-                0x9b8...4a2
-              </span>
-              <div className="flex items-center gap-0.5 text-[#D28A4C]">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="size-4 fill-[#D28A4C]" aria-hidden="true" />
-                ))}
-              </div>
+          {reviewsList.length === 0 ? (
+            <div className="p-6 rounded-xl bg-[#1E1410] border border-[#3F2319]/60 text-center space-y-1.5">
+              <p className="text-[#F5F1EB] font-semibold text-sm sm:text-[15px]">
+                Nenhuma avaliação de colecionador ainda.
+              </p>
+              <p className="text-xs sm:text-[13.5px] text-[#CFB28C]">
+                Seja o primeiro colecionador a avaliar esta obra após adquiri-la.
+              </p>
             </div>
-            <p className="text-sm sm:text-[14.5px] text-[#CFB28C]">
-              Arte incrível e finalização impecável. A resolução e os detalhes dos óculos
-              e do colar são de outro nível!
-            </p>
-          </div>
-          <div className="p-4.5 rounded-xl bg-[#1E1410] border border-[#3F2319]/60 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[#F5F1EB] font-bold text-sm sm:text-[15px]">
-                CryptoK
-              </span>
-              <div className="flex items-center gap-0.5 text-[#D28A4C]">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="size-4 fill-[#D28A4C]" aria-hidden="true" />
-                ))}
+          ) : (
+            reviewsList.map((review) => (
+              <div
+                key={review.id}
+                className="p-4.5 rounded-xl bg-[#1E1410] border border-[#3F2319]/60 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[#F5F1EB] font-bold text-sm sm:text-[15px]">
+                    {review.author}
+                  </span>
+                  <div className="flex items-center gap-0.5 text-[#D28A4C]">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "size-4",
+                          i < review.rating
+                            ? "fill-[#D28A4C] text-[#D28A4C]"
+                            : "fill-[#3F2319]/40 text-[#6B4B3D]/70",
+                        )}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-sm sm:text-[14.5px] text-[#CFB28C]">
+                  {review.comment}
+                </p>
               </div>
-            </div>
-            <p className="text-sm sm:text-[14.5px] text-[#CFB28C]">
-              Procedência verificada na Ethereum certinha e metadados no IPFS. Kurio nunca
-              decepciona.
-            </p>
-          </div>
+            ))
+          )}
         </div>
       )}
     </section>

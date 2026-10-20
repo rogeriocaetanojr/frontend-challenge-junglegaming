@@ -130,4 +130,45 @@ describe("NftTechnicalTabs (src/features/nft-details/NftTechnicalTabs.tsx)", () 
       "0x7A42...19E8 • Contrato inteligente ERC-721 verificado.",
     );
   });
+
+  it("deve renderizar a lista de avaliações personalizada e atualizar a contagem no título da aba", async () => {
+    const customReviews = [
+      {
+        id: "rev-custom-1",
+        author: "AliceCollector",
+        rating: 4,
+        comment: "Excelente render 3D e texturas refinadas.",
+      },
+    ];
+
+    await act(async () => {
+      root?.render(
+        <NftTechnicalTabs
+          activeTab="reviews"
+          nft={{
+            reviews: customReviews,
+          }}
+        />,
+      );
+    });
+
+    const reviewsTab = container?.querySelector("#tab-reviews");
+    expect(reviewsTab?.textContent).toContain("Avaliações de colecionadores (1)");
+
+    const panel = container?.querySelector("#panel-reviews");
+    expect(panel?.textContent).toContain("AliceCollector");
+    expect(panel?.textContent).toContain("Excelente render 3D e texturas refinadas.");
+  });
+
+  it("deve renderizar estado vazio caso o NFT não tenha avaliações", async () => {
+    await act(async () => {
+      root?.render(<NftTechnicalTabs activeTab="reviews" nft={{ reviews: [] }} />);
+    });
+
+    const reviewsTab = container?.querySelector("#tab-reviews");
+    expect(reviewsTab?.textContent).toContain("Avaliações de colecionadores (0)");
+
+    const panel = container?.querySelector("#panel-reviews");
+    expect(panel?.textContent).toContain("Nenhuma avaliação de colecionador ainda.");
+  });
 });

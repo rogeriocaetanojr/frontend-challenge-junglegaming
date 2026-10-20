@@ -51,6 +51,19 @@ export interface NftActivityHistory {
 }
 
 /**
+ * Avaliação registrada por um colecionador.
+ */
+export interface CollectorReview {
+  id: string;
+  author: string;
+  address?: string;
+  avatarUrl?: string;
+  rating: number;
+  date?: string;
+  comment: string;
+}
+
+/**
  * Entidade completa e detalhada de um NFT com metadados estendidos.
  */
 export interface NftDetail extends Nft {
@@ -62,6 +75,7 @@ export interface NftDetail extends Nft {
   attributes?: NftAttribute[];
   bids?: NftBid[];
   history?: NftActivityHistory[];
+  reviews?: CollectorReview[];
   likesCount?: number;
   viewsCount?: number;
 }
