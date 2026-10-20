@@ -216,6 +216,40 @@ export const identityHandlers = [
     return HttpResponse.json<User>(sanitizeUser(user));
   }),
 
+  // 3.1. Obtenção da sessão completa (/api/auth/session)
+  http.get("*/api/auth/session", async ({ request }) => {
+    const fault = await scenarioEngine.executeMiddleware(request.url);
+    if (fault) {
+      return fault;
+    }
+
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : authHeader?.trim();
+
+    if (token) {
+      const existingSession = db.sessions.get(token);
+      if (existingSession) {
+        return HttpResponse.json<Session>(existingSession, { status: 200 });
+      }
+    }
+
+    const user = extractUserFromHeader(request);
+    if (!user) {
+      return HttpResponse.json<ApiErrorBody>(
+        {
+          code: "unauthorized",
+          message: "Sessão não autenticada.",
+        },
+        { status: 401 },
+      );
+    }
+
+    const session = createSession(user);
+    return HttpResponse.json<Session>(session, { status: 200 });
+  }),
+
   // 4. Logout da sessão
   http.post("*/api/auth/logout", async ({ request }) => {
     const fault = await scenarioEngine.executeMiddleware(request.url);
