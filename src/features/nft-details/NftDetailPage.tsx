@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertCircle, ArrowLeft, Heart, Mail, Minus, Plus, Star } from "lucide-react";
+import { AlertCircle, ArrowLeft, Mail, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { NftActionPanel } from "./NftActionPanel";
 import { NftDetailHeader } from "./NftDetailHeader";
 import { NftImageGallery } from "./NftImageGallery";
 import { useNftDetail } from "./queries";
@@ -20,9 +21,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const { data: nft, isLoading, isError } = useNftDetail(nftId);
   const currentNft = nft ?? initialData;
 
-  const [quantity, setQuantity] = useState(1);
   const [selectedEdition, setSelectedEdition] = useState("1/50");
-  const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "reviews">("details");
   const [userRating, setUserRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
@@ -41,14 +40,6 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
       creator: currentNft.creator?.name || "Kurio Editions",
       quantity: 1,
     });
-  };
-
-  const handleDecreaseQuantity = () => {
-    setQuantity((prev) => Math.max(1, prev - 1));
-  };
-
-  const handleIncreaseQuantity = () => {
-    setQuantity((prev) => prev + 1);
   };
 
   if (isLoading && !currentNft) {
@@ -238,62 +229,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
           </div>
 
           {/* Controles de Quantidade & Botões de Ação COMPRAR / Favoritar */}
-          <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
-            {/* Contador Circular [-] 1 [+] */}
-            <div className="flex items-center gap-2.5 bg-transparent shrink-0">
-              <button
-                type="button"
-                onClick={handleDecreaseQuantity}
-                disabled={quantity <= 1}
-                aria-label="Diminuir quantidade"
-                className="size-8.5 rounded-full bg-[#D28A4C] text-[#0E0907] flex items-center justify-center hover:bg-[#c47b3e] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              >
-                <Minus className="size-3.5 stroke-[2.8]" />
-              </button>
-              <span className="w-6 text-center text-sm sm:text-[16px] font-bold font-mono text-[#F5F1EB]">
-                {quantity}
-              </span>
-              <button
-                type="button"
-                onClick={handleIncreaseQuantity}
-                aria-label="Aumentar quantidade"
-                className="size-8.5 rounded-full bg-[#D28A4C] text-[#0E0907] flex items-center justify-center hover:bg-[#c47b3e] transition-colors cursor-pointer"
-              >
-                <Plus className="size-3.5 stroke-[2.8]" />
-              </button>
-            </div>
-
-            {/* Grupo de Botões Comprar e Favoritar alinhados à direita */}
-            <div className="flex items-center gap-3 flex-1 justify-end">
-              <button
-                type="button"
-                onClick={handleBuy}
-                className="min-w-[130px] sm:min-w-[150px] h-9.5 px-6 rounded-lg bg-[#D28A4C] hover:bg-[#c47b3e] text-[#0E0907] font-mono text-xs sm:text-[14px] font-bold uppercase tracking-wider transition-colors shadow-sm cursor-pointer flex items-center justify-center"
-              >
-                COMPRAR
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsFavorite(!isFavorite)}
-                aria-label={isFavorite ? "Desfavoritar NFT" : "Favoritar NFT"}
-                className={cn(
-                  "h-9.5 px-4 rounded-lg border font-mono text-xs sm:text-[13.5px] font-medium transition-colors flex items-center gap-2 cursor-pointer",
-                  isFavorite
-                    ? "border-[#D28A4C] text-[#D28A4C] bg-[#D28A4C]/10"
-                    : "border-[#3F2319] text-[#F5F1EB]/85 hover:border-[#D28A4C] hover:text-[#F5F1EB] bg-transparent",
-                )}
-              >
-                <Heart
-                  className={cn(
-                    "size-3.5",
-                    isFavorite ? "fill-[#D28A4C] text-[#D28A4C]" : "stroke-[1.8]",
-                  )}
-                />
-                <span>Favoritar</span>
-              </button>
-            </div>
-          </div>
+          <NftActionPanel onBuy={handleBuy} />
 
           {/* Metadados Técnicos em #CFB28C aproximados para cima com fonte maior */}
           <div className="space-y-1 pt-0.5 text-xs sm:text-[14.5px] text-[#CFB28C] font-mono">
