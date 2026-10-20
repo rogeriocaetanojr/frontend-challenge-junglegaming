@@ -91,6 +91,13 @@ export function createRouter(
           element: <NftDetailPage />,
         },
         {
+          path: "cart",
+          lazy: async () => {
+            const { CartPage } = await import("@/features/cart/CartPage");
+            return { Component: CartPage };
+          },
+        },
+        {
           path: "checkout",
           element: <CheckoutPage />,
         },
