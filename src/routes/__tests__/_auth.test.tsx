@@ -11,9 +11,9 @@ import {
   isRedirect,
   RouterProvider,
 } from "@tanstack/react-router";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { clearSession, setSession } from "@/lib/auth/session-store";
+import { clearSession, hasValidSession, setSession } from "@/lib/auth/session-store";
 import { AuthLayout, Route } from "../_auth";
 
 // @ts-expect-error IS_REACT_ACT_ENVIRONMENT flag
@@ -31,6 +31,9 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
   describe("beforeLoad Guard de Autenticação", () => {
     type BeforeLoadFn = (args: {
       context?: {
+        queryClient?: {
+          ensureQueryData: (options: unknown) => Promise<unknown>;
+        };
         auth?: {
           isAuthenticated?: boolean;
           user?: unknown;
@@ -43,7 +46,7 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
         searchStr?: string;
         href?: string;
       };
-    }) => void;
+    }) => Promise<unknown>;
 
     interface RedirectResult {
       options: {
@@ -54,13 +57,13 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
       };
     }
 
-    it("deve disparar redirect para /login com search.redirect seguro quando desautenticado", () => {
+    it("deve disparar redirect para /login com search.redirect seguro quando desautenticado", async () => {
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
       expect(beforeLoad).toBeDefined();
 
       let thrownError: unknown = null;
       try {
-        beforeLoad({
+        await beforeLoad({
           context: {
             auth: {
               isAuthenticated: false,
@@ -85,12 +88,12 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
       expect(redirectResult.options.search?.redirect).toBe("/checkout?step=payment");
     });
 
-    it("deve sanitizar caminhos maliciosos prevenindo open redirects", () => {
+    it("deve sanitizar caminhos maliciosos prevenindo open redirects", async () => {
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
 
       let thrownError: unknown = null;
       try {
-        beforeLoad({
+        await beforeLoad({
           context: {
             auth: { isAuthenticated: false },
           },
@@ -109,11 +112,12 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
       expect(redirectResult.options.search?.redirect).toBe("/");
     });
 
-    it("não deve disparar redirect quando context.auth.isAuthenticated for true", () => {
+    it("não deve disparar redirect quando context.auth.isAuthenticated for true com dados de user", async () => {
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
 
-      expect(() => {
-        beforeLoad({
+      let thrownError: unknown = null;
+      try {
+        await beforeLoad({
           context: {
             auth: {
               isAuthenticated: true,
@@ -121,12 +125,17 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
                 id: "usr_1",
                 name: "Alice",
                 email: "alice@example.com",
-                role: "collector",
+                createdAt: "2026-01-01T00:00:00.000Z",
               },
               session: {
                 token: "valid_token",
                 expiresAt: "2099-01-01T00:00:00Z",
-                userId: "usr_1",
+                user: {
+                  id: "usr_1",
+                  name: "Alice",
+                  email: "alice@example.com",
+                  createdAt: "2026-01-01T00:00:00.000Z",
+                },
               },
             },
           },
@@ -135,29 +144,159 @@ describe("Rota de Layout Protegida (src/routes/_auth.tsx)", () => {
             search: "",
           },
         });
-      }).not.toThrow();
+      } catch (err) {
+        thrownError = err;
+      }
+
+      expect(thrownError).toBeNull();
     });
 
-    it("não deve disparar redirect quando possuir sessão válida em sessionStore (hasValidSession)", () => {
+    it("deve resolver sessão concorrentemente via ensureQueryData quando possuir token em sessionStore", async () => {
       setSession({
-        token: "stored_token",
+        token: "stored_jwt_token",
         expiresAt: "2099-01-01T00:00:00Z",
         userId: "usr_stored",
       });
 
+      const mockUser = {
+        id: "usr_stored",
+        name: "Stored User",
+        email: "stored@example.com",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      };
+
+      const mockSession = {
+        token: "stored_jwt_token",
+        expiresAt: "2099-01-01T00:00:00Z",
+        user: mockUser,
+      };
+
+      const ensureQueryDataMock = vi.fn().mockResolvedValue(mockSession);
+
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
 
-      expect(() => {
-        beforeLoad({
-          context: {
-            auth: { isAuthenticated: false },
-          },
+      const contextObj = {
+        queryClient: {
+          ensureQueryData: ensureQueryDataMock,
+        },
+        auth: {
+          isAuthenticated: false,
+          user: null,
+          session: null,
+        },
+      };
+
+      let result: unknown = null;
+      let thrownError: unknown = null;
+      try {
+        result = await beforeLoad({
+          context: contextObj,
           location: {
             pathname: "/settings",
             search: "",
           },
         });
-      }).not.toThrow();
+      } catch (err) {
+        thrownError = err;
+      }
+
+      // Não deve ter lançado redirect
+      expect(thrownError).toBeNull();
+      // Deve ter chamado ensureQueryData para hidratar a sessão
+      expect(ensureQueryDataMock).toHaveBeenCalledTimes(1);
+      // Deve atualizar o contexto da rota permitindo a passagem
+      expect(contextObj.auth.isAuthenticated).toBe(true);
+      expect(contextObj.auth.user).toEqual(mockUser);
+      // E retornado o contexto enriquecido
+      expect(result).toEqual({
+        auth: {
+          isAuthenticated: true,
+          user: mockUser,
+          session: mockSession,
+        },
+      });
+    });
+
+    it("deve limpar storage e redirecionar para login caso a sessão resolvida seja inválida ou rejeitada pelo backend", async () => {
+      setSession({
+        token: "expired_token",
+        expiresAt: "2099-01-01T00:00:00Z",
+        userId: "usr_expired",
+      });
+
+      // Backend rejeita ou retorna null (401 convertido para null em sessionQueryOptions)
+      const ensureQueryDataMock = vi.fn().mockResolvedValue(null);
+
+      const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
+
+      let thrownError: unknown = null;
+      try {
+        await beforeLoad({
+          context: {
+            queryClient: {
+              ensureQueryData: ensureQueryDataMock,
+            },
+            auth: {
+              isAuthenticated: false,
+              user: null,
+              session: null,
+            },
+          },
+          location: {
+            pathname: "/orders",
+            search: "?filter=completed",
+          },
+        });
+      } catch (err) {
+        thrownError = err;
+      }
+
+      expect(thrownError).toBeDefined();
+      expect(isRedirect(thrownError)).toBe(true);
+      const redirectResult = thrownError as RedirectResult;
+      expect(redirectResult.options.to).toBe("/login");
+      expect(redirectResult.options.search?.redirect).toBe("/orders?filter=completed");
+
+      // Deve ter limpado a sessão em sessionStore
+      expect(hasValidSession()).toBe(false);
+    });
+
+    it("deve limpar storage e redirecionar para login caso ensureQueryData lance um erro de rede/API", async () => {
+      setSession({
+        token: "broken_token",
+        expiresAt: "2099-01-01T00:00:00Z",
+        userId: "usr_broken",
+      });
+
+      const ensureQueryDataMock = vi.fn().mockRejectedValue(new Error("Network Error"));
+
+      const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
+
+      let thrownError: unknown = null;
+      try {
+        await beforeLoad({
+          context: {
+            queryClient: {
+              ensureQueryData: ensureQueryDataMock,
+            },
+            auth: {
+              isAuthenticated: false,
+              user: null,
+              session: null,
+            },
+          },
+          location: {
+            pathname: "/vault",
+            search: "",
+          },
+        });
+      } catch (err) {
+        thrownError = err;
+      }
+
+      expect(thrownError).toBeDefined();
+      expect(isRedirect(thrownError)).toBe(true);
+      expect(hasValidSession()).toBe(false);
     });
   });
 
