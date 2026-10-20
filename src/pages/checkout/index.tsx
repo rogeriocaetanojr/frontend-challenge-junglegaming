@@ -1,7 +1,7 @@
-import { CartPage } from "@/features/cart/CartPage";
+import { CheckoutPage as FeatureCheckoutPage } from "@/features/checkout/CheckoutPage";
 
 export function CheckoutPage() {
-  return <CartPage />;
+  return <FeatureCheckoutPage />;
 }
 
 export default CheckoutPage;
