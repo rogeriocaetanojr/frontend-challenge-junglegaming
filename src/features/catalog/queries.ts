@@ -40,8 +40,27 @@ export function catalogListQueryOptions(filters: CatalogFilters = {}) {
       if (filters?.rarity) searchParams.set("rarity", filters.rarity);
       if (filters?.network) searchParams.set("network", filters.network);
       if (filters?.availability) searchParams.set("availability", filters.availability);
-      if (filters?.priceMin) searchParams.set("priceMin", filters.priceMin);
-      if (filters?.priceMax) searchParams.set("priceMax", filters.priceMax);
+      const rawFilters = filters as Record<string, unknown> | undefined;
+      const minPriceVal =
+        rawFilters?.minPrice !== undefined
+          ? String(rawFilters.minPrice)
+          : rawFilters?.priceMin !== undefined
+            ? String(rawFilters.priceMin)
+            : undefined;
+      const maxPriceVal =
+        rawFilters?.maxPrice !== undefined
+          ? String(rawFilters.maxPrice)
+          : rawFilters?.priceMax !== undefined
+            ? String(rawFilters.priceMax)
+            : undefined;
+      if (minPriceVal !== undefined && minPriceVal !== "") {
+        searchParams.set("priceMin", minPriceVal);
+        searchParams.set("minPrice", minPriceVal);
+      }
+      if (maxPriceVal !== undefined && maxPriceVal !== "") {
+        searchParams.set("priceMax", maxPriceVal);
+        searchParams.set("maxPrice", maxPriceVal);
+      }
 
       const resolvedSort =
         filters?.sort ??

@@ -95,24 +95,52 @@ export function CatalogSidebar({
             Faixa de preço
           </h3>
 
-          {/* Duplo Seletor Estilizado com Slider */}
+          {/* Duplo Seletor com Slider Duplo Real e Arrastável */}
           <div className="space-y-4">
-            <div className="relative pt-2 pb-1">
-              <div className="h-1.5 bg-[#140D0A] border border-[#3F2319] rounded-full w-full" />
-              <div className="absolute top-2 left-1 right-8 h-1.5 bg-[#D28A4C] rounded-full" />
-              {/* Handle Esquerdo */}
-              <button
-                type="button"
-                className="absolute top-0.5 left-1 size-4 rounded-full bg-[#D28A4C] border-2 border-[#140D0A] cursor-pointer shadow focus:outline-none focus:ring-1 focus:ring-[#F5F1EB]"
-                aria-label="Ajustar preço mínimo"
-                onClick={() => setMinPrice((prev) => (prev > 0 ? 0 : 0.02))}
+            <div className="relative h-6 flex items-center">
+              {/* Trilha de fundo */}
+              <div className="h-1.5 bg-[#140D0A] border border-[#3F2319] rounded-full w-full pointer-events-none" />
+              {/* Destaque ativo preenchido entre min e max */}
+              <div
+                className="absolute h-1.5 bg-[#D28A4C] rounded-full pointer-events-none"
+                style={{
+                  left: `${Math.min(100, Math.max(0, (minPrice / 20) * 100))}%`,
+                  right: `${Math.min(100, Math.max(0, 100 - (maxPrice / 20) * 100))}%`,
+                }}
               />
-              {/* Handle Direito */}
-              <button
-                type="button"
-                className="absolute top-0.5 right-8 size-4 rounded-full bg-[#D28A4C] border-2 border-[#140D0A] cursor-pointer shadow focus:outline-none focus:ring-1 focus:ring-[#F5F1EB]"
+
+              {/* Slider de Preço Mínimo */}
+              <input
+                type="range"
+                min="0"
+                max="20"
+                step="0.01"
+                value={minPrice}
+                onChange={(e) => {
+                  const val = Math.min(Number(e.target.value), maxPrice);
+                  setMinPrice(val);
+                }}
+                aria-label="Ajustar preço mínimo"
+                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none cursor-pointer z-10
+                  [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D28A4C] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#140D0A] [&::-webkit-slider-thumb]:shadow
+                  [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#D28A4C] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#140D0A] [&::-moz-range-thumb]:shadow"
+              />
+
+              {/* Slider de Preço Máximo */}
+              <input
+                type="range"
+                min="0"
+                max="20"
+                step="0.01"
+                value={maxPrice}
+                onChange={(e) => {
+                  const val = Math.max(Number(e.target.value), minPrice);
+                  setMaxPrice(val);
+                }}
                 aria-label="Ajustar preço máximo"
-                onClick={() => setMaxPrice((prev) => (prev < 15 ? 13.38 : 10))}
+                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none cursor-pointer z-20
+                  [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D28A4C] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#140D0A] [&::-webkit-slider-thumb]:shadow
+                  [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#D28A4C] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#140D0A] [&::-moz-range-thumb]:shadow"
               />
             </div>
 

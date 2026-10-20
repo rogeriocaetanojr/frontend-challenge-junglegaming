@@ -16,8 +16,7 @@ import type {
   NftRarity,
   NftSortOption,
 } from "@/contracts/catalog";
-import { type ApiErrorBody, isEthString } from "@/contracts/common";
-import { compareEth } from "@/lib/money";
+import { type ApiErrorBody } from "@/contracts/common";
 import { db, dbHelpers } from "@/mocks/db";
 import { scenarioEngine } from "@/mocks/scenarios";
 
@@ -121,8 +120,18 @@ export const catalogHandlers = [
     const rarities = parseMultiParam(url, "rarity") as NftRarity[];
     const networks = parseMultiParam(url, "network") as Network[];
     const availability = url.searchParams.get("availability") ?? "all";
-    const priceMin = url.searchParams.get("priceMin");
-    const priceMax = url.searchParams.get("priceMax");
+    const rawMinPrice =
+      url.searchParams.get("minPrice") ?? url.searchParams.get("priceMin");
+    const rawMaxPrice =
+      url.searchParams.get("maxPrice") ?? url.searchParams.get("priceMax");
+    const minPrice =
+      rawMinPrice !== null && !isNaN(Number(rawMinPrice))
+        ? Number(rawMinPrice)
+        : undefined;
+    const maxPrice =
+      rawMaxPrice !== null && !isNaN(Number(rawMaxPrice))
+        ? Number(rawMaxPrice)
+        : undefined;
     const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
     const pageSize = Math.max(
       1,
@@ -181,12 +190,12 @@ export const catalogHandlers = [
       );
     }
 
-    // 8. Filtros de faixa de preço com precisão decimal em ETH
-    if (priceMin && isEthString(priceMin)) {
-      filtered = filtered.filter((nft) => compareEth(nft.price, priceMin) >= 0);
+    // 8. Filtros de faixa de preço em ETH
+    if (minPrice !== undefined) {
+      filtered = filtered.filter((nft) => Number(nft.price) >= minPrice);
     }
-    if (priceMax && isEthString(priceMax)) {
-      filtered = filtered.filter((nft) => compareEth(nft.price, priceMax) <= 0);
+    if (maxPrice !== undefined) {
+      filtered = filtered.filter((nft) => Number(nft.price) <= maxPrice);
     }
 
     // 9. Agregação de facetas sobre o conjunto filtrado
