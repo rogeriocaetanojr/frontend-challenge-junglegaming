@@ -7,7 +7,7 @@
 import type { Nft } from "@/contracts/catalog";
 import type { Cart, Order, Quote } from "@/contracts/commerce";
 import type { Wallet } from "@/contracts/identity";
-import type { DbCoupon, DbUser, InMemoryDatabase } from "./schema";
+import type { DbCoupon, DbUser, IdempotencyRecord, InMemoryDatabase } from "./schema";
 import {
   SEED_CARTS,
   SEED_COUPONS,
@@ -30,6 +30,7 @@ export const db: InMemoryDatabase = {
   quotes: new Map<string, Quote>(),
   orders: new Map<string, Order>(),
   coupons: new Map<string, DbCoupon>(),
+  idempotency: new Map<string, IdempotencyRecord>(),
 };
 
 /**
@@ -44,6 +45,7 @@ export function resetDb(): InMemoryDatabase {
   db.quotes.clear();
   db.orders.clear();
   db.coupons.clear();
+  db.idempotency.clear();
 
   for (const nft of structuredClone(SEED_NFTS)) {
     db.nfts.set(nft.id, nft);

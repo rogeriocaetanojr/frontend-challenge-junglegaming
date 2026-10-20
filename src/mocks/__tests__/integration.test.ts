@@ -91,7 +91,10 @@ describe("MSW End-to-End Integration Tests (src/mocks/__tests__/integration.test
       // 5. Finaliza pedido via POST /api/orders
       const orderRes = await fetch(`${BASE_URL}/orders`, {
         method: "POST",
-        headers: authHeaders,
+        headers: {
+          ...authHeaders,
+          "Idempotency-Key": "idemp_order_integration_1",
+        },
         body: JSON.stringify({
           quoteId: quote.quoteId,
           walletId: "wallet_demo_eth",
@@ -131,6 +134,7 @@ describe("MSW End-to-End Integration Tests (src/mocks/__tests__/integration.test
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer mock-token-user_demo",
+          "Idempotency-Key": "idemp_checkout_conflict",
         },
         body: JSON.stringify({
           quoteId: "quote_demo_active",

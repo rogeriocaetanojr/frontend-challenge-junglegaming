@@ -93,4 +93,18 @@ export const SCENARIO_REGISTRY: Record<ScenarioName, ScenarioConfig> = {
       },
     },
   },
+  order_timeout: {
+    name: "order_timeout",
+    description:
+      "Simula criação de pedido com atraso de rede excessivo para validação de timeout no cliente.",
+    latencyMs: 1500,
+    faultRate: 0,
+  },
+  "order-timeout": {
+    name: "order-timeout",
+    description:
+      "Simula criação de pedido com atraso de rede excessivo para validação de timeout no cliente.",
+    latencyMs: 1500,
+    faultRate: 0,
+  },
 };

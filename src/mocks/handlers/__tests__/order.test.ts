@@ -1,9 +1,9 @@
 /**
- * Testes de integração dos handlers REST de pedidos (Order) e checkout com MSW.
+ * Testes de integração dos handlers REST de pedidos (Order), checkout com MSW e idempotência.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import type { Cart, Order, Quote } from "@/contracts/commerce";
+import type { Order, Quote } from "@/contracts/commerce";
 import type { ApiErrorBody, IsoDate } from "@/contracts/common";
 import { db, resetDb } from "@/mocks/db";
 import { scenarioEngine } from "@/mocks/scenarios";
@@ -11,7 +11,7 @@ import { server } from "@/mocks/server";
 
 const BASE_URL = "http://localhost/api";
 
-describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
+describe("Order Handlers (src/mocks/handlers/orders.ts)", () => {
   beforeAll(() => {
     server.listen();
   });
@@ -30,6 +30,7 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     const authHeaders = {
       Authorization: "Bearer mock-token-user_demo",
       "Content-Type": "application/json",
+      "Idempotency-Key": "idemp_create_order_happy",
     };
 
     // 1. Estoque inicial
@@ -95,17 +96,138 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     const cartRes = await fetch(`${BASE_URL}/cart`, {
       headers: authHeaders,
     });
-    const cart = (await cartRes.json()) as Cart;
-    expect(cart.lines).toHaveLength(0);
+    const userCart = (await cartRes.json()) as { lines: unknown[] };
+    expect(userCart.lines.length).toBe(0);
+  });
+
+  describe("Idempotência em POST /api/orders", () => {
+    it("deve rejeitar com 400 Bad Request se o cabeçalho Idempotency-Key estiver ausente", async () => {
+      const authHeadersWithoutIdempotency = {
+        Authorization: "Bearer mock-token-user_demo",
+        "Content-Type": "application/json",
+      };
+
+      const quoteRes = await fetch(`${BASE_URL}/quotes`, {
+        method: "POST",
+        headers: authHeadersWithoutIdempotency,
+        body: JSON.stringify({ cartId: "cart_demo" }),
+      });
+      const quote = (await quoteRes.json()) as Quote;
+
+      const orderRes = await fetch(`${BASE_URL}/orders`, {
+        method: "POST",
+        headers: authHeadersWithoutIdempotency,
+        body: JSON.stringify({
+          quoteId: quote.quoteId,
+          walletId: "wallet_demo_eth",
+          network: "ethereum",
+          collector: { name: "Alex Jungle", email: "demo@jungle.com" },
+        }),
+      });
+
+      expect(orderRes.status).toBe(400);
+      const error = (await orderRes.json()) as ApiErrorBody;
+      expect(error.code).toBe("validation_error");
+      expect(error.message).toContain("Idempotency-Key");
+    });
+
+    it("deve retornar o pedido existente com cabeçalho Idempotent-Replayed: true em reenvio com mesmo payload", async () => {
+      const headers = {
+        Authorization: "Bearer mock-token-user_demo",
+        "Content-Type": "application/json",
+        "Idempotency-Key": "unique_idempotency_key_42",
+      };
+
+      const quoteRes = await fetch(`${BASE_URL}/quotes`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ cartId: "cart_demo" }),
+      });
+      const quote = (await quoteRes.json()) as Quote;
+
+      const payload = {
+        quoteId: quote.quoteId,
+        walletId: "wallet_demo_eth",
+        network: "ethereum",
+        collector: { name: "Alex Jungle", email: "demo@jungle.com" },
+      };
+
+      // 1ª Requisição
+      const res1 = await fetch(`${BASE_URL}/orders`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+      expect(res1.status).toBe(201);
+      const order1 = (await res1.json()) as Order;
+
+      // 2ª Requisição (idêntica, mesma chave e mesmo payload)
+      const res2 = await fetch(`${BASE_URL}/orders`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      expect(res2.status).toBe(200);
+      expect(res2.headers.get("Idempotent-Replayed")).toBe("true");
+      const order2 = (await res2.json()) as Order;
+      expect(order2.id).toBe(order1.id);
+      expect(order2.snapshot.txRef).toBe(order1.snapshot.txRef);
+    });
+
+    it("deve rejeitar com 409 idempotency_conflict quando a mesma chave for enviada com payload diferente", async () => {
+      const headers = {
+        Authorization: "Bearer mock-token-user_demo",
+        "Content-Type": "application/json",
+        "Idempotency-Key": "reused_key_conflict_test",
+      };
+
+      const quoteRes = await fetch(`${BASE_URL}/quotes`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ cartId: "cart_demo" }),
+      });
+      const quote = (await quoteRes.json()) as Quote;
+
+      // 1ª Requisição com carteira A
+      const res1 = await fetch(`${BASE_URL}/orders`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          quoteId: quote.quoteId,
+          walletId: "wallet_demo_eth",
+          network: "ethereum",
+          collector: { name: "Alex Jungle", email: "demo@jungle.com" },
+        }),
+      });
+      expect(res1.status).toBe(201);
+
+      // 2ª Requisição com a MESMA chave, mas alterando o e-mail do collector (payload divergente)
+      const res2 = await fetch(`${BASE_URL}/orders`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          quoteId: quote.quoteId,
+          walletId: "wallet_demo_eth",
+          network: "ethereum",
+          collector: { name: "Alex Jungle", email: "outro_email@jungle.com" },
+        }),
+      });
+
+      expect(res2.status).toBe(409);
+      const conflictError = (await res2.json()) as ApiErrorBody;
+      expect(conflictError.code).toBe("idempotency_conflict");
+      expect(conflictError.message).toContain("idempotência");
+    });
   });
 
   it("deve rejeitar com 409 quando a cotação estiver expirada", async () => {
     const authHeaders = {
       Authorization: "Bearer mock-token-user_demo",
       "Content-Type": "application/json",
+      "Idempotency-Key": "idemp_expired_quote",
     };
 
-    // Cria cotação
     const quoteRes = await fetch(`${BASE_URL}/quotes`, {
       method: "POST",
       headers: authHeaders,
@@ -140,6 +262,7 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     const authHeaders = {
       Authorization: "Bearer mock-token-user_demo",
       "Content-Type": "application/json",
+      "Idempotency-Key": "idemp_invalid_wallet",
     };
 
     const quoteRes = await fetch(`${BASE_URL}/quotes`, {
@@ -168,7 +291,10 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
   it("deve rejeitar com 401 unauthorized quando tentar criar pedido sem autenticação", async () => {
     const orderRes = await fetch(`${BASE_URL}/orders`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "idemp_unauth",
+      },
       body: JSON.stringify({
         quoteId: "qualquer",
         walletId: "qualquer",
@@ -180,10 +306,11 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     expect(orderRes.status).toBe(401);
   });
 
-  it("deve listar pedidos do usuário e consultar pedido por ID", async () => {
+  it("deve listar pedidos do usuário com suporte a filtro por status e detalhe por ID", async () => {
     const authHeaders = {
       Authorization: "Bearer mock-token-user_demo",
       "Content-Type": "application/json",
+      "Idempotency-Key": "idemp_list_orders_test",
     };
 
     // 1. Gera cotação e pedido
@@ -206,7 +333,7 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     });
     const createdOrder = (await createRes.json()) as Order;
 
-    // 2. Listagem de pedidos
+    // 2. Listagem de todos os pedidos do usuário
     const listRes = await fetch(`${BASE_URL}/orders`, {
       headers: authHeaders,
     });
@@ -214,13 +341,29 @@ describe("Order Handlers (src/mocks/handlers/order.handlers.ts)", () => {
     const orders = (await listRes.json()) as Order[];
     expect(orders.some((o) => o.id === createdOrder.id)).toBe(true);
 
-    // 3. Consulta de pedido por ID
+    // 3. Listagem com filtro ?status=confirmed
+    const confirmedRes = await fetch(`${BASE_URL}/orders?status=confirmed`, {
+      headers: authHeaders,
+    });
+    expect(confirmedRes.status).toBe(200);
+    const confirmedOrders = (await confirmedRes.json()) as Order[];
+    expect(confirmedOrders.every((o) => o.status === "confirmed")).toBe(true);
+
+    // 4. Listagem com filtro ?status=pending
+    const pendingRes = await fetch(`${BASE_URL}/orders?status=pending`, {
+      headers: authHeaders,
+    });
+    expect(pendingRes.status).toBe(200);
+    const pendingOrders = (await pendingRes.json()) as Order[];
+    expect(pendingOrders.every((o) => o.status === "pending")).toBe(true);
+
+    // 5. Consulta de pedido por ID
     const getRes = await fetch(`${BASE_URL}/orders/${createdOrder.id}`);
     expect(getRes.status).toBe(200);
     const fetchedOrder = (await getRes.json()) as Order;
     expect(fetchedOrder.id).toBe(createdOrder.id);
 
-    // 4. ID inexistente
+    // 6. ID inexistente
     const notFoundRes = await fetch(`${BASE_URL}/orders/order-inexistente`);
     expect(notFoundRes.status).toBe(404);
     const notFoundError = (await notFoundRes.json()) as ApiErrorBody;

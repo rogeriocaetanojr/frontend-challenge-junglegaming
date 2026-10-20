@@ -10,6 +10,7 @@ export * from "./cart.handlers";
 export * from "./catalog.handlers";
 export * from "./identity.handlers";
 export * from "./order.handlers";
+export * from "./orders";
 export * from "./quote.handlers";
 
 export const handlers = [

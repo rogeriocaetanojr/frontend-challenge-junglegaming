@@ -11,7 +11,9 @@ export type ScenarioName =
   | "price_surge"
   | "out_of_stock"
   | "auth_expired"
-  | "checkout_conflict";
+  | "checkout_conflict"
+  | "order_timeout"
+  | "order-timeout";
 
 /** Definição de erro HTTP forçado para rotas específicas. */
 export interface ForcedErrorDefinition {

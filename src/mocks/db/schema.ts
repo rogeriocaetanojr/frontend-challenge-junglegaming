@@ -29,6 +29,18 @@ export interface DbCoupon {
 }
 
 /**
+ * Registro de idempotência para criação de pedidos.
+ * Associa (userId, idempotencyKey) ao hash canônico da requisição e ao pedido gerado.
+ */
+export interface IdempotencyRecord {
+  userId: string;
+  key: string;
+  requestHash: string;
+  orderId: string;
+  createdAt: IsoDate;
+}
+
+/**
  * Estrutura do banco de dados em memória.
  * Cada coleção é mantida em um `Map` para buscas e mutações O(1).
  */
@@ -40,4 +52,5 @@ export interface InMemoryDatabase {
   quotes: Map<string, Quote>;
   orders: Map<string, Order>;
   coupons: Map<string, DbCoupon>;
+  idempotency: Map<string, IdempotencyRecord>;
 }
