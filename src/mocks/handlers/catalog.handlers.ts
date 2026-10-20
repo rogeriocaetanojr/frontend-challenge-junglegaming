@@ -114,7 +114,8 @@ export const catalogHandlers = [
     const url = new URL(request.url);
 
     // 1. Extração de parâmetros de consulta
-    const q = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
+    const rawSearch = url.searchParams.get("q") ?? url.searchParams.get("search") ?? "";
+    const q = rawSearch.trim().toLowerCase();
     const categories = parseMultiParam(url, "category");
     const collections = parseMultiParam(url, "collection");
     const rarities = parseMultiParam(url, "rarity") as NftRarity[];
@@ -139,8 +140,8 @@ export const catalogHandlers = [
       filtered = filtered.filter(
         (nft) =>
           nft.title.toLowerCase().includes(q) ||
-          nft.description.toLowerCase().includes(q) ||
-          nft.collection.name.toLowerCase().includes(q),
+          (nft.description ? nft.description.toLowerCase().includes(q) : false) ||
+          (nft.collection?.name ? nft.collection.name.toLowerCase().includes(q) : false),
       );
     }
 

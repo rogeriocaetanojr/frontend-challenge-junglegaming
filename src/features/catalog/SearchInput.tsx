@@ -35,8 +35,14 @@ export function SearchInput({
   const [prevControlledValue, setPrevControlledValue] = useState(controlledValue);
   const [localValue, setLocalValue] = useState(controlledValue);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onChangeRef = useRef(onChange);
 
-  // Sincroniza estado durante a renderização se a prop externa value for alterada
+  // Mantém a referência de onChange sempre atualizada
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Sincroniza o estado local durante o render quando a prop externa value mudar
   if (controlledValue !== prevControlledValue) {
     setPrevControlledValue(controlledValue);
     setLocalValue(controlledValue);
@@ -57,7 +63,7 @@ export function SearchInput({
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      onChange(nextValue);
+      onChangeRef.current(nextValue);
     }, delayMs);
   };
 
@@ -72,7 +78,7 @@ export function SearchInput({
       clearTimeout(debounceTimerRef.current);
     }
     setLocalValue("");
-    onChange("");
+    onChangeRef.current("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

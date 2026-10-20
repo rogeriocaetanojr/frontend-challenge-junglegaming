@@ -28,8 +28,10 @@ export function catalogListQueryOptions(filters: CatalogFilters = {}) {
       if (filters.page !== undefined) params.page = filters.page;
       if (filters.limit !== undefined) params.limit = filters.limit;
       if (filters.pageSize !== undefined) params.pageSize = filters.pageSize;
-      if (filters.search) params.q = filters.search;
-      if (filters.q) params.q = filters.q;
+      const searchTerm = filters.q ?? filters.search;
+      if (searchTerm) {
+        params.q = searchTerm;
+      }
       if (filters.category) params.category = filters.category;
       if (filters.collection) params.collection = filters.collection;
       if (filters.rarity) params.rarity = filters.rarity;

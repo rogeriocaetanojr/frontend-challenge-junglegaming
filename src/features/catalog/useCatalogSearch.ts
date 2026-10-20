@@ -26,6 +26,7 @@ export interface UseCatalogSearchOptions {
 export interface UseCatalogSearchReturn {
   searchParams: CatalogSearchParams;
   q?: string;
+  search?: string;
   category?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -84,11 +85,13 @@ export function useCatalogSearch(
   );
 
   const setSearch = useCallback(
-    (q: string) => {
-      const trimmed = q.trim();
+    (nextQuery: string) => {
+      const trimmed = nextQuery.trim();
+      const finalValue = trimmed.length > 0 ? trimmed : undefined;
       updateSearch((prev) => ({
         ...prev,
-        q: trimmed.length > 0 ? trimmed : undefined,
+        q: finalValue,
+        search: finalValue,
         page: 1,
       }));
     },
@@ -156,6 +159,7 @@ export function useCatalogSearch(
     updateSearch((prev) => {
       const next = { ...prev };
       delete next.q;
+      delete next.search;
       delete next.category;
       delete next.minPrice;
       delete next.maxPrice;
@@ -170,9 +174,12 @@ export function useCatalogSearch(
     });
   }, [updateSearch]);
 
+  const activeTerm = searchParams.q;
+
   return {
     searchParams,
-    q: searchParams.q,
+    q: activeTerm,
+    search: activeTerm,
     category: searchParams.category,
     minPrice: searchParams.minPrice,
     maxPrice: searchParams.maxPrice,

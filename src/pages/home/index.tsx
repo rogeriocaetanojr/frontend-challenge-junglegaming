@@ -1,5 +1,6 @@
-import * as React from "react";
 import { ChevronRight, PackageSearch, RotateCcw } from "lucide-react";
+import * as React from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { useNfts } from "@/hooks/use-nfts";
@@ -15,13 +16,31 @@ import { NftGridSkeleton } from "./components/nft-grid-skeleton";
 const PAGE_SIZE = 9;
 
 export function HomePage() {
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
+
   const [filters, setFilters] = React.useState<NftFilters>({
     sortBy: "recent",
   });
   const [activeTab, setActiveTab] = React.useState<CatalogTab>("all");
+  const [prevUrlSearch, setPrevUrlSearch] = React.useState(urlSearch);
   const [page, setPage] = React.useState(1);
 
-  const { data, isLoading, isError } = useNfts(filters, page, PAGE_SIZE);
+  // Sincroniza e reseta página durante a renderização se a busca mudar
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setPage(1);
+  }
+
+  const activeFilters = React.useMemo<NftFilters>(
+    () => ({
+      ...filters,
+      search: urlSearch.trim().length > 0 ? urlSearch.trim() : undefined,
+    }),
+    [filters, urlSearch],
+  );
+
+  const { data, isLoading, isError } = useNfts(activeFilters, page, PAGE_SIZE);
 
   // Featured NFT: primeiro item retornado ou fallback
   const featuredNft = data?.items[0];
@@ -109,7 +128,7 @@ export function HomePage() {
           {/* Barra Lateral Esquerda (col-span-3) */}
           <div className="lg:col-span-3">
             <CatalogSidebar
-              selectedCategory={filters.category}
+              selectedCategory={filters.category as NftCategory | undefined}
               onSelectCategory={handleSelectCategory}
               selectedNetwork={filters.network}
               onSelectNetwork={handleSelectNetwork}
@@ -118,8 +137,8 @@ export function HomePage() {
           </div>
 
           {/* Grelha do Catálogo à Direita (col-span-9) */}
-          <div className="lg:col-span-9 space-y-8">
-            {/* Barra superior: Abas e Seletor de Ordenação */}
+          <div className="lg:col-span-9 space-y-6">
+            {/* Barra de Abas e Seletor de Ordenação */}
             <CatalogTabsBar
               activeTab={activeTab}
               onTabChange={handleTabChange}

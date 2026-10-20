@@ -34,10 +34,12 @@ export const Route = createFileRoute("/")({
     const routerContext = context as unknown as Partial<RouterContext>;
     const queryClient = routerContext?.queryClient ?? defaultQueryClient;
 
+    const searchTerm = deps.q ?? deps.search;
     const filters: CatalogFilters = {
       page: deps.page,
       limit: deps.limit,
-      q: deps.q,
+      q: searchTerm,
+      search: searchTerm,
       category: deps.category,
       priceMin: deps.minPrice !== undefined ? String(deps.minPrice) : undefined,
       priceMax: deps.maxPrice !== undefined ? String(deps.maxPrice) : undefined,

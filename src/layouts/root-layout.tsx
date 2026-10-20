@@ -1,6 +1,13 @@
-import { useEffect } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { LogOut, Search, ShoppingCart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import { LogOut, Search, ShoppingCart, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
@@ -22,12 +29,116 @@ export function ScrollToTop() {
 export function RootLayout() {
   const cartCount = useCartStore((state) => state.items.length);
   const connectWallet = useAuthStore((state) => state.connectWallet);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const searchValue = searchParams.get("search") || searchParams.get("q") || "";
+
+  // Fecha o popover de busca ao clicar fora ou ao pressionar Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSearchOpen(false);
+      }
+    };
+
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }, 50);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSearchOpen]);
 
   const scrollToCatalog = () => {
+    if (pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const catalog = document.getElementById("catalog-section");
+        if (catalog) {
+          catalog.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+      return;
+    }
+
     const catalog = document.getElementById("catalog-section");
     if (catalog) {
       catalog.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        if (pathname !== "/") {
+          navigate("/");
+        }
+        setTimeout(() => {
+          const catalog = document.getElementById("catalog-section");
+          if (catalog) {
+            catalog.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 50);
+      }
+      return next;
+    });
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    const newParams = new URLSearchParams(searchParams);
+    if (val.trim()) {
+      newParams.set("search", val);
+    } else {
+      newParams.delete("search");
+      newParams.delete("q");
+    }
+
+    if (pathname !== "/") {
+      navigate(`/?${newParams.toString()}`);
+    } else {
+      setSearchParams(newParams, { replace: true });
+    }
+
+    const catalog = document.getElementById("catalog-section");
+    if (catalog) {
+      catalog.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleClearSearch = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("search");
+    newParams.delete("q");
+    if (pathname !== "/") {
+      navigate(`/?${newParams.toString()}`);
+    } else {
+      setSearchParams(newParams, { replace: true });
+    }
+    searchInputRef.current?.focus();
   };
 
   return (
@@ -106,16 +217,52 @@ export function RootLayout() {
             </nav>
 
             {/* Lado Direito: Busca, Carrinho e Botão Entrar rebalanceado */}
-            <div className="h-full flex items-center gap-4 sm:gap-5">
-              {/* Botão de Busca */}
-              <button
-                type="button"
-                onClick={scrollToCatalog}
-                className="text-[#F5F1EB] hover:text-[#D28A4C] p-1.5 transition-colors cursor-pointer"
-                aria-label="Buscar no catálogo"
-              >
-                <Search className="size-[20px] stroke-[1.8]" />
-              </button>
+            <div className="h-full flex items-center gap-3 sm:gap-4">
+              {/* Botão de Busca com Input Compacto Inline ao Lado */}
+              <div className="flex items-center h-full" ref={searchContainerRef}>
+                {isSearchOpen && (
+                  <div className="flex items-center animate-in fade-in slide-in-from-right-2 duration-150 mr-1.5">
+                    <div className="relative flex items-center">
+                      <input
+                        ref={searchInputRef}
+                        id="catalog-search-input"
+                        type="search"
+                        role="searchbox"
+                        value={searchValue}
+                        onChange={handleSearchChange}
+                        placeholder="Buscar..."
+                        className="w-28 sm:w-32 h-6.5 sm:h-7 pl-2 pr-5 text-[11.5px] sm:text-[12px] font-mono bg-[#140D0A] border border-[#3F2319] rounded text-[#F5F1EB] placeholder:text-[#F5F1EB]/35 transition-colors focus:border-[#D28A4C] focus:ring-1 focus:ring-[#D28A4C] focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                      {searchValue && (
+                        <button
+                          type="button"
+                          onClick={handleClearSearch}
+                          aria-label="Limpar busca"
+                          className="absolute right-1 text-[#F5F1EB]/40 hover:text-[#D28A4C] p-0.5 rounded transition-colors"
+                        >
+                          <X className="size-2.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={toggleSearch}
+                  className={`p-1.5 transition-colors cursor-pointer rounded-md ${
+                    isSearchOpen
+                      ? "text-[#D28A4C] bg-[#D28A4C]/10"
+                      : "text-[#F5F1EB] hover:text-[#D28A4C]"
+                  }`}
+                  aria-label={isSearchOpen ? "Fechar busca" : "Buscar no catálogo"}
+                  aria-expanded={isSearchOpen}
+                >
+                  <Search className="size-[19px] sm:size-[20px] stroke-[1.8]" />
+                </button>
+              </div>
 
               {/* Ícone de Carrinho (ShoppingCart) com Badge Numérico no topo direito */}
               <Link

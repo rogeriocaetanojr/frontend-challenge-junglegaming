@@ -52,6 +52,7 @@ export function CatalogPage({ className }: CatalogPageProps) {
       page,
       limit,
       q,
+      search: q,
       category,
       priceMin: minPrice !== undefined ? String(minPrice) : undefined,
       priceMax: maxPrice !== undefined ? String(maxPrice) : undefined,
@@ -84,8 +85,9 @@ export function CatalogPage({ className }: CatalogPageProps) {
 
   return (
     <div
+      id="catalog-section"
       data-testid="catalog-page"
-      className={cn("container mx-auto px-4 py-8 space-y-8", className)}
+      className={cn("container mx-auto px-4 py-8 space-y-8 scroll-mt-24", className)}
     >
       {/* Cabeçalho da Seção */}
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -101,6 +103,7 @@ export function CatalogPage({ className }: CatalogPageProps) {
         {/* Campo de Busca Principal */}
         <div className="w-full md:w-80">
           <SearchInput
+            id="catalog-search-input"
             value={q ?? ""}
             onChange={setSearch}
             placeholder="Buscar por nome, coleção..."

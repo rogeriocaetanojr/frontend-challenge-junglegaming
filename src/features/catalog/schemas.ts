@@ -69,7 +69,15 @@ export type CatalogSearch = CatalogSearchParams;
  * Função utilitária de sanitização e valores padrão para o validateSearch do router.
  */
 export function parseCatalogSearch(rawSearch: unknown): CatalogSearchParams {
-  const result = catalogSearchSchema.safeParse(rawSearch ?? {});
+  const rawObj = (rawSearch ?? {}) as Record<string, unknown>;
+  const rawTerm = rawObj.q ?? rawObj.search;
+  const normalizedRaw: Record<string, unknown> = {
+    ...rawObj,
+    q: rawTerm,
+  };
+  delete normalizedRaw.search;
+
+  const result = catalogSearchSchema.safeParse(normalizedRaw);
   if (result.success) {
     return result.data;
   }
