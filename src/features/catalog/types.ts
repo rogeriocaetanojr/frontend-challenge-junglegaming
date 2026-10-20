@@ -25,6 +25,48 @@ export const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = [
   { id: "membership", label: "Membros" },
 ];
 
+export interface SortOptionItem {
+  value: string;
+  label: string;
+  sortBy: string;
+  sortDirection: "asc" | "desc";
+}
+
+export const CATALOG_SORT_OPTIONS: SortOptionItem[] = [
+  {
+    value: "createdAt:desc",
+    label: "Mais recentes",
+    sortBy: "createdAt",
+    sortDirection: "desc",
+  },
+  {
+    value: "price:asc",
+    label: "Preço: Menor para maior",
+    sortBy: "price",
+    sortDirection: "asc",
+  },
+  {
+    value: "price:desc",
+    label: "Preço: Maior para menor",
+    sortBy: "price",
+    sortDirection: "desc",
+  },
+  {
+    value: "title:asc",
+    label: "Nome: A-Z",
+    sortBy: "title",
+    sortDirection: "asc",
+  },
+  {
+    value: "title:desc",
+    label: "Nome: Z-A",
+    sortBy: "title",
+    sortDirection: "desc",
+  },
+];
+
+export const CATALOG_PAGE_SIZE_OPTIONS = [8, 12, 24, 48] as const;
+
 /**
  * Filtros de consulta e paginação do catálogo de NFTs.
  */
