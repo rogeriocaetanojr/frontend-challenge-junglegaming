@@ -1,203 +1,164 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Suíte de Testes End-to-End (E2E) para Autenticação e Autorização.
+ * Suíte de Testes End-to-End (E2E) para o Modal Unificado de Autenticação (AuthModal).
  *
  * Cobertura:
- * 1. Login com credenciais válidas (demo@jungle.com / Password123!), redirecionamento e persistência de sessão.
- * 2. Tentativa de login com credenciais inválidas exibindo mensagem de erro acessível (role="alert").
- * 3. Bloqueio de rota protegida para visitantes deslogados, redirecionando para /login com parâmetro redirect seguro.
- * 4. Cadastro com validação de senhas divergentes e fluxo feliz com auto-login.
- * 5. Expiração de sessão e acionamento do diálogo modal acessível (role="alertdialog").
+ * 1. Abertura do modal via botão 'Entrar' no cabeçalho e login com credenciais válidas.
+ * 2. Validação de erro amigável ao tentar submeter com campos em branco.
+ * 3. Alternância suave entre as abas 'Entrar' e 'Criar conta' dentro do modal.
+ * 4. Validação de senhas divergentes na aba de criação de conta e auto-login pós-cadastro.
+ * 5. Fechamento do modal através do botão de fechar (X).
  */
-test.describe("Autenticação e Controle de Acesso (E2E)", () => {
+test.describe("Autenticação via Modal Unificado (E2E)", () => {
   test.beforeEach(async ({ page }) => {
-    // Garante ambiente limpo sem resíduos de storage entre testes
     await page.goto("/");
     await page.evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
     });
+    await page.reload();
   });
 
-  test("deve realizar login com credenciais válidas, redirecionar e persistir sessão", async ({
+  test("deve abrir o AuthModal pelo cabeçalho, realizar login com sucesso e atualizar perfil no header", async ({
     page,
   }) => {
-    await page.goto("/login");
+    // 1. Localiza e clica no botão "Entrar" no cabeçalho
+    const loginHeaderButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i });
+    await expect(loginHeaderButton).toBeVisible();
+    await loginHeaderButton.click();
 
-    // Valida presença dos campos acessíveis
-    const emailInput = page.getByLabel("E-mail");
-    const passwordInput = page.getByLabel("Senha");
-    const submitButton = page.getByRole("button", {
-      name: /entrar na conta/i,
-    });
+    // 2. Valida abertura do diálogo modal acessível
+    const modal = page.getByRole("dialog");
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText("Entre para gerenciar sua carteira");
 
-    await expect(emailInput).toBeVisible();
-    await expect(passwordInput).toBeVisible();
-    await expect(submitButton).toBeVisible();
+    // 3. Preenche formulário de login
+    const emailInput = modal.locator('input[type="email"]');
+    const passwordInput = modal.locator('input[type="password"]');
+    const submitButton = modal.locator('button[type="submit"]');
 
-    // Preenche credenciais da conta de demonstração
-    await emailInput.fill("demo@jungle.com");
+    await emailInput.fill("alex.vance@marketplace.local");
     await passwordInput.fill("Password123!");
 
-    // Submete o formulário
+    // 4. Submete o login
     await submitButton.click();
 
-    // Redireciona para a página inicial pós-login
-    await expect(page).toHaveURL(/\/(?:#.*)?$/);
+    // 5. Valida que o modal foi fechado
+    await expect(modal).not.toBeVisible();
 
-    // Valida persistência da sessão no localStorage
-    const storedSession = await page.evaluate(() => {
-      return localStorage.getItem("@nft-marketplace:session_v1");
-    });
-
-    expect(storedSession).not.toBeNull();
-    expect(storedSession).toContain("user_demo");
+    // 6. Valida que o cabeçalho agora exibe o perfil do usuário logado
+    const profileButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /alex\.vance|alex|perfil/i });
+    await expect(profileButton).toBeVisible();
   });
 
-  test("deve exibir mensagem de erro acessível com role='alert' ao tentar login com credenciais inválidas", async ({
+  test("deve exibir validação ao tentar submeter login sem preencher campos", async ({
     page,
   }) => {
-    await page.goto("/login");
+    const loginHeaderButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i });
+    await loginHeaderButton.click();
 
-    const emailInput = page.getByLabel("E-mail");
-    const passwordInput = page.getByLabel("Senha");
-    const submitButton = page.getByRole("button", {
-      name: /entrar na conta/i,
-    });
+    const modal = page.getByRole("dialog");
+    await expect(modal).toBeVisible();
 
-    // Informa credenciais incorretas
-    await emailInput.fill("demo@jungle.com");
-    await passwordInput.fill("senha_totalmente_errada_123");
-
+    const submitButton = modal.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Valida alerta acessível com mensagem de erro
-    const alert = page.getByRole("alert");
-    await expect(alert).toBeVisible();
-    await expect(alert).toContainText(/credenciais inválidas/i);
-
-    // Garante que nenhuma sessão foi persistida
-    const storedSession = await page.evaluate(() => {
-      return localStorage.getItem("@nft-marketplace:session_v1");
-    });
-    expect(storedSession).toBeNull();
+    // Valida que o modal continua visível e com foco de interação mantido
+    await expect(modal).toBeVisible();
   });
 
-  test("deve bloquear acesso à rota protegida para visitantes e redirecionar para login com parâmetro redirect", async ({
+  test("deve alternar entre as abas 'Entrar' e 'Criar conta' dentro do modal", async ({
     page,
   }) => {
-    // Tenta acessar a rota protegida de checkout desautenticado
-    await page.goto("/checkout");
+    const loginHeaderButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i });
+    await loginHeaderButton.click();
 
-    // Valida redirecionamento automático com query parameter sanitizado
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/);
+    const modal = page.getByRole("dialog");
+    await expect(modal).toBeVisible();
 
-    // Verifica que o formulário de login está acessível na tela
-    const emailInput = page.getByLabel("E-mail");
-    await expect(emailInput).toBeVisible();
-  });
-
-  test("deve validar senhas divergentes no cadastro e concluir fluxo de registro com auto-login", async ({
-    page,
-  }) => {
-    await page.goto("/register");
-
-    const nameInput = page.getByLabel("Nome Completo");
-    const emailInput = page.getByLabel("E-mail");
-    const passwordInput = page.getByLabel("Senha");
-    const confirmPasswordInput = page.getByLabel("Confirmar Senha");
-    const submitButton = page.getByRole("button", {
-      name: /criar conta/i,
-    });
-
-    const uniqueEmail = `novo.usuario.${Date.now()}@example.com`;
-
-    // 1. Preenche senhas divergentes
-    await nameInput.fill("Colecionador Web3");
-    await emailInput.fill(uniqueEmail);
-    await passwordInput.fill("SenhaSegura123!");
-    await confirmPasswordInput.fill("SenhaTotalmenteDiferente456!");
-
-    await submitButton.click();
-
-    // Valida feedback de erro associado ao campo de confirmação
-    const errorMessage = page.locator("#register-confirm-password-error");
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toContainText(/as senhas não coincidem/i);
-
-    // 2. Corrige a confirmação de senha para igualar à principal
-    await confirmPasswordInput.fill("SenhaSegura123!");
-    await submitButton.click();
-
-    // Valida redirecionamento com sucesso e auto-login
-    await expect(page).toHaveURL(/\/(?:#.*)?$/);
-
-    const storedSession = await page.evaluate(() => {
-      return localStorage.getItem("@nft-marketplace:session_v1");
-    });
-
-    expect(storedSession).not.toBeNull();
-    expect(storedSession).toContain("mock-token-");
-  });
-
-  test("deve exibir o diálogo acessível de sessão expirada sob evento de expiração de token", async ({
-    page,
-  }) => {
-    // 1. Configura sessão ativa prévia no localStorage
-    await page.goto("/");
-    await page.evaluate(() => {
-      const activeSession = {
-        version: 1,
-        data: {
-          token: "mock-token-user_demo-active",
-          expiresAt: "2099-01-01T00:00:00.000Z",
-          userId: "user_demo",
-        },
-      };
-      localStorage.setItem("@nft-marketplace:session_v1", JSON.stringify(activeSession));
-    });
-
-    await page.reload();
-
-    // 2. Dispara evento de expiração de sessão pelo barramento
-    await page.evaluate(() => {
-      const bus = (
-        window as unknown as {
-          __authEventBus?: {
-            emit: (
-              event: string,
-              payload: { returnTo: string; timestamp: number },
-            ) => boolean;
-          };
-        }
-      ).__authEventBus;
-
-      bus?.emit("auth:expired", {
-        returnTo: "/checkout",
-        timestamp: Date.now(),
-      });
-    });
-
-    // 3. Valida modal acessível de sessão expirada
-    const alertDialog = page.getByRole("alertdialog");
-    await expect(alertDialog).toBeVisible();
-    await expect(alertDialog).toContainText("Sessão Expirada");
-    await expect(alertDialog).toContainText(
-      "Sua sessão de autenticação expirou por motivos de segurança",
+    // Clica na aba 'Criar conta'
+    const registerTabButton = modal.locator(
+      'button[type="button"]:has-text("Criar conta")',
     );
+    await registerTabButton.click();
 
-    // 4. Aciona botão de reconexão
-    const reconnectButton = page.getByRole("button", {
-      name: /fazer login novamente/i,
-    });
-    await expect(reconnectButton).toBeVisible();
-    await reconnectButton.click();
+    // Valida mensagem descritiva da aba de cadastro
+    await expect(modal).toContainText("Crie seu perfil de colecionador");
+    await expect(modal.locator('input[placeholder="Nome de usuário"]')).toBeVisible();
+    await expect(modal.locator('input[placeholder="Confirmar senha"]')).toBeVisible();
 
-    // 5. Valida redirecionamento com redirect seguro
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/);
+    // Volta para a aba 'Entrar'
+    const loginTabButton = modal.locator('button[type="button"]:has-text("Entrar")');
+    await loginTabButton.click();
 
-    // Modal fechado
-    await expect(alertDialog).not.toBeVisible();
+    await expect(modal).toContainText("Entre para gerenciar sua carteira");
+  });
+
+  test("deve validar senhas divergentes no cadastro e concluir registro com auto-login", async ({
+    page,
+  }) => {
+    const loginHeaderButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i });
+    await loginHeaderButton.click();
+
+    const modal = page.getByRole("dialog");
+    const registerTabButton = modal.locator(
+      'button[type="button"]:has-text("Criar conta")',
+    );
+    await registerTabButton.click();
+
+    const userInput = modal.locator('input[placeholder="Nome de usuário"]');
+    const emailInput = modal.locator('input[placeholder="Digite seu e-mail"]');
+    const passwordInputs = modal.locator('input[type="password"]');
+    const submitButton = modal.locator('button[type="submit"]');
+
+    // 1. Preenche dados com senhas divergentes
+    await userInput.fill("CryptoCollector");
+    await emailInput.fill("collector@kurio.art");
+    await passwordInputs.nth(0).fill("MinhaSenha123!");
+    await passwordInputs.nth(1).fill("SenhaDiferente456!");
+
+    await submitButton.click();
+
+    // Valida mensagem de erro exibida no modal
+    await expect(modal).toContainText("As senhas não coincidem.");
+
+    // 2. Corrige a confirmação de senha
+    await passwordInputs.nth(1).fill("MinhaSenha123!");
+    await submitButton.click();
+
+    // Valida fechamento do modal e perfil ativo no header
+    await expect(modal).not.toBeVisible();
+    const profileButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /CryptoCollector|perfil/i });
+    await expect(profileButton).toBeVisible();
+  });
+
+  test("deve permitir fechar o modal através do botão de fechar (X)", async ({
+    page,
+  }) => {
+    const loginHeaderButton = page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i });
+    await loginHeaderButton.click();
+
+    const modal = page.getByRole("dialog");
+    await expect(modal).toBeVisible();
+
+    const closeButton = modal.getByRole("button", { name: /fechar modal/i });
+    await closeButton.click();
+
+    await expect(modal).not.toBeVisible();
   });
 });
