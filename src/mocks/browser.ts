@@ -10,11 +10,9 @@ export const worker = setupWorker(...handlers);
  * para desenvolvimento e validação em build de produção.
  */
 export async function startWorker(options?: StartOptions) {
-  const unhandledStrategy = import.meta.env.DEV ? "error" : "bypass";
-
   return worker.start({
-    onUnhandledFrame: unhandledStrategy,
-    ...({ onUnhandledRequest: unhandledStrategy } as Record<string, unknown>),
+    onUnhandledFrame: "bypass",
+    ...({ onUnhandledRequest: "bypass" } as Record<string, unknown>),
     serviceWorker: {
       url: "/mockServiceWorker.js",
     },
