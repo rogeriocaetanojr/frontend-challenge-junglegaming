@@ -7,7 +7,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { LogOut, Search, ShoppingCart, X } from "lucide-react";
+import { LogOut, Search, ShoppingCart, User as UserIcon, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
@@ -31,7 +31,6 @@ export function RootLayout() {
   const cartCount = useCartStore((state) => state.items.length);
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const logout = useAuthStore((state) => state.logout);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -251,7 +250,7 @@ export function RootLayout() {
                         value={searchValue}
                         onChange={handleSearchChange}
                         placeholder="Buscar..."
-                        className="w-28 sm:w-32 h-6.5 sm:h-7 pl-2 pr-5 text-[11.5px] sm:text-[12px] font-mono bg-[#140D0A] border border-[#3F2319] rounded text-[#F5F1EB] placeholder:text-[#F5F1EB]/35 transition-colors focus:border-[#D28A4C] focus:ring-1 focus:ring-[#D28A4C] focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+                        className="w-20 sm:w-24 h-6.5 sm:h-7 pl-2 pr-5 text-[11px] sm:text-[11.5px] font-mono bg-[#140D0A] border border-[#3F2319] rounded text-[#F5F1EB] placeholder:text-[#F5F1EB]/35 transition-colors focus:border-[#D28A4C] focus:ring-1 focus:ring-[#D28A4C] focus:outline-none [&::-webkit-search-cancel-button]:hidden"
                         autoComplete="off"
                         spellCheck="false"
                       />
@@ -296,16 +295,29 @@ export function RootLayout() {
                 </span>
               </Link>
 
-              {/* Botão Entrar Oficial KURIO com box confortável e proporcional */}
+              {/* Botão Oficial KURIO: Perfil Minimalista (com nome e avatar à direita) ou Entrar */}
               {isAuthenticated && user ? (
                 <button
                   type="button"
-                  onClick={() => logout()}
-                  title="Clique para sair"
-                  className="bg-[#1A120E] border border-[#3F2319] hover:border-[#D28A4C] text-[#F5F1EB] font-mono text-[13.5px] sm:text-[14px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer select-none"
+                  onClick={() => navigate("/profile")}
+                  title="Ver meu perfil"
+                  className="group flex items-center gap-2.5 px-2 sm:px-2.5 py-1.5 rounded-lg font-mono text-[13.5px] sm:text-[14px] text-[#F5F1EB] hover:text-[#D28A4C] transition-all cursor-pointer select-none"
                 >
-                  <LogOut className="size-4 stroke-[2.2] text-[#D28A4C]" />
-                  <span className="truncate max-w-[100px]">{user.name || "Perfil"}</span>
+                  <span className="font-medium truncate max-w-[130px] group-hover:text-[#D28A4C] transition-colors">
+                    {user.name || "Perfil"}
+                  </span>
+                  {/* Ícone de Avatar circular à direita que reflete foto ou ícone padrão de perfil */}
+                  <div className="size-7 sm:size-7.5 rounded-full bg-[#1A120E] border border-[#3F2319] group-hover:border-[#D28A4C] flex items-center justify-center overflow-hidden shrink-0 transition-colors">
+                    {user.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.name || "Avatar"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="size-4 text-[#CFB28C] group-hover:text-[#D28A4C] transition-colors" />
+                    )}
+                  </div>
                 </button>
               ) : (
                 <button
@@ -332,8 +344,8 @@ export function RootLayout() {
           <Outlet />
         </main>
 
-        {/* Footer Oficial KURIO */}
-        <Footer />
+        {/* Footer Oficial KURIO (oculto na página de perfil) */}
+        {pathname !== "/profile" && <Footer />}
       </div>
 
       {/* Modal de Autenticação (Entrar / Criar Conta) */}

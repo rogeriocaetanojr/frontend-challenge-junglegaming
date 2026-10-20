@@ -1,9 +1,6 @@
-import * as React from "react";
 import { Link } from "react-router-dom";
-import { Check, ShoppingBag } from "lucide-react";
 
 import { formatEth } from "@/lib/formatters";
-import { useCartStore } from "@/store/cart-store";
 import type { NftItem } from "@/types/nft";
 
 interface NftCardProps {
@@ -20,37 +17,11 @@ export function NftCard({ nft }: NftCardProps) {
     originalPriceEth?: number;
     image?: string;
     images?: Array<{ url: string; alt?: string }>;
-    collection?: { name?: string };
-    creator?: { address?: string };
   };
 
   const title = rawNft.title ?? rawNft.name ?? "NFT";
   const image = rawNft.images?.[0]?.url ?? rawNft.image ?? "";
   const price = rawNft.priceEth ?? rawNft.price ?? "0";
-  const collectionName = rawNft.collection?.name ?? "Collection";
-  const creatorAddress = rawNft.creator?.address ?? "";
-
-  const addItem = useCartStore((state) => state.addItem);
-  const removeItem = useCartStore((state) => state.removeItem);
-  const isInCart = useCartStore((state) => state.isInCart(nft.id));
-
-  const handleToggleCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isInCart) {
-      removeItem(nft.id);
-    } else {
-      addItem({
-        id: nft.id,
-        name: title,
-        collection: collectionName,
-        priceEth: Number(price),
-        image,
-        creator: creatorAddress,
-        quantity: 1,
-      });
-    }
-  };
 
   return (
     <article className="group flex flex-col space-y-3 text-left">
@@ -69,24 +40,6 @@ export function NftCard({ nft }: NftCardProps) {
               loading="lazy"
             />
           </Link>
-
-          {/* Botão flutuante de carrinho / compra rápido com feedback interativo */}
-          <button
-            type="button"
-            onClick={handleToggleCart}
-            aria-label={isInCart ? `Remover ${title} do carrinho` : `Comprar ${title}`}
-            className={`absolute bottom-2.5 right-2.5 p-2 rounded-full transition-all duration-200 cursor-pointer shadow-lg ${
-              isInCart
-                ? "bg-[#D28A4C] text-[#0E0907]"
-                : "bg-[#0E0907]/80 hover:bg-[#D28A4C] hover:text-[#0E0907] text-white backdrop-blur-md border border-[#3F2319]"
-            }`}
-          >
-            {isInCart ? (
-              <Check className="size-3.5 stroke-[2.5]" />
-            ) : (
-              <ShoppingBag className="size-3.5" />
-            )}
-          </button>
         </div>
       </div>
 

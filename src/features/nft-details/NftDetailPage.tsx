@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { useFavoritesStore } from "@/store/favorites-store";
 import { NftActionPanel } from "./NftActionPanel";
 import { NftDetailHeader } from "./NftDetailHeader";
 import { NftImageGallery } from "./NftImageGallery";
@@ -29,6 +30,24 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
   const addItem = useCartStore((state) => state.addItem);
+  const isFavorite = useFavoritesStore((state) =>
+    currentNft ? state.isFavorite(String(currentNft.id)) : false,
+  );
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const handleFavoriteChange = () => {
+    if (!currentNft) return;
+    toggleFavorite({
+      id: String(currentNft.id),
+      title: currentNft.title,
+      name: currentNft.title,
+      collection: currentNft.collection,
+      price: currentNft.price,
+      priceEth: Number(currentNft.price) || 0,
+      image: currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png",
+      creator: currentNft.creator,
+    });
+  };
 
   const handleBuy = (quantity = 1) => {
     if (!currentNft) return;
@@ -330,7 +349,11 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
           </div>
 
           {/* Controles de Quantidade & Botões de Ação COMPRAR / Favoritar */}
-          <NftActionPanel onBuy={handleBuy} />
+          <NftActionPanel
+            onBuy={handleBuy}
+            initialFavorite={isFavorite}
+            onFavoriteChange={handleFavoriteChange}
+          />
 
           {/* Metadados Técnicos em #CFB28C aproximados para cima com fonte maior */}
           <div className="space-y-1 pt-0.5 text-xs sm:text-[14.5px] text-[#CFB28C] font-mono">

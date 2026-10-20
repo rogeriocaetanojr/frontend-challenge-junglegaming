@@ -102,6 +102,13 @@ export function createRouter(
           element: <CheckoutPage />,
         },
         {
+          path: "profile",
+          lazy: async () => {
+            const { ProfilePage } = await import("@/pages/profile");
+            return { Component: ProfilePage };
+          },
+        },
+        {
           path: "*",
           element: <NotFoundPage />,
         },
