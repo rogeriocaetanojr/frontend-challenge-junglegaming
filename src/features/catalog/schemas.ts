@@ -6,8 +6,26 @@
  */
 import { z } from "zod";
 
+export const catalogSortOptionSchema = z.enum([
+  "recent",
+  "popular",
+  "price_desc",
+  "price_asc",
+]);
+
+export type CatalogSortOption = z.infer<typeof catalogSortOptionSchema>;
+
 export const catalogSortBySchema = z
-  .enum(["price", "createdAt", "name", "title"])
+  .enum([
+    "price",
+    "createdAt",
+    "name",
+    "title",
+    "recent",
+    "popular",
+    "price_desc",
+    "price_asc",
+  ])
   .or(z.string());
 
 export const sortDirectionSchema = z.enum(["asc", "desc"]);
@@ -44,6 +62,7 @@ export const catalogSearchSchema = z.object({
       return isNaN(num) || num < 0 ? undefined : num;
     }, z.number().min(0).optional())
     .optional(),
+  sort: catalogSortOptionSchema.optional(),
   sortBy: catalogSortBySchema.optional(),
   sortDirection: sortDirectionSchema.optional(),
   page: z
@@ -71,11 +90,33 @@ export type CatalogSearch = CatalogSearchParams;
 export function parseCatalogSearch(rawSearch: unknown): CatalogSearchParams {
   const rawObj = (rawSearch ?? {}) as Record<string, unknown>;
   const rawTerm = rawObj.q ?? rawObj.search;
+
   const normalizedRaw: Record<string, unknown> = {
     ...rawObj,
-    q: rawTerm,
   };
+
+  if (rawTerm !== undefined) {
+    normalizedRaw.q = rawTerm;
+  }
   delete normalizedRaw.search;
+
+  // Normalização de alias de ordenação apenas se fornecido
+  if (rawObj.sort !== undefined && rawObj.sortBy === undefined) {
+    const rawSort = String(rawObj.sort);
+    if (rawSort === "price_asc") {
+      normalizedRaw.sortBy = "price";
+      normalizedRaw.sortDirection = "asc";
+    } else if (rawSort === "price_desc") {
+      normalizedRaw.sortBy = "price";
+      normalizedRaw.sortDirection = "desc";
+    } else if (rawSort === "popular") {
+      normalizedRaw.sortBy = "popular";
+      normalizedRaw.sortDirection = "desc";
+    } else if (rawSort === "recent") {
+      normalizedRaw.sortBy = "recent";
+      normalizedRaw.sortDirection = "desc";
+    }
+  }
 
   const result = catalogSearchSchema.safeParse(normalizedRaw);
   if (result.success) {

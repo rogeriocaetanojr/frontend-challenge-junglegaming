@@ -27,6 +27,11 @@ declare module "@tanstack/react-router" {
   }
 }
 
+function CatalogRouteComponent() {
+  const search = Route.useSearch();
+  return <CatalogPage searchParams={search} />;
+}
+
 export const Route = createFileRoute("/")({
   validateSearch: (search) => parseCatalogSearch(search),
   loaderDeps: ({ search }) => search,
@@ -49,7 +54,7 @@ export const Route = createFileRoute("/")({
 
     await queryClient.ensureQueryData(catalogListQueryOptions(filters));
   },
-  component: CatalogPage,
+  component: CatalogRouteComponent,
 });
 
 export { router } from "@/router";

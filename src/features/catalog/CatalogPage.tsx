@@ -25,9 +25,13 @@ import { useCatalogSearch } from "./useCatalogSearch";
 
 export interface CatalogPageProps {
   className?: string;
+  searchParams?: Record<string, unknown>;
 }
 
-export function CatalogPage({ className }: CatalogPageProps) {
+export function CatalogPage({
+  className,
+  searchParams: searchParamsProp,
+}: CatalogPageProps) {
   const {
     q,
     category,
@@ -35,6 +39,7 @@ export function CatalogPage({ className }: CatalogPageProps) {
     maxPrice,
     sortBy,
     sortDirection,
+    sort,
     page,
     limit,
     setSearch,
@@ -44,11 +49,21 @@ export function CatalogPage({ className }: CatalogPageProps) {
     setPage,
     setLimit,
     resetFilters,
-  } = useCatalogSearch();
+  } = useCatalogSearch(searchParamsProp ? { search: searchParamsProp } : undefined);
 
-  // Mapeia parâmetros da URL para os filtros da query
-  const queryFilters = useMemo<CatalogFilterParams>(
-    () => ({
+  // Mapeia parâmetros da URL para os filtros da query garantindo reatividade imediata do sort
+  const queryFilters = useMemo<CatalogFilterParams>(() => {
+    const resolvedSort =
+      sort ??
+      (sortBy === "price"
+        ? sortDirection === "asc"
+          ? "price_asc"
+          : "price_desc"
+        : sortBy === "createdAt"
+          ? "recent"
+          : sortBy);
+
+    return {
       page,
       limit,
       q,
@@ -58,9 +73,9 @@ export function CatalogPage({ className }: CatalogPageProps) {
       priceMax: maxPrice !== undefined ? String(maxPrice) : undefined,
       sortBy,
       sortDirection,
-    }),
-    [page, limit, q, category, minPrice, maxPrice, sortBy, sortDirection],
-  );
+      sort: resolvedSort,
+    };
+  }, [page, limit, q, category, minPrice, maxPrice, sortBy, sortDirection, sort]);
 
   const { data, isLoading, error, refetch } = useCatalog(queryFilters);
 

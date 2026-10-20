@@ -35,33 +35,27 @@ export interface SortOptionItem {
 export const CATALOG_SORT_OPTIONS: SortOptionItem[] = [
   {
     value: "createdAt:desc",
-    label: "Mais recentes",
+    label: "Listados recentemente",
     sortBy: "createdAt",
     sortDirection: "desc",
   },
   {
-    value: "price:asc",
-    label: "Preço: Menor para maior",
-    sortBy: "price",
-    sortDirection: "asc",
+    value: "popular",
+    label: "Mais populares",
+    sortBy: "popular",
+    sortDirection: "desc",
   },
   {
     value: "price:desc",
-    label: "Preço: Maior para menor",
+    label: "Maior preço",
     sortBy: "price",
     sortDirection: "desc",
   },
   {
-    value: "title:asc",
-    label: "Nome: A-Z",
-    sortBy: "title",
+    value: "price:asc",
+    label: "Menor preço",
+    sortBy: "price",
     sortDirection: "asc",
-  },
-  {
-    value: "title:desc",
-    label: "Nome: Z-A",
-    sortBy: "title",
-    sortDirection: "desc",
   },
 ];
 

@@ -85,11 +85,10 @@ describe("CatalogToolbar (src/features/catalog/CatalogToolbar.tsx)", () => {
 
       expect(options).toEqual(
         expect.arrayContaining([
-          { value: "createdAt:desc", text: "Mais recentes" },
-          { value: "price:asc", text: "Preço: Menor para maior" },
-          { value: "price:desc", text: "Preço: Maior para menor" },
-          { value: "title:asc", text: "Nome: A-Z" },
-          { value: "title:desc", text: "Nome: Z-A" },
+          { value: "createdAt:desc", text: "Listados recentemente" },
+          { value: "popular", text: "Mais populares" },
+          { value: "price:desc", text: "Maior preço" },
+          { value: "price:asc", text: "Menor preço" },
         ]),
       );
     });
@@ -159,7 +158,7 @@ describe("CatalogToolbar (src/features/catalog/CatalogToolbar.tsx)", () => {
       });
     });
 
-    it("deve disparar onSortChange com parâmetros corretos ao alterar para 'title:asc'", async () => {
+    it("deve disparar onSortChange com parâmetros corretos ao alterar para 'popular'", async () => {
       const onSortChange = vi.fn();
       await act(async () => {
         root?.render(
@@ -176,13 +175,13 @@ describe("CatalogToolbar (src/features/catalog/CatalogToolbar.tsx)", () => {
       expect(sortSelect).not.toBeNull();
       if (sortSelect) {
         await act(async () => {
-          changeSelectValue(sortSelect, "title:asc");
+          changeSelectValue(sortSelect, "popular");
         });
       }
 
       expect(onSortChange).toHaveBeenCalledWith({
-        sortBy: "title",
-        sortDirection: "asc",
+        sortBy: "popular",
+        sortDirection: "desc",
       });
     });
 

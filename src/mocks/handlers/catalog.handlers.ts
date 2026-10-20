@@ -123,7 +123,6 @@ export const catalogHandlers = [
     const availability = url.searchParams.get("availability") ?? "all";
     const priceMin = url.searchParams.get("priceMin");
     const priceMax = url.searchParams.get("priceMax");
-    const sort = (url.searchParams.get("sort") as NftSortOption) ?? "recent";
     const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
     const pageSize = Math.max(
       1,
@@ -193,27 +192,59 @@ export const catalogHandlers = [
     // 9. Agregação de facetas sobre o conjunto filtrado
     const facets = computeFacets(filtered);
 
-    // 10. Ordenação
+    const rawSort =
+      url.searchParams.get("sort") || url.searchParams.get("sortBy") || "recent";
+    const normalizedSort = rawSort.replace("-", "_");
+
+    let sort: NftSortOption = "recent";
+    if (
+      normalizedSort === "recent" ||
+      normalizedSort === "createdAt" ||
+      normalizedSort === "createdAt:desc" ||
+      normalizedSort === "createdAt_desc"
+    ) {
+      sort = "recent";
+    } else if (
+      normalizedSort === "popular" ||
+      normalizedSort === "views_desc" ||
+      normalizedSort === "likes_desc"
+    ) {
+      sort = "popular";
+    } else if (
+      normalizedSort === "price_desc" ||
+      normalizedSort === "price:desc" ||
+      (url.searchParams.get("sortBy") === "price" &&
+        url.searchParams.get("sortDirection") === "desc")
+    ) {
+      sort = "price_desc";
+    } else if (
+      normalizedSort === "price_asc" ||
+      normalizedSort === "price:asc" ||
+      (url.searchParams.get("sortBy") === "price" &&
+        url.searchParams.get("sortDirection") === "asc")
+    ) {
+      sort = "price_asc";
+    }
+
+    // 10. Ordenação rigorosa dos 4 casos padronizados
     switch (sort) {
       case "price_asc":
-        filtered.sort((a, b) => compareEth(a.price, b.price));
+        filtered.sort((a, b) => Number(a.price) - Number(b.price));
         break;
       case "price_desc":
-        filtered.sort((a, b) => compareEth(b.price, a.price));
+        filtered.sort((a, b) => Number(b.price) - Number(a.price));
         break;
       case "popular":
-        filtered.sort((a, b) => {
-          if (a.featured !== b.featured) {
-            return b.featured ? 1 : -1;
-          }
-          return b.version - a.version;
-        });
+        // Ordenação pseudoaleatória/embaralhada dos itens
+        filtered.sort(() => Math.random() - 0.5);
         break;
       case "recent":
       default:
-        filtered.sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-        );
+        filtered.sort((a, b) => {
+          const aDate = (a as unknown as { createdAt?: string }).createdAt ?? a.updatedAt;
+          const bDate = (b as unknown as { createdAt?: string }).createdAt ?? b.updatedAt;
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        });
         break;
     }
 

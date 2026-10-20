@@ -32,12 +32,13 @@ export interface UseCatalogSearchReturn {
   maxPrice?: number;
   sortBy?: string;
   sortDirection?: "asc" | "desc";
+  sort?: string;
   page: number;
   limit: number;
   setSearch: (q: string) => void;
   setCategory: (category?: string) => void;
   setPriceRange: (range: { min?: number; max?: number }) => void;
-  setSort: (sortBy: string, sortDirection: "asc" | "desc") => void;
+  setSort: (sortBy: string, sortDirection?: "asc" | "desc") => void;
   setPage: (page: number) => void;
   setLimit: (limit: number) => void;
   resetFilters: () => void;
@@ -123,11 +124,21 @@ export function useCatalogSearch(
   );
 
   const setSort = useCallback(
-    (sortBy: string, sortDirection: "asc" | "desc") => {
+    (sortBy: string, sortDirection: "asc" | "desc" = "desc") => {
+      let sortKey = sortBy;
+      if (sortBy === "price") {
+        sortKey = sortDirection === "desc" ? "price_desc" : "price_asc";
+      } else if (sortBy === "createdAt" || sortBy === "recent") {
+        sortKey = "recent";
+      } else if (sortBy === "popular") {
+        sortKey = "popular";
+      }
+
       updateSearch((prev) => ({
         ...prev,
         sortBy,
         sortDirection,
+        sort: sortKey,
         page: 1,
       }));
     },
@@ -165,6 +176,7 @@ export function useCatalogSearch(
       delete next.maxPrice;
       delete next.sortBy;
       delete next.sortDirection;
+      delete next.sort;
 
       return {
         ...next,
@@ -185,6 +197,7 @@ export function useCatalogSearch(
     maxPrice: searchParams.maxPrice,
     sortBy: searchParams.sortBy,
     sortDirection: searchParams.sortDirection,
+    sort: searchParams.sort,
     page: searchParams.page,
     limit: searchParams.limit,
     setSearch,

@@ -23,34 +23,51 @@ export function catalogListQueryOptions(filters: CatalogFilters = {}) {
   return queryOptions<CatalogResponse>({
     queryKey: queryKeys.catalog.list(filters as Record<string, unknown>),
     queryFn: async () => {
-      const params: Record<string, string | number> = {};
+      const searchParams = new URLSearchParams();
 
-      if (filters.page !== undefined) params.page = filters.page;
-      if (filters.limit !== undefined) params.limit = filters.limit;
-      if (filters.pageSize !== undefined) params.pageSize = filters.pageSize;
-      const searchTerm = filters.q ?? filters.search;
+      if (filters?.page !== undefined) searchParams.set("page", String(filters.page));
+      if (filters?.limit !== undefined) searchParams.set("limit", String(filters.limit));
+      if (filters?.pageSize !== undefined)
+        searchParams.set("pageSize", String(filters.pageSize));
+
+      const searchTerm = filters?.q ?? filters?.search;
       if (searchTerm) {
-        params.q = searchTerm;
+        searchParams.set("q", searchTerm);
+        searchParams.set("search", searchTerm);
       }
-      if (filters.category) params.category = filters.category;
-      if (filters.collection) params.collection = filters.collection;
-      if (filters.rarity) params.rarity = filters.rarity;
-      if (filters.network) params.network = filters.network;
-      if (filters.availability) params.availability = filters.availability;
-      if (filters.priceMin) params.priceMin = filters.priceMin;
-      if (filters.priceMax) params.priceMax = filters.priceMax;
+      if (filters?.category) searchParams.set("category", filters.category);
+      if (filters?.collection) searchParams.set("collection", filters.collection);
+      if (filters?.rarity) searchParams.set("rarity", filters.rarity);
+      if (filters?.network) searchParams.set("network", filters.network);
+      if (filters?.availability) searchParams.set("availability", filters.availability);
+      if (filters?.priceMin) searchParams.set("priceMin", filters.priceMin);
+      if (filters?.priceMax) searchParams.set("priceMax", filters.priceMax);
 
-      if (filters.sortBy) {
-        if (filters.sortBy === "price") {
-          params.sort = filters.sortDirection === "desc" ? "price_desc" : "price_asc";
-        } else {
-          params.sort = filters.sortBy;
-        }
-      } else if (filters.sort) {
-        params.sort = filters.sort;
+      const resolvedSort =
+        filters?.sort ??
+        (filters?.sortBy === "price"
+          ? filters?.sortDirection === "asc"
+            ? "price_asc"
+            : "price_desc"
+          : filters?.sortBy === "createdAt" || filters?.sortBy === "recent"
+            ? "recent"
+            : filters?.sortBy === "popular"
+              ? "popular"
+              : (filters?.sortBy ?? "recent"));
+
+      if (resolvedSort) {
+        searchParams.set("sort", resolvedSort);
+      }
+      if (filters?.sortBy) {
+        searchParams.set("sortBy", filters.sortBy);
+      }
+      if (filters?.sortDirection) {
+        searchParams.set("sortDirection", filters.sortDirection);
       }
 
-      const response = await http.get<NftListResponse>("/nfts", { params });
+      const queryString = searchParams.toString();
+      const endpoint = queryString ? `/api/nfts?${queryString}` : "/api/nfts";
+      const response = await http.get<NftListResponse>(endpoint);
 
       const catalogResponse: CatalogResponse = {
         items: response.items,

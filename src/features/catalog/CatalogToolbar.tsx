@@ -39,27 +39,34 @@ export function CatalogToolbar({
   totalItems,
   className,
 }: CatalogToolbarProps) {
-  // Resolve o valor combinado da ordenação atual
-  const currentSortValue =
-    CATALOG_SORT_OPTIONS.find(
-      (opt) => opt.sortBy === sortBy && opt.sortDirection === sortDirection,
-    )?.value ?? `${sortBy}:${sortDirection}`;
+  // Resolve o valor combinado da ordenação atual mapeando para as 4 opções padronizadas
+  const currentSortValue = (() => {
+    if (sortBy === "recent" || sortBy === "createdAt") return "createdAt:desc";
+    if (sortBy === "popular") return "popular";
+    if (sortBy === "price_desc" || (sortBy === "price" && sortDirection === "desc"))
+      return "price:desc";
+    if (sortBy === "price_asc" || (sortBy === "price" && sortDirection === "asc"))
+      return "price:asc";
+    return (
+      CATALOG_SORT_OPTIONS.find(
+        (opt) => opt.sortBy === sortBy && opt.sortDirection === sortDirection,
+      )?.value ?? `${sortBy}:${sortDirection}`
+    );
+  })();
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = CATALOG_SORT_OPTIONS.find(
-      (opt) => opt.value === e.target.value,
-    );
-
+    const val = e.target.value;
+    const selectedOption = CATALOG_SORT_OPTIONS.find((opt) => opt.value === val);
     if (selectedOption) {
       onSortChange({
         sortBy: selectedOption.sortBy,
         sortDirection: selectedOption.sortDirection,
       });
     } else {
-      const [parsedSortBy, parsedDirection] = e.target.value.split(":");
+      const [parsedSortBy, parsedDirection] = val.split(":");
       onSortChange({
         sortBy: parsedSortBy || "createdAt",
-        sortDirection: parsedDirection === "asc" ? "asc" : "desc",
+        sortDirection: (parsedDirection as "asc" | "desc") || "desc",
       });
     }
   };
