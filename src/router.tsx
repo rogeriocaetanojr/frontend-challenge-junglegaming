@@ -15,7 +15,6 @@ import {
 import type { Session, User } from "@/contracts/identity";
 import { RootLayout } from "@/layouts/root-layout";
 import { queryClient as defaultQueryClient } from "@/lib/query-client";
-import { CheckoutPage } from "@/pages/checkout";
 import { HomePage } from "@/pages/home";
 import { NftDetailPage } from "@/pages/nft-detail";
 import { NotFoundPage } from "@/pages/not-found";
@@ -99,7 +98,17 @@ export function createRouter(
         },
         {
           path: "checkout",
-          element: <CheckoutPage />,
+          lazy: async () => {
+            const { PaymentPage } = await import("@/pages/payment");
+            return { Component: PaymentPage };
+          },
+        },
+        {
+          path: "payment",
+          lazy: async () => {
+            const { PaymentPage } = await import("@/pages/payment");
+            return { Component: PaymentPage };
+          },
         },
         {
           path: "profile",
