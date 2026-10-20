@@ -4,6 +4,14 @@ export * from "./NftCard";
 export * from "./NftCardSkeleton";
 export * from "./NftGrid";
 export * from "./queries";
+export {
+  catalogSearchSchema,
+  catalogSortBySchema,
+  parseCatalogSearch,
+  sortDirectionSchema,
+  type CatalogSearch,
+  type CatalogSearchParams,
+} from "./schemas";
 export * from "./SearchInput";
 export {
   CATALOG_PAGE_SIZE_OPTIONS,
@@ -15,3 +23,8 @@ export {
   type CategoryOption,
   type SortOptionItem,
 } from "./types";
+export {
+  useCatalogSearch,
+  type UseCatalogSearchOptions,
+  type UseCatalogSearchReturn,
+} from "./useCatalogSearch";
