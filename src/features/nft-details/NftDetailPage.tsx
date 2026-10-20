@@ -84,10 +84,104 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
     );
   }
 
-  // Prepara atributos formatados para exibição
-  const attributesText = "Óculos, Esmeralda, Raro";
-  const tokenIdText = "#0042";
-  const collectionText = "Kurio Apes";
+  // Prepara atributos e metadados dinâmicos baseados no NFT atual
+  const titleNumberMatch = currentNft.title?.match(/#([0-9a-zA-Z]+)/);
+  const rawTokenId =
+    titleNumberMatch?.[1] ||
+    currentNft.tokenId ||
+    (typeof currentNft.id === "string"
+      ? currentNft.id.replace(/^nft[-_]/i, "")
+      : String(currentNft.id));
+  const tokenIdText = `#${rawTokenId}`;
+  const collectionText =
+    currentNft.collection?.name || currentNft.category || "Kurio Apes";
+
+  // Mapeamento específico de atributos visuais para cada personagem
+  const getCharacterAttributes = (): string => {
+    if (currentNft.attributes && currentNft.attributes.length > 0) {
+      return currentNft.attributes.map((a) => String(a.value)).join(", ");
+    }
+
+    const titleLower = (currentNft.title || "").toLowerCase();
+    const idStr = String(currentNft.id || "").toLowerCase();
+
+    // Emerald Ape (Mantém exatamente "Óculos, Esmeralda, Raro")
+    if (titleLower.includes("emerald ape") || idStr === "1" || idStr === "nft-1") {
+      return "Óculos, Esmeralda, Raro";
+    }
+
+    // Sage Nomad & Violet Nomad & Cosmic Bloom
+    if (titleLower.includes("sage nomad") || idStr === "2" || idStr === "nft-2") {
+      return "Chapéu Bucket, Roxo Violeta, Moletom";
+    }
+    if (titleLower.includes("cosmic bloom") || idStr === "4" || idStr === "nft-4") {
+      return "Consciência Neural, Algorítmico, Sereno";
+    }
+    if (titleLower.includes("violet nomad") || idStr === "5" || idStr === "nft-5") {
+      return "Traje Espacial, Roxo Cósmico, Nômade";
+    }
+
+    // Noct Vessel & Ivory Baron
+    if (titleLower.includes("noct vessel") || idStr === "3" || idStr === "nft-3") {
+      return "Blazer Marfim, Gola Alta, Aristocrata";
+    }
+    if (titleLower.includes("ivory baron") || idStr === "6" || idStr === "nft-6") {
+      return "Terno Bege, Textura Hiper-realista, Nobreza";
+    }
+
+    // Golden Bear & Golden Signal
+    if (titleLower.includes("golden bear") || idStr === "7" || idStr === "nft-7") {
+      return "Fones Acústicos, Agasalho Creme, Campeão Gamer";
+    }
+    if (
+      titleLower.includes("golden signal") ||
+      idStr === "8" ||
+      idStr === "nft-8" ||
+      idStr === "9" ||
+      idStr === "nft-9"
+    ) {
+      return "Fones de Monitoramento, Ondas Sonoras, Produtor Musical";
+    }
+
+    // Emerald Visionary
+    if (
+      titleLower.includes("emerald visionary") ||
+      idStr === "10" ||
+      idStr === "nft-10"
+    ) {
+      return "Óculos Refletivos, Textura Têxtil, Retrato Fotográfico";
+    }
+
+    // Neon Cyber
+    if (
+      titleLower.includes("cyber") ||
+      titleLower.includes("neon") ||
+      idStr === "11" ||
+      idStr === "nft-11"
+    ) {
+      return "Circuito Neon, Visor Holográfico, Cyberpunk";
+    }
+
+    // Fallback dinâmico com raridade e categoria
+    const parts: string[] = [];
+    if (currentNft.rarity) {
+      parts.push(currentNft.rarity.charAt(0).toUpperCase() + currentNft.rarity.slice(1));
+    }
+    if (currentNft.category) {
+      parts.push(
+        currentNft.category.charAt(0).toUpperCase() + currentNft.category.slice(1),
+      );
+    }
+    if (currentNft.network) {
+      parts.push(
+        currentNft.network.charAt(0).toUpperCase() + currentNft.network.slice(1),
+      );
+    }
+    return parts.length > 0 ? parts.join(", ") : "Óculos, Esmeralda, Raro";
+  };
+
+  const attributesText = getCharacterAttributes();
+
   const editionOptions = ["1/1", "1/10", "1/50", "ABERTA"];
 
   return (
