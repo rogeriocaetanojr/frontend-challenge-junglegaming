@@ -3,12 +3,14 @@
  *
  * 1. Injeta 'Authorization: Bearer <token>' caso haja sessão ativa e válida.
  * 2. Injeta 'X-Guest-Id: <uuid>' caso o usuário seja anônimo/deslogado.
- * 3. Normaliza erros de resposta HTTP para ApiError e dispara 'http:unauthorized' em 401.
+ * 3. Trata respostas 401 via authEventBus ('auth:expired' se havia sessão, 'auth:unauthorized' se anônimo).
+ * 4. Normaliza erros de resposta HTTP para ApiError sem retry automático em 401.
  */
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
+import { authEventBus, captureReturnTo } from "@/lib/auth/events";
 import { getGuestId } from "@/lib/auth/guest-id";
-import { getSession } from "@/lib/auth/session-store";
+import { clearSession, getSession, hasValidSession } from "@/lib/auth/session-store";
 
 import { ApiError } from "./types";
 
@@ -48,7 +50,8 @@ export function authRequestInterceptor(
 }
 
 /**
- * Interceptor de erro de resposta: normaliza para ApiError e emite evento 401.
+ * Interceptor de erro de resposta: normaliza para ApiError e emite evento 401
+ * via authEventBus sem retry automático.
  */
 export function errorResponseInterceptor(
   error: AxiosError<{ message?: string; error?: string }>,
@@ -62,8 +65,27 @@ export function errorResponseInterceptor(
     error.message ||
     "Ocorreu um erro inesperado na comunicação com o servidor.";
 
-  if (statusCode === 401 && typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("http:unauthorized"));
+  if (statusCode === 401) {
+    const returnTo = captureReturnTo();
+    const hadSession = hasValidSession();
+
+    if (hadSession) {
+      clearSession();
+      authEventBus.emit("auth:expired", {
+        returnTo,
+        timestamp: Date.now(),
+      });
+    } else {
+      authEventBus.emit("auth:unauthorized", {
+        returnTo,
+        timestamp: Date.now(),
+      });
+    }
+
+    // Mantém retrocompatibilidade para listeners do DOM
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("http:unauthorized"));
+    }
   }
 
   return Promise.reject(

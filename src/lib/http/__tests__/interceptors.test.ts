@@ -1,9 +1,10 @@
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import axios, { AxiosHeaders } from "axios";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { authEventBus, clearReturnTo } from "@/lib/auth/events";
 import { clearGuestId, getGuestId, isValidUuid } from "@/lib/auth/guest-id";
-import { clearSession, setSession } from "@/lib/auth/session-store";
+import { clearSession, hasValidSession, setSession } from "@/lib/auth/session-store";
 
 import {
   attachInterceptors,
@@ -17,7 +18,14 @@ describe("Axios Interceptors (src/lib/http/interceptors.ts)", () => {
     localStorage.clear();
     clearSession();
     clearGuestId();
+    clearReturnTo();
+    authEventBus.reset();
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    authEventBus.reset();
+    clearReturnTo();
   });
 
   describe("authRequestInterceptor", () => {
@@ -99,8 +107,89 @@ describe("Axios Interceptors (src/lib/http/interceptors.ts)", () => {
     });
   });
 
-  describe("errorResponseInterceptor", () => {
-    it("deve disparar evento 'http:unauthorized' na janela quando o status for 401", async () => {
+  describe("errorResponseInterceptor e Integração com authEventBus", () => {
+    it("deve limpar a sessão e emitir 'auth:expired' quando receber 401 e havia sessão ativa", async () => {
+      setSession({
+        token: "valid-session-token",
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+        userId: "user-123",
+      });
+      expect(hasValidSession()).toBe(true);
+
+      const expiredSpy = vi.fn();
+      authEventBus.on("auth:expired", expiredSpy);
+
+      const mockError = {
+        response: {
+          status: 401,
+          data: { message: "Token has expired" },
+        },
+        message: "Request failed with status code 401",
+      } as AxiosError<{ message?: string }>;
+
+      await expect(errorResponseInterceptor(mockError)).rejects.toThrow(ApiError);
+
+      expect(hasValidSession()).toBe(false);
+      expect(expiredSpy).toHaveBeenCalledTimes(1);
+      expect(expiredSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          returnTo: expect.any(String),
+        }),
+      );
+    });
+
+    it("deve emitir 'auth:unauthorized' quando receber 401 e não havia sessão ativa prévia", async () => {
+      expect(hasValidSession()).toBe(false);
+
+      const unauthSpy = vi.fn();
+      const expiredSpy = vi.fn();
+      authEventBus.on("auth:unauthorized", unauthSpy);
+      authEventBus.on("auth:expired", expiredSpy);
+
+      const mockError = {
+        response: {
+          status: 401,
+          data: { message: "Unauthorized credentials" },
+        },
+        message: "Request failed with status code 401",
+      } as AxiosError<{ message?: string }>;
+
+      await expect(errorResponseInterceptor(mockError)).rejects.toThrow(ApiError);
+
+      expect(unauthSpy).toHaveBeenCalledTimes(1);
+      expect(expiredSpy).not.toHaveBeenCalled();
+    });
+
+    it("deve deduplicar 'auth:expired' quando múltiplas requisições receberem 401 simultaneamente", async () => {
+      setSession({
+        token: "token-concurrent",
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+        userId: "user-concurrent",
+      });
+
+      const expiredSpy = vi.fn();
+      authEventBus.on("auth:expired", expiredSpy);
+
+      const mockError = {
+        response: {
+          status: 401,
+          data: { message: "Session invalid" },
+        },
+        message: "401",
+      } as AxiosError<{ message?: string }>;
+
+      // Dispara 3 erros 401 quase simultaneamente
+      await Promise.allSettled([
+        errorResponseInterceptor(mockError),
+        errorResponseInterceptor(mockError),
+        errorResponseInterceptor(mockError),
+      ]);
+
+      // Graças à deduplicação do authEventBus, disparou apenas uma vez
+      expect(expiredSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve disparar evento 'http:unauthorized' na janela para retrocompatibilidade", async () => {
       const dispatchSpy = vi.spyOn(window, "dispatchEvent");
 
       const mockError = {
@@ -118,22 +207,25 @@ describe("Axios Interceptors (src/lib/http/interceptors.ts)", () => {
       );
     });
 
-    it("deve normalizar o erro em uma instância ApiError com mensagem do servidor", async () => {
+    it("deve rejeitar com ApiError e NÃO aplicar retry automático", async () => {
       const mockError = {
         response: {
-          status: 422,
-          data: { message: "Invalid payload input" },
+          status: 401,
+          data: { message: "No retry allowed" },
         },
-        message: "Unprocessable entity",
+        message: "Request failed with status code 401",
       } as AxiosError<{ message?: string }>;
 
+      const rejection = errorResponseInterceptor(mockError);
+      await expect(rejection).rejects.toThrow(ApiError);
+
       try {
-        await errorResponseInterceptor(mockError);
+        await rejection;
       } catch (err) {
         expect(err).toBeInstanceOf(ApiError);
         const apiError = err as ApiError;
-        expect(apiError.statusCode).toBe(422);
-        expect(apiError.message).toBe("Invalid payload input");
+        expect(apiError.statusCode).toBe(401);
+        expect(apiError.message).toBe("No retry allowed");
       }
     });
   });
