@@ -4,9 +4,9 @@ import { AlertCircle, ArrowLeft, Heart, Mail, Minus, Plus, Star } from "lucide-r
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatEth } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { NftDetailHeader } from "./NftDetailHeader";
 import { NftImageGallery } from "./NftImageGallery";
 import { useNftDetail } from "./queries";
 import type { NftDetail } from "./types";
@@ -24,6 +24,8 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const [selectedEdition, setSelectedEdition] = useState("1/50");
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "reviews">("details");
+  const [userRating, setUserRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -135,27 +137,53 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
 
         {/* Painel Direito: Conteúdo e Tipografia FIEL À REFERÊNCIA KURIO */}
         <div className="flex-1 flex flex-col space-y-3.5 sm:space-y-4 select-none w-full">
-          {/* Título Principal */}
-          <h1 className="text-3xl sm:text-[34px] lg:text-[38px] font-bold text-[#F5F1EB] tracking-tight leading-none font-mono">
-            {currentNft.title}
-          </h1>
+          {/* Header oficial com título da obra */}
+          <NftDetailHeader
+            nft={{
+              title: currentNft.title,
+              price: currentNft.price,
+            }}
+          />
 
           {/* Preço em ETH + Estrelas de Avaliação + Contagem */}
           <div className="space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <span className="text-2xl sm:text-[27px] font-bold text-[#D28A4C] font-mono leading-none tracking-tight">
-                {formatEth(currentNft.price)}
+                {currentNft.price} ETH
               </span>
 
               <div className="flex items-center gap-1.5 text-xs sm:text-[14.5px] text-[#F5F1EB] font-mono">
-                <div className="flex items-center gap-0.5 text-[#D28A4C]">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="size-3.5 fill-[#D28A4C] text-[#D28A4C]"
-                      aria-hidden="true"
-                    />
-                  ))}
+                <div
+                  className="flex items-center gap-1"
+                  role="radiogroup"
+                  aria-label="Avaliação por estrelas"
+                >
+                  {[1, 2, 3, 4, 5].map((starValue) => {
+                    const isFilled = starValue <= (hoverRating ?? userRating);
+                    return (
+                      <button
+                        key={starValue}
+                        type="button"
+                        role="radio"
+                        aria-checked={userRating === starValue}
+                        aria-label={`Avaliar com ${starValue} estrela${starValue > 1 ? "s" : ""}`}
+                        onClick={() => setUserRating(starValue)}
+                        onMouseEnter={() => setHoverRating(starValue)}
+                        onMouseLeave={() => setHoverRating(null)}
+                        className="p-0.5 -m-0.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D28A4C] cursor-pointer transition-transform hover:scale-115"
+                      >
+                        <Star
+                          className={cn(
+                            "size-3.5 transition-colors duration-150",
+                            isFilled
+                              ? "fill-[#D28A4C] text-[#D28A4C]"
+                              : "fill-[#3F2319]/40 text-[#6B4B3D]/70",
+                          )}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
                 <span>19 avaliações de colecionadores</span>
               </div>
