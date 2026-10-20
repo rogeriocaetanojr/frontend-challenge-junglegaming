@@ -1,6 +1,6 @@
 # Arquitetura e Decisões Técnicas — NFT Marketplace
 
-Documento técnico que consolida a arquitetura, padrões estruturais, contratos e o histórico de decisões técnicas da aplicação.
+Documento técnico que consolida a arquitetura, padrões estruturais, contratos e o histórico de decisões técnicas da aplicação **KURIO NFT Marketplace**.
 
 ---
 
@@ -10,24 +10,26 @@ A arquitetura do projeto adota uma divisão modular baseada em responsabilidades
 
 ```plaintext
 src/
-├── assets/          # Assets estáticos, ícones e mídias compartilhadas
-├── components/      # Componentes de UI genéricos (Design System e Primitivos)
-├── features/        # Módulos de domínio de negócio isolados (auth, marketplace, cart, etc.)
+├── components/      # Componentes de UI genéricos (Design System e Primitivos shadcn/ui)
+├── contracts/       # Interfaces e tipos estritos dos contratos REST e WebSocket
+├── features/        # Módulos de domínio de negócio isolados (auth, catalog, cart, checkout, nft-details)
 ├── hooks/           # Hooks React reutilizáveis de escopo transversal
-├── layouts/         # Layouts estruturais da aplicação (RootLayout com Outlet e ScrollToTop)
+├── layouts/         # Layouts estruturais da aplicação (RootLayout com Header, Outlet e Footer)
 ├── lib/             # Adaptadores de bibliotecas terceiras e clientes de infraestrutura
-│   ├── http/        # Cliente HTTP encapsulado (Axios)
-│   └── realtime/    # Cliente de WebSocket encapsulado (Socket.IO)
-├── mocks/           # Camada de interceptação e simulação de rede (MSW)
-│   ├── data/        # Bases de dados mockadas em memória (nfts, etc.)
-│   └── handlers/    # Handlers unificados de rotas simuladas
-├── pages/           # Páginas e views de rotas (home, nft-detail, checkout, not-found)
-├── routes/          # Configuração declarativa de rotas SPA (createBrowserRouter)
-├── services/        # Camada de serviços desacoplada de chamadas à API (nft-service, etc.)
+│   ├── auth/        # Lógica de sessão, guest ID (UUID v4) e sanitização de retorno
+│   ├── http/        # Cliente HTTP encapsulado (Axios com interceptors)
+│   ├── money/       # Precisão monetária rigorosa em ETH (BigNumber.js e Wei)
+│   └── query/       # Configuração e fábrica de queryKeys do TanStack Query
+├── mocks/           # Camada de interceptação e simulação de rede (MSW v3)
+│   ├── db/          # Banco de dados relacional em memória com persistência local
+│   ├── handlers/    # Handlers unificados de rotas simuladas
+│   ├── realtime/    # Barramento de eventos Socket.IO tipado (emitter e socket-server)
+│   └── ui/          # Alternador de cenários de teste (ScenarioSwitcher)
+├── pages/           # Páginas e views de rotas (home, nft-detail, cart, payment, profile, not-found)
+├── routes/          # Configuração declarativa de rotas SPA com React Router DOM
 ├── store/           # Stores de estado global de cliente (Zustand com persist)
 ├── styles/          # Tokens CSS, Tailwind v4 e estilos globais
-├── types/           # Declarações e contratos globais de tipos TypeScript
-└── utils/           # Funções utilitárias puras
+└── types/           # Declarações e contratos globais de tipos TypeScript
 ```
 
 ### Barreiras Arquiteturais e Restrições de Importação
@@ -36,35 +38,37 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 - **MSW (`msw`, `@mswjs/*`)**: Permitido exclusivamente em `src/mocks/**`.
 - **Axios (`axios`, `axios/*`)**: Permitido exclusivamente em `src/lib/http/**`.
-- **Socket.IO (`socket.io-client`, `socket.io-client/*`)**: Permitido exclusivamente em `src/lib/realtime/**`.
+- **Socket.IO (`socket.io-client`, `socket.io-client/*`)**: Permitido exclusivamente em `src/lib/realtime/**` e `src/mocks/realtime/**`.
 
 ---
 
-## 2. Contratos REST e Catálogo de Eventos em Tempo Real (Socket.IO)
+## 2. Contratos REST da Camada de Mocks (MSW)
 
-[Pendente - Será detalhado durante a especificação da API e dos mocks]
+Todos os endpoints estão implementados na camada de interceptação do Mock Service Worker, garantindo conformidade com a especificação técnica:
 
-### Contratos REST Implementados
-
-- `GET /api/nfts`: Listagem paginada de NFTs com suporte a parâmetros de query:
-  - `search`: busca textual por nome, descrição ou coleção.
-  - `category`: filtro categórico (`art`, `gaming`, `collectibles`, `virtual-worlds`).
-  - `minPrice` e `maxPrice`: filtragem por faixa de preço em ETH.
-  - `sortBy`: ordenação (`price-asc`, `price-desc`, `recent`, `popular`).
-  - `page` e `limit`: controle de paginação retornando envelope `PaginatedResponse<NftItem>`.
-- `GET /api/nfts/:id`: Detalhes completos do token com atributos e metadados de criador; retorna `404 Not Found` caso o ID não exista.
-- `GET /api/health`: Verificação de integridade da camada de interceptação do mock.
-
-### Contratos REST Futuros Previstos
-
-- `POST /api/auth/login`: Autenticação e obtenção de token de sessão.
-- `POST /api/checkout`: Criação de pedido com suporte a cabeçalho de idempotência.
-
-### Catálogo de Eventos Socket.IO Previstos
-
-- `nft:price_updated`: Notificação de alteração de preço ou lance em tempo real.
-- `nft:purchased`: Notificação de NFT vendido (remoção ou atualização de status).
-- `order:status_changed`: Atualização do ciclo de vida de uma ordem de compra.
+| Recurso              | Método & Rota                | Descrição & Parâmetros                                                                           |      Códigos de Resposta       |
+| :------------------- | :--------------------------- | :----------------------------------------------------------------------------------------------- | :----------------------------: |
+| **Sessão & Conta**   | `POST /api/auth/login`       | Autenticação por e-mail e senha.                                                                 |          `200`, `401`          |
+|                      | `POST /api/auth/register`    | Criação de conta com verificação de duplicidade.                                                 |          `201`, `409`          |
+|                      | `GET /api/auth/session`      | Consulta dos dados da sessão ativa.                                                              |          `200`, `401`          |
+|                      | `POST /api/auth/logout`      | Revogação de token e encerramento de sessão.                                                     |          `200`, `204`          |
+| **Catálogo de NFTs** | `GET /api/nfts`              | Listagem com `search`, `category`, `network`, `minPrice`, `maxPrice`, `sortBy`, `page`, `limit`. |             `200`              |
+|                      | `GET /api/nfts/:id`          | Detalhes completos do token e atributos visuais.                                                 |          `200`, `404`          |
+| **Favoritos**        | `GET /api/favorites`         | Listagem de favoritos do usuário logado.                                                         |          `200`, `401`          |
+|                      | `POST /api/favorites/:id`    | Inclusão de NFT nos favoritos.                                                                   |          `201`, `401`          |
+|                      | `DELETE /api/favorites/:id`  | Remoção de NFT dos favoritos.                                                                    |          `200`, `401`          |
+| **Carrinho**         | `GET /api/cart`              | Consulta de itens no carrinho (isolado por usuário/guest).                                       |             `200`              |
+|                      | `POST /api/cart/items`       | Adição de item respeitando o limite de estoque.                                                  |          `200`, `409`          |
+|                      | `PATCH /api/cart/items/:id`  | Alteração de quantidade de um item.                                                              |          `200`, `400`          |
+|                      | `DELETE /api/cart/items/:id` | Remoção de item específico do carrinho.                                                          |             `200`              |
+|                      | `POST /api/cart/merge`       | Merge idempotente do carrinho anônimo ao autenticar.                                             |             `200`              |
+| **Cotação**          | `POST /api/quotes`           | Cálculo preciso com cupom, taxas e validação de disponibilidade.                                 |          `200`, `422`          |
+| **Pedidos**          | `POST /api/orders`           | Criação de pedido com header `Idempotency-Key`.                                                  | `201`, `200` _(replay)_, `409` |
+|                      | `GET /api/orders/:id`        | Consulta de estado e recibo imutável do pedido.                                                  |          `200`, `404`          |
+| **Perfil**           | `GET /api/profile`           | Consulta dos dados cadastrais do colecionador.                                                   |          `200`, `401`          |
+|                      | `PATCH /api/profile`         | Atualização de nome, bio, avatar e alteração de senha.                                           |      `200`, `400`, `401`       |
+| **Carteiras**        | `GET /api/wallets`           | Listagem de carteiras principal e secundária.                                                    |          `200`, `401`          |
+|                      | `POST /api/wallets`          | Vinculação de nova carteira Web3 simulada.                                                       |      `201`, `400`, `401`       |
 
 ---
 
@@ -80,6 +84,8 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 - **Auto-Logout e Tratamento Reativo de Expiração (401)**:
   - O interceptor de resposta do Axios emite o evento global da janela `window.dispatchEvent(new CustomEvent("http:unauthorized"))` sempre que um código `401 Unauthorized` é retornado pela API.
   - O `authStore` registra um listener para o evento `http:unauthorized`, executando imediatamente `logout()` (limpeza de estado e `setAuthToken(null)`), evitando estados inconsistentes de autenticação.
+- **Isolamento de Dados por Usuário**:
+  - Todas as chaves privadas do TanStack Query utilizam a fábrica padronizada `queryKeys.user(userId)` (`src/lib/query/keys.ts`), garantindo que dados de carrinho, pedidos e perfil nunca vazem entre sessões distintas.
 
 ---
 
@@ -87,79 +93,76 @@ Para evitar vazamento de dependências de infraestrutura nas camadas de apresent
 
 - **Gerenciamento de Estado Global (`src/store/cart-store.ts`)**:
   - Implementado com **Zustand** e middleware `persist` gravando no `localStorage` sob a chave `@nft-marketplace:cart`.
-  - **Unicidade de NFTs (1 de 1)**: Por serem ativos digitais não-fungíveis únicos, a quantidade por item é rigidamente fixada em `1`. A ação `addItem` rejeita automaticamente duplicações de um mesmo identificador.
   - **Ações Atômicas e Seletores**: Prover `addItem`, `removeItem`, `clearCart`, `isInCart`, `getItemCount`, `getTotalEth` e `getTotalUsd`.
 - **Precisão Numérica Rigorosa (IEEE 754)**:
-  - Todo cálculo de soma e conversão monetária é computado por meio de `calculateTotalEth` e `BigNumber.js` (`src/lib/formatters.ts`), eliminando anomalias decimais comuns de ponto flutuante em JavaScript (`0.1 + 0.2 = 0.30000000000000004`).
-- **Formatação de Criptoativos**:
-  - Valores exibidos através de `formatEth` (com precisão configurável e sem zeros residuais) e `formatUsd` com separadores monetários padronizados.
-- **Merge de Visitante (Previsto)**:
-  - Ao autenticar a sessão Web3 ou conta de usuário, os itens armazenados localmente no estado de visitante serão sincronizados com o backend antes do checkout definitivo.
+  - Cálculos financeiros de soma, desconto e taxas de rede utilizam `BigNumber.js` e conversões em Wei (`src/lib/money/eth.ts`), eliminando discrepâncias de ponto flutuante em JavaScript (`0.1 + 0.2 = 0.30000000000000004`).
+- **Merge de Visitante Idempotente**:
+  - Visitantes recebem um `guestId` persistente (UUID v4 canônico). Ao efetuar login, o endpoint `POST /api/cart/merge` mescla os itens do carrinho anônimo na conta do usuário autenticado de forma estritamente idempotente.
 
 ---
 
-## 5. Estratégia de Cache, Invalidação, Retries e Atualização Otimista (TanStack Query)
+## 5. Estratégia de Cache, Invalidação e Mutações (TanStack Query)
 
 - **Instância Centralizada (`src/lib/query-client.ts`)**:
-  - `staleTime`: 30 segundos (`1000 * 30`) como padrão, equilibrando atualização frequente de dados do marketplace com consumo de rede.
-  - `gcTime`: 5 minutos (`1000 * 60 * 5`) para retenção em cache antes da liberação de memória de queries inativas.
-  - `retry`: Política defensiva de 1 retry para falhas transitórias, com bypass imediato (retorno `false`) para erros determinísticos como `401 Unauthorized` e `404 Not Found` identificados via `ApiError`.
+  - `staleTime`: 30 segundos como padrão, equilibrando atualização frequente de dados do marketplace com consumo de rede.
+  - `gcTime`: 5 minutos para retenção em cache antes da liberação de memória de queries inativas.
+  - `retry`: Política defensiva de 1 retry para falhas transitórias, com bypass imediato (retorno `false`) para erros determinísticos como `401 Unauthorized` e `404 Not Found`.
   - `refetchOnWindowFocus`: desativado (`false`) para evitar refetches acidentais e tráfego redundante ao alternar janelas locais.
-  - `mutations`: `retry: 0` para preservar integridade e idempotência de transações Web3 e operações de carrinho.
-- **Fábrica Padronizada de Chaves (`src/lib/query-keys.ts`)**:
-  - Estrutura hierárquica e imutável (`as const`) dividida por domínios (`nfts`, `cart`, `user`, `health`).
-  - Facilita a invalidação cirúrgica de cache (ex: invalidar todas as listas de NFTs sem descartar detalhes específicos em cache).
-- **Ferramentas de Diagnóstico (`ReactQueryDevtools`)**:
-  - Carregado exclusivamente em desenvolvimento (`import.meta.env.DEV`) na raiz da aplicação (`src/main.tsx`), garantindo zero impacto no bundle final de produção.
+  - `mutations`: `retry: 0` para preservar integridade e idempotência de transações e checkout.
+- **Fábrica Padronizada de Chaves (`src/lib/query/keys.ts`)**:
+  - Estrutura hierárquica e imutável (`as const`) dividida por domínios (`public`, `user`, `cart`, `orders`).
+  - Mutações de favoritos aplicam **atualização otimista** com rollback imediato no cache caso a requisição falhe.
 
 ---
 
-## 6. Reconciliação entre API REST e WebSocket (Socket.IO)
+## 6. Tempo Real com Socket.IO e Reconciliação com REST
 
-[Pendente - Será detalhado na camada de sincronização em tempo real]
+A aplicação implementa um barramento de eventos em tempo real (`src/contracts/realtime.ts` e `src/mocks/realtime/`):
 
-- Deduplicação de eventos baseada em identificadores únicos e timestamps.
-- Atualização direta do cache do TanStack Query ao receber eventos de socket.
-- Revalidação defensiva da API REST caso a conexão WebSocket seja interrompida e reconectada.
+- **Eventos Monitorados**:
+  - `nft.updated`: Transmite alteração de preço e estoque de determinado NFT.
+  - `order.updated`: Transmite transições de estado do pedido (`pending`, `confirmed`, `declined`).
+- **Envelope Tipado e Versionamento**:
+  - Todos os eventos trafegam dentro do `RealtimeEnvelope<Type, Payload>`, contendo `eventId`, `version`, `occurredAt` e `resource`.
+  - Eventos antigos ou duplicados cuja versão seja menor ou igual à já refletida no cache local são **descartados automaticamente**, evitando regressão de estado.
+- **Reconciliação e Resiliência**:
+  - Em reconexão de rede ou recarregamento de página, os recursos ativos são revalidados via chamadas REST (`GET /api/orders/:id`, `GET /api/nfts/:id`).
+  - Listeners e subscriptions são limpos no desmonte dos componentes para prevenir vazamento de memória.
 
 ---
 
 ## 7. Camada de Mocks (MSW), Persistência e Limitações Conhecidas
 
 - **Arquitetura Isolada**: Todo o código e handlers do Mock Service Worker estão restritos a `src/mocks/**`, protegidos pela barreira arquitetural do ESLint (`no-restricted-imports`).
-- **Interceptação no Navegador e Node**: `src/mocks/browser.ts` para runtime do browser via Service Worker (`public/mockServiceWorker.js`) e `src/mocks/server.ts` para testes automatizados.
-- **Inicialização Condicional**: Controlada pela variável `VITE_ENABLE_MOCKS=true` via função assíncrona `enableMocking()`, postergando a renderização da UI até o registro do worker.
-- **Modo de Operação**: Configurado com `bypass` em requisições não interceptadas (`onUnhandledFrame: 'bypass'`) para não interferir em assets estáticos ou chamadas externas.
+- **Interceptação no Navegador e Node**: `src/mocks/browser.ts` para runtime do browser via Service Worker (`public/mockServiceWorker.js`) e `src/mocks/server.ts` para os testes de integração do Vitest.
+- **Execução em Produção / Vercel**: No build publicado, o MSW é inicializado via `prepareApp()` em `src/main.tsx`, permitindo que a demonstração na Vercel execute 100% autônoma sem backend real.
 
 ---
 
-## 8. Decisões de UX, Acessibilidade e Registro de Desvios do Figma
+## 8. UX, Acessibilidade (WCAG 2.1 AA) e Registro de Desvios do Figma
 
-[Pendente - Será detalhado conforme a interface for construída]
-
-- Conformidade com padrões WCAG 2.1 nível AA.
-- Suporte completo a navegação por teclado e semântica acessível para leitores de tela.
-- Tabela de desvios e adaptações em relação ao protótipo do Figma documentadas com justificativa de usabilidade ou viabilidade técnica.
+- **Navegação por Teclado e Foco Visível**:
+  - Foco gerenciado em modais (`role="dialog"` e `role="alertdialog"`) com aprisionamento de foco (_focus trap_) e fechamento via tecla `Escape`.
+- **Semântica e ARIA**:
+  - Abas interativas do catálogo e detalhes do NFT possuem atributos `role="tablist"`, `role="tab"`, `aria-selected` e `aria-controls`.
+  - Mensagens de erro de validação e alertas utilizam `role="alert"` associadas aos campos via `aria-describedby`.
+- **Imagens e Mídias**:
+  - Todas as artes e avatares contêm atributos `alt` descritivos e skeletons com efeito shimmer durante o carregamento de dados remotos.
+- **Escala e Conforto Visual**:
+  - O conteúdo interno utiliza zoom de 90% para leitura confortável em monitores com 100% de escala, mantendo a navbar intacta no topo conforme refinamento de usabilidade.
 
 ---
 
 ## 9. Log de Decisões Técnicas
 
-| Data       | Commit    | Decisão                                                                            | Motivo                                                                                                                                                                                                                                                                                                                |
-| ---------- | --------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-19 | `972cf09` | Ativação do modo estrito do TypeScript e path alias `@/*`                          | Garantir segurança máxima de tipos no compilador e facilitar refatorações com imports absolutos limpos.                                                                                                                                                                                                               |
-| 2026-10-19 | `f0c9fe0` | Barreiras arquiteturais com ESLint (`no-restricted-imports`)                       | Impedir vazamento de dependências terceiras (Axios, Socket.IO, MSW) fora de suas camadas de abstração dedicadas.                                                                                                                                                                                                      |
-| 2026-10-19 | `0a85bbe` | Padronização de commits com Conventional Commits, Husky e lint-staged              | Assegurar rastreabilidade histórica, mensagens semânticas e validação automática de código antes de qualquer commit.                                                                                                                                                                                                  |
-| 2026-10-19 | `569d00b` | Fixação da versão do Node.js (22) via `.nvmrc` e scripts operacionais              | Unificar o ambiente de execução entre membros do time e garantir scripts consistentes para CI/CD.                                                                                                                                                                                                                     |
-| 2026-10-19 | `8602956` | Adoção do Tailwind CSS v4 com plugin `@tailwindcss/vite`                           | Performance de build superior com engine Oxide, configuração CSS-first simplificada sem PostCSS e integração nativa ao Vite.                                                                                                                                                                                          |
-| 2026-10-19 | `d4b7930` | Mapeamento cirúrgico dos design tokens do Figma (paleta Dark Mode Bronze-Caramelo) | Extração precisa do arquivo oficial `figma-tokens.json` em `tokens.css` com variáveis CSS e mapeamento `@theme` no Tailwind v4, garantindo fidelidade visual e temática Web3.                                                                                                                                         |
-| 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens de design do Figma                 | Prover componentes atômicos primitivos (Button, Badge, Input) acessíveis (WAI-ARIA), extensíveis com CVA e integrados com precisão cirúrgica aos tokens da aplicação.                                                                                                                                                 |
-| 2026-10-19 | `d584a24` | Inclusão das primitivas Radix UI (Dialog, DropdownMenu, Separator, Slot)           | Garantir conformidade rigorosa com diretrizes de acessibilidade WCAG 2.1 AA (foco, trap, navegação por teclado e semântica ARIA) em componentes compostos interativos.                                                                                                                                                |
-| 2026-10-19 | `9af98ed` | Adoção do bignumber.js para aritmética e formatação de criptoativos (ETH/USD)      | Eliminar vulnerabilidades e inconsistências de ponto flutuante (IEEE 754) em operações financeiras e checkout, garantindo precisão arbitrária exata.                                                                                                                                                                  |
-| 2026-10-19 | `f5ea535` | Isolamento do cliente HTTP com Axios em `src/lib/http/`                            | Centralizar baseURL, timeout de 10s, injeção de Bearer token e tratamento de erro tipado (ApiError), respeitando rigorosamente a barreira no-restricted-imports.                                                                                                                                                      |
-| 2026-10-19 | `b81c179` | Arquitetura do Mock Service Worker (MSW) isolada em `src/mocks/`                   | Simular APIs REST via Service Worker no navegador e Node.js com inicialização condicional (VITE_ENABLE_MOCKS) e isolamento arquitetural.                                                                                                                                                                              |
-| 2026-10-19 | `acb5951` | Configuração do TanStack Query v5 e fábrica de queryKeys                           | Instância centralizada com políticas de cache/retry adequadas a Web3 e chaves padronizadas para previsibilidade de invalidação.                                                                                                                                                                                       |
-| 2026-10-19 | `b419f5a` | Roteamento declarativo SPA com React Router DOM v7 e layouts aninhados             | Estrutura de rotas baseada em `createBrowserRouter`, layout estrutural com `<Outlet />`, restauração de scroll (`ScrollToTop`) e página 404 acessível.                                                                                                                                                                |
-| 2026-10-19 | `b079894` | Gerenciamento de estado do carrinho (`cartStore`) com Zustand e persistência       | Store global com middleware `persist` (`localStorage`), garantia de unicidade de NFTs 1/1 e totalização imune a IEEE 754 via `bignumber.js`.                                                                                                                                                                          |
-| 2026-10-19 | `b24b412` | Autenticação e carteira Web3 (`authStore`) com auto-logout e sincronização HTTP    | Gerenciamento de sessão com Zustand (`persist`), injeção automática de Bearer token no cliente HTTP e auto-logout reativo para o evento `http:unauthorized`.                                                                                                                                                          |
-| 2026-10-19 | Pendente  | Construção da página Home oficial e layout principal KURIO com paridade visual     | Implementação do Header KURIO com carrinho reativo, Hero Section de 2 colunas com tipografia oficial e carrossel de 3 pontos, Catálogo de 12 colunas (sidebar com coleções, duplo seletor de preço e rede, grid de 3 colunas e paginação), Banners intermediários, Diário da Cunhagem, diferenciais e rodapé oficial. |
+| Data       | Commit    | Decisão                                                                | Motivo                                                                                                                 |
+| :--------- | :-------- | :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-19 | `972cf09` | Modo estrito do TypeScript e path alias `@/*`                          | Garantir segurança máxima de tipos no compilador e facilitar refatorações com imports absolutos.                       |
+| 2026-10-19 | `f0c9fe0` | Barreiras arquiteturais com ESLint (`no-restricted-imports`)           | Impedir vazamento de dependências terceiras (Axios, Socket.IO, MSW) fora de suas camadas dedicadas.                    |
+| 2026-10-19 | `8602956` | Adoção do Tailwind CSS v4 com plugin `@tailwindcss/vite`               | Performance de build superior com engine Oxide e mapeamento nativo de design tokens.                                   |
+| 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens do Figma               | Prover componentes primitivos acessíveis (WAI-ARIA) fiéis à paleta Dark Mode do Figma.                                 |
+| 2026-10-19 | `9af98ed` | Adoção do BigNumber.js para aritmética de ETH e conversão monetária    | Eliminar vulnerabilidades de ponto flutuante (IEEE 754) em operações financeiras e checkout.                           |
+| 2026-10-20 | `8a9aa28` | Estabilização de rotas, scroll e redirecionamento de compra            | Garantir que o botão Comprar leve ao carrinho e estabilizar navegação para início e mercado.                           |
+| 2026-10-20 | `e797730` | Configuração do `vercel.json` e ativação do MSW para build de produção | Garantir que a versão publicada na Vercel intercepte as requisições sem backend real externo.                          |
+| 2026-10-20 | `652a7f5` | Adaptação dos testes Playwright E2E ao AuthModal unificado             | Cobrir 100% dos fluxos de login, cadastro, alternância de abas e validação acessível no browser.                       |
+| 2026-10-20 | `24310d2` | Configuração da auditoria de qualidade com Lighthouse CI               | Versionar `lighthouserc.json` com metas rígidas (Performance ≥ 90, Acessibilidade ≥ 95, Boas Práticas ≥ 95, SEO ≥ 90). |
