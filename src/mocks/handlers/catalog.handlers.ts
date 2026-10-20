@@ -244,8 +244,19 @@ export const catalogHandlers = [
         filtered.sort((a, b) => Number(b.price) - Number(a.price));
         break;
       case "popular":
-        // Ordenação pseudoaleatória/embaralhada dos itens
-        filtered.sort(() => Math.random() - 0.5);
+        // Prioriza itens em destaque (featured), mantendo ordem estável por views/likes
+        filtered.sort((a, b) => {
+          if (a.featured !== b.featured) {
+            return a.featured ? -1 : 1;
+          }
+          const aPop =
+            ((a as unknown as { views?: number }).views ?? 0) +
+            ((a as unknown as { likes?: number }).likes ?? 0);
+          const bPop =
+            ((b as unknown as { views?: number }).views ?? 0) +
+            ((b as unknown as { likes?: number }).likes ?? 0);
+          return bPop - aPop;
+        });
         break;
       case "recent":
       default:

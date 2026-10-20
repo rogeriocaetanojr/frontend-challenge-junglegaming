@@ -159,9 +159,7 @@ export function CatalogPage({
               onPageChange={(newPage) => {
                 setPage(newPage);
                 const section = document.getElementById("catalog-section");
-                if (section) {
-                  section.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
+                section?.scrollIntoView?.({ behavior: "smooth", block: "start" });
               }}
             />
           )}

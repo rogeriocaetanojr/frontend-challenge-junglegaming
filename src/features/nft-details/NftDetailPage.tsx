@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowLeft, Mail, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ export interface NftDetailPageProps {
 }
 
 export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) {
+  const navigate = useNavigate();
   const { data: nft, isLoading, isError } = useNftDetail(nftId);
   const currentNft = nft ?? initialData;
 
@@ -66,6 +67,8 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
       },
       quantity,
     );
+
+    navigate("/cart");
   };
 
   if (isLoading && !currentNft) {

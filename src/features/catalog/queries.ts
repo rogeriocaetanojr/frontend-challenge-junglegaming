@@ -74,19 +74,21 @@ export function catalogListQueryOptions(filters: CatalogFilters = {}) {
               ? "popular"
               : (filters?.sortBy ?? "recent"));
 
-      if (resolvedSort) {
-        searchParams.set("sort", resolvedSort);
-      }
-      if (filters?.sortBy) {
-        searchParams.set("sortBy", filters.sortBy);
-      }
-      if (filters?.sortDirection) {
-        searchParams.set("sortDirection", filters.sortDirection);
-      }
+      const params: Record<string, unknown> = {};
+      if (filters?.page !== undefined) params.page = filters.page;
+      if (filters?.limit !== undefined) params.limit = filters.limit;
+      if (filters?.pageSize !== undefined) params.pageSize = filters.pageSize;
+      if (searchTerm) params.q = searchTerm;
+      if (filters?.category) params.category = filters.category;
+      if (filters?.collection) params.collection = filters.collection;
+      if (filters?.rarity) params.rarity = filters.rarity;
+      if (filters?.network) params.network = filters.network;
+      if (filters?.availability) params.availability = filters.availability;
+      if (minPriceVal !== undefined && minPriceVal !== "") params.priceMin = minPriceVal;
+      if (maxPriceVal !== undefined && maxPriceVal !== "") params.priceMax = maxPriceVal;
+      if (resolvedSort) params.sort = resolvedSort;
 
-      const queryString = searchParams.toString();
-      const endpoint = queryString ? `/api/nfts?${queryString}` : "/api/nfts";
-      const response = await http.get<NftListResponse>(endpoint);
+      const response = await http.get<NftListResponse>("/nfts", { params });
 
       const catalogResponse: CatalogResponse = {
         items: response.items,

@@ -10,7 +10,7 @@
  * - Estados de foco visível (focus-visible:ring-2) e hover destacados.
  */
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { Badge } from "@/components/ui/badge";
 import type { Nft, NftRarity } from "@/contracts/catalog";
@@ -46,6 +46,7 @@ const RARITY_COLORS: Record<NftRarity, string> = {
 };
 
 export function NftCard({ nft, className, onAddToCart }: NftCardProps) {
+  const navigate = useNavigate();
   const initialImageUrl = nft.images?.[0]?.url || FALLBACK_NFT_IMAGE;
   const imageAlt = nft.images?.[0]?.alt || nft.title;
 
@@ -140,6 +141,7 @@ export function NftCard({ nft, className, onAddToCart }: NftCardProps) {
             onClick={(e) => {
               e.preventDefault();
               onAddToCart(nft);
+              void navigate({ to: "/cart" as const });
             }}
             aria-label={`Adicionar ${nft.title} ao carrinho`}
             className="rounded-button bg-primary/10 border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-ink-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
