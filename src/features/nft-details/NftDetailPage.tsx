@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cart-store";
 import { NftActionPanel } from "./NftActionPanel";
 import { NftDetailHeader } from "./NftDetailHeader";
 import { NftImageGallery } from "./NftImageGallery";
+import { NftRelatedCollection } from "./NftRelatedCollection";
 import { NftTechnicalTabs } from "./NftTechnicalTabs";
 import { useNftDetail } from "./queries";
 import type { NftDetail } from "./types";
@@ -386,85 +387,12 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
         onTabChange={setActiveTab}
       />
 
-      {/* Seção Inferior: "Mais desta coleção" FIEL À REFERÊNCIA KURIO */}
-      <section className="pt-10 sm:pt-14 pb-8 font-mono" aria-label="Mais desta coleção">
-        {/* Título com linha divisória sutil */}
-        <div className="space-y-3">
-          <h2 className="text-[#D28A4C] text-base sm:text-[17px] font-bold tracking-tight">
-            Mais desta coleção
-          </h2>
-          <hr className="border-t border-[#3F2319]/50" />
-        </div>
-
-        {/* Grid dos 5 cards da coleção */}
-        <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 items-start">
-          {[
-            {
-              id: "118",
-              name: "Cosmic Bloom #118",
-              price: "1.29 ETH",
-              image: "/images/nfts/sage-nomad.png",
-            },
-            {
-              id: "314",
-              name: "Violet Nomad #314",
-              price: "1.39 ETH",
-              image: "/images/nfts/sage-nomad.png",
-            },
-            {
-              id: "088",
-              name: "Ivory Baron #088",
-              price: "1.79 ETH",
-              image: "/images/nfts/noct-vessel.png",
-            },
-            {
-              id: "207",
-              name: "Golden Beat #207",
-              price: "0.99 ETH",
-              image: "/images/nfts/golden-bear.png",
-            },
-            {
-              id: "160",
-              name: "Golden Signal #160",
-              price: "0.39 ETH",
-              image: "/images/nfts/golden-bear.png",
-            },
-          ].map((item) => (
-            <Link
-              key={item.id}
-              to={`/nft/${item.id}`}
-              className="group flex flex-col space-y-2.5 cursor-pointer select-none transition-transform duration-200 hover:-translate-y-1"
-            >
-              {/* Moldura escura com imagem arredondada */}
-              <div className="relative aspect-square w-full rounded-[20px] bg-[#1E1410] border border-[#2E1A13]/85 p-3 flex items-center justify-center overflow-hidden shadow-md group-hover:border-[#D28A4C]/60 transition-colors">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="size-full object-cover rounded-[14px] select-none pointer-events-none transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-
-              {/* Informações: Nome e Preço */}
-              <div className="space-y-0.5 text-xs sm:text-[13.5px]">
-                <h3 className="text-[#F5F1EB] font-normal truncate group-hover:text-[#D28A4C] transition-colors">
-                  {item.name}
-                </h3>
-                <p className="text-[#D28A4C] font-bold tracking-tight">{item.price}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Paginação Dots centralizada (o do meio preenchido fiel à imagem) */}
-        <div
-          className="flex items-center justify-center gap-2.5 pt-8 select-none"
-          aria-hidden="true"
-        >
-          <span className="size-2 rounded-full border border-[#D28A4C] bg-transparent" />
-          <span className="size-2 rounded-full bg-[#D28A4C]" />
-          <span className="size-2 rounded-full border border-[#D28A4C] bg-transparent" />
-        </div>
-      </section>
+      {/* Seção Inferior: "Mais desta coleção" alimentada por query com links semânticos */}
+      <NftRelatedCollection
+        currentNftId={currentNft.id}
+        collectionId={currentNft.collection?.id}
+        category={currentNft.category}
+      />
     </div>
   );
 }
