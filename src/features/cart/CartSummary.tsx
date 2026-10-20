@@ -20,9 +20,18 @@ export interface QuoteResponse {
 export interface CartSummaryProps {
   items: CartItem[];
   couponCode: string | null;
+  onConnectAndCheckout?: (quoteData: {
+    subtotal: string;
+    networkFee: string;
+    total: string;
+  }) => void;
 }
 
-export function CartSummary({ items, couponCode }: CartSummaryProps) {
+export function CartSummary({
+  items,
+  couponCode,
+  onConnectAndCheckout,
+}: CartSummaryProps) {
   const applyCoupon = useCartStore((state) => state.applyCoupon);
   const removeCoupon = useCartStore((state) => state.removeCoupon);
 
@@ -179,15 +188,32 @@ export function CartSummary({ items, couponCode }: CartSummaryProps) {
 
       {/* Botões de Ação */}
       <div className="space-y-3 pt-1">
-        <Button
-          asChild
-          disabled={items.length === 0}
-          className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
-        >
-          <Link to="/checkout" className="flex items-center justify-center gap-2">
+        {onConnectAndCheckout ? (
+          <Button
+            type="button"
+            disabled={items.length === 0}
+            onClick={() =>
+              onConnectAndCheckout({
+                subtotal: displaySubtotal,
+                networkFee: `${displayGas} ETH`,
+                total: displayTotal,
+              })
+            }
+            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
+          >
             <span>Conectar e finalizar</span>
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            disabled={items.length === 0}
+            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
+          >
+            <Link to="/checkout" className="flex items-center justify-center gap-2">
+              <span>Conectar e finalizar</span>
+            </Link>
+          </Button>
+        )}
 
         <div className="text-center">
           <Link

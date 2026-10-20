@@ -1,13 +1,35 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useCartStore } from "@/store/cart-store";
 import { CartItemList } from "./CartItemList";
 import { CartSummary } from "./CartSummary";
 import { CollectorsAlsoSaw } from "./CollectorsAlsoSaw";
+import { TransactionSuccessModal } from "./TransactionSuccessModal";
 
 export function CartPage() {
   const items = useCartStore((state) => state.items);
   const couponCode = useCartStore((state) => state.couponCode);
+
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [modalQuoteData, setModalQuoteData] = useState<{
+    subtotal: string;
+    networkFee: string;
+    total: string;
+  }>({
+    subtotal: "26.83",
+    networkFee: "0.016 ETH",
+    total: "26.846",
+  });
+
+  const handleOpenSuccessModal = (quoteData: {
+    subtotal: string;
+    networkFee: string;
+    total: string;
+  }) => {
+    setModalQuoteData(quoteData);
+    setIsSuccessModalOpen(true);
+  };
 
   return (
     <div className="w-full py-6 sm:py-8 font-mono text-[#F5F1EB]" data-testid="cart-page">
@@ -45,13 +67,30 @@ export function CartPage() {
           </div>
 
           <div className="lg:col-span-4 sticky top-24">
-            <CartSummary items={items} couponCode={couponCode} />
+            <CartSummary
+              items={items}
+              couponCode={couponCode}
+              onConnectAndCheckout={handleOpenSuccessModal}
+            />
           </div>
         </div>
       </div>
 
       {/* Seção 'Colecionadores também viram' logo abaixo (acessível via scroll) */}
       <CollectorsAlsoSaw />
+
+      {/* Modal de Sucesso da Transação conforme a foto de referência */}
+      <TransactionSuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        items={items}
+        subtotal={modalQuoteData.subtotal}
+        networkFee={modalQuoteData.networkFee}
+        total={modalQuoteData.total}
+        transactionHash="0xA91F...E82C"
+        date="29 Jul, 2026"
+        walletName="MetaMask"
+      />
     </div>
   );
 }
