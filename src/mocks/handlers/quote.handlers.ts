@@ -250,4 +250,77 @@ export const quoteHandlers = [
 
     return HttpResponse.json<Quote>(quote, { status: 200 });
   }),
+
+  // 3. Endpoint de Cotação Direta do Carrinho (POST /api/quote)
+  http.post("*/api/quote", async ({ request }) => {
+    const fault = await scenarioEngine.executeMiddleware(request.url);
+    if (fault) {
+      return fault;
+    }
+
+    interface DirectQuoteInput {
+      items?: Array<{ id: string; price: number | string; quantity: number }>;
+      couponCode?: string | null;
+    }
+
+    let body: DirectQuoteInput = {};
+    try {
+      body = (await request.json()) as DirectQuoteInput;
+    } catch {
+      // payload vazio
+    }
+
+    const items = body.items || [];
+    if (items.length === 0) {
+      return HttpResponse.json(
+        {
+          code: "empty_cart",
+          message: "O carrinho está vazio para emissão de cotação.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Calcula subtotal com precisão decimal
+    const rawSubtotal = items.reduce((acc, item) => {
+      const priceNum =
+        typeof item.price === "number" ? item.price : parseFloat(item.price) || 0;
+      const qty = item.quantity > 0 ? item.quantity : 1;
+      return acc + priceNum * qty;
+    }, 0);
+
+    const subtotal = Number(rawSubtotal.toFixed(4));
+    let discount = 0;
+    const rawCoupon = (body.couponCode || "").trim().toUpperCase();
+
+    if (rawCoupon) {
+      if (rawCoupon === "KURIO10" || rawCoupon === "JUNGLE10") {
+        discount = Number((subtotal * 0.1).toFixed(4));
+      } else {
+        return HttpResponse.json(
+          {
+            code: "invalid_coupon",
+            message: `Cupom '${rawCoupon}' inválido ou expirado.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    const networkFee = 0.005; // 0.005 ETH fixa
+    const total = Number((Math.max(0, subtotal - discount) + networkFee).toFixed(4));
+
+    return HttpResponse.json(
+      {
+        quoteId: `quote_${Date.now()}`,
+        subtotal,
+        discount,
+        networkFee,
+        total,
+        couponCode: rawCoupon || null,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      },
+      { status: 200 },
+    );
+  }),
 ];

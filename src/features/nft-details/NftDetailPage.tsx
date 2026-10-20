@@ -30,18 +30,23 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
 
   const addItem = useCartStore((state) => state.addItem);
 
-  const handleBuy = () => {
+  const handleBuy = (quantity = 1) => {
     if (!currentNft) return;
 
-    addItem({
-      id: String(currentNft.id),
-      name: currentNft.title,
-      collection: currentNft.collection?.name || "Kurio Apes",
-      priceEth: currentNft.price,
-      image: currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png",
-      creator: currentNft.creator?.name || "Kurio Editions",
-      quantity: 1,
-    });
+    addItem(
+      {
+        id: String(currentNft.id),
+        title: currentNft.title,
+        name: currentNft.title,
+        collection: currentNft.collection?.name || "Genesis Apes",
+        price: Number(currentNft.price) || 0,
+        priceEth: currentNft.price,
+        image: currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png",
+        creator: currentNft.creator?.name || "Kurio Studios",
+        quantity,
+      },
+      quantity,
+    );
   };
 
   if (isLoading && !currentNft) {
