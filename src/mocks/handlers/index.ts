@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 
 import { cartHandlers } from "./cart.handlers";
 import { catalogHandlers } from "./catalog.handlers";
+import { checkoutHandlers } from "./checkout.handlers";
 import { identityHandlers } from "./identity.handlers";
 import { orderHandlers } from "./order.handlers";
 import { profileHandlers } from "./profile";
@@ -10,6 +11,7 @@ import { walletsHandlers } from "./wallets";
 
 export * from "./cart.handlers";
 export * from "./catalog.handlers";
+export * from "./checkout.handlers";
 export * from "./identity.handlers";
 export * from "./order.handlers";
 export * from "./orders";
@@ -31,5 +33,6 @@ export const handlers = [
   ...walletsHandlers,
   ...cartHandlers,
   ...quoteHandlers,
+  ...checkoutHandlers,
   ...orderHandlers,
 ];
