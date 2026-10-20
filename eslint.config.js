@@ -124,9 +124,14 @@ export default tseslint.config(
       ],
     },
   },
-  // Permite exportar variantes junto a componentes no shadcn/ui
+  // Permite exportar variantes junto a componentes no shadcn/ui e definicoes de rotas no TanStack Router
   {
-    files: ["src/components/ui/**", "**/src/components/ui/**"],
+    files: [
+      "src/components/ui/**",
+      "**/src/components/ui/**",
+      "src/routes/**",
+      "**/src/routes/**",
+    ],
     rules: {
       "react-refresh/only-export-components": "off",
     },
