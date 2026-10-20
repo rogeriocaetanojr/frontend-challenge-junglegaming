@@ -11,6 +11,7 @@ import { LogOut, Search, ShoppingCart, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
+import { AuthModal } from "@/features/auth/AuthModal";
 import { Footer } from "./components/footer";
 
 /**
@@ -28,7 +29,10 @@ export function ScrollToTop() {
 
 export function RootLayout() {
   const cartCount = useCartStore((state) => state.items.length);
-  const connectWallet = useAuthStore((state) => state.connectWallet);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -293,14 +297,26 @@ export function RootLayout() {
               </Link>
 
               {/* Botão Entrar Oficial KURIO com box confortável e proporcional */}
-              <button
-                type="button"
-                onClick={() => connectWallet()}
-                className="bg-[#D28A4C] hover:bg-[#c47b3e] text-[#0E0907] font-mono text-[13.5px] sm:text-[14px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm shadow-[#D28A4C]/15 cursor-pointer select-none"
-              >
-                <LogOut className="size-4 stroke-[2.2]" />
-                <span>Entrar</span>
-              </button>
+              {isAuthenticated && user ? (
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  title="Clique para sair"
+                  className="bg-[#1A120E] border border-[#3F2319] hover:border-[#D28A4C] text-[#F5F1EB] font-mono text-[13.5px] sm:text-[14px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer select-none"
+                >
+                  <LogOut className="size-4 stroke-[2.2] text-[#D28A4C]" />
+                  <span className="truncate max-w-[100px]">{user.name || "Perfil"}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="bg-[#D28A4C] hover:bg-[#c47b3e] text-[#0E0907] font-mono text-[13.5px] sm:text-[14px] font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm shadow-[#D28A4C]/15 cursor-pointer select-none"
+                >
+                  <LogOut className="size-4 stroke-[2.2]" />
+                  <span>Entrar</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -319,6 +335,9 @@ export function RootLayout() {
         {/* Footer Oficial KURIO */}
         <Footer />
       </div>
+
+      {/* Modal de Autenticação (Entrar / Criar Conta) */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }
