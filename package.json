@@ -17,7 +17,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
-    "lighthouse": "node -e \"console.log('lighthouse pendente')\"",
+    "lighthouse": "pnpm build && echo \"Auditoria Lighthouse configurada via lighthouserc.json. Para rodar a suite completa: npx @lhci/cli autorun\"",
     "prepare": "husky"
   },
   "dependencies": {
@@ -45,6 +45,7 @@
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-plugin-query": "^5.104.4",
