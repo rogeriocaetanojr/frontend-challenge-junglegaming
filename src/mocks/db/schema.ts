@@ -7,7 +7,7 @@
 import type { Nft } from "@/contracts/catalog";
 import type { Cart, Order, Quote } from "@/contracts/commerce";
 import type { IsoDate } from "@/contracts/common";
-import type { User, Wallet } from "@/contracts/identity";
+import type { Session, User, Wallet } from "@/contracts/identity";
 
 /**
  * Entidade de usuário persistida no banco em memória,
@@ -53,4 +53,5 @@ export interface InMemoryDatabase {
   orders: Map<string, Order>;
   coupons: Map<string, DbCoupon>;
   idempotency: Map<string, IdempotencyRecord>;
+  sessions: Map<string, Session>;
 }

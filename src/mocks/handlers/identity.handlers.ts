@@ -69,11 +69,13 @@ function sanitizeUser(dbUser: DbUser): User {
 }
 
 function createSession(user: DbUser): Session {
-  return {
+  const session: Session = {
     token: `mock-token-${user.id}-${Date.now()}`,
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() as IsoDate,
     user: sanitizeUser(user),
   };
+  db.sessions.set(session.token, session);
+  return session;
 }
 
 export const identityHandlers = [
@@ -221,6 +223,16 @@ export const identityHandlers = [
     const fault = await scenarioEngine.executeMiddleware(request.url);
     if (fault) {
       return fault;
+    }
+
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7).trim()
+        : authHeader.trim();
+      if (token) {
+        db.sessions.delete(token);
+      }
     }
 
     return HttpResponse.json({ success: true }, { status: 200 });

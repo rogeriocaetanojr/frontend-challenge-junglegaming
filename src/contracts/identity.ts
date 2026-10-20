@@ -12,6 +12,7 @@ export interface User {
   id: Id<"user">;
   name: string;
   email: string;
+  bio?: string;
   avatarUrl?: string;
   createdAt: IsoDate;
 }
@@ -40,12 +41,14 @@ export interface RegisterInput {
 export interface ProfileUpdate {
   name?: string;
   email?: string;
+  bio?: string;
 }
 
 /** Troca de senha exigindo a senha atual. */
 export interface PasswordChange {
   currentPassword: string;
   newPassword: string;
+  confirmPassword?: string;
 }
 
 /** Papel da carteira vinculada ao usuário. */

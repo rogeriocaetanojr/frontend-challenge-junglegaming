@@ -22,6 +22,7 @@ export const userSchema = z.object({
   id: createIdSchema<"user">(),
   name: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
+  bio: z.string().optional(),
   avatarUrl: z.string().url("URL de avatar inválida").optional(),
   createdAt: isoDateSchema,
 }) satisfies z.ZodType<User>;
@@ -50,13 +51,20 @@ export const registerInputSchema = z.object({
 export const profileUpdateSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email("E-mail inválido").optional(),
+  bio: z.string().optional(),
 }) satisfies z.ZodType<ProfileUpdate>;
 
 /** Schema para alteração de senha. */
-export const passwordChangeSchema = z.object({
-  currentPassword: z.string().min(1, "Senha atual é obrigatória"),
-  newPassword: z.string().min(6, "Nova senha deve ter no mínimo 6 caracteres"),
-}) satisfies z.ZodType<PasswordChange>;
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Senha atual é obrigatória"),
+    newPassword: z.string().min(8, "Nova senha deve ter no mínimo 8 caracteres"),
+    confirmPassword: z.string().optional(),
+  })
+  .refine((data) => !data.confirmPassword || data.newPassword === data.confirmPassword, {
+    message: "A confirmação de senha não confere com a nova senha.",
+    path: ["confirmPassword"],
+  }) satisfies z.ZodType<PasswordChange>;
 
 /** Schema para papel da carteira. */
 export const walletRoleSchema = z.enum([

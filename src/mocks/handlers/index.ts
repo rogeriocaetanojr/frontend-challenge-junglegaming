@@ -4,6 +4,7 @@ import { cartHandlers } from "./cart.handlers";
 import { catalogHandlers } from "./catalog.handlers";
 import { identityHandlers } from "./identity.handlers";
 import { orderHandlers } from "./order.handlers";
+import { profileHandlers } from "./profile";
 import { quoteHandlers } from "./quote.handlers";
 
 export * from "./cart.handlers";
@@ -11,6 +12,7 @@ export * from "./catalog.handlers";
 export * from "./identity.handlers";
 export * from "./order.handlers";
 export * from "./orders";
+export * from "./profile";
 export * from "./quote.handlers";
 
 export const handlers = [
@@ -23,6 +25,7 @@ export const handlers = [
   }),
   ...catalogHandlers,
   ...identityHandlers,
+  ...profileHandlers,
   ...cartHandlers,
   ...quoteHandlers,
   ...orderHandlers,
