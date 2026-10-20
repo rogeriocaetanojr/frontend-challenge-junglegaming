@@ -1,42 +1,39 @@
-import axios, {
-  type AxiosError,
-  type AxiosInstance,
-  type InternalAxiosRequestConfig,
-} from "axios";
+import axios, { type AxiosInstance } from "axios";
 
-import { ApiError, type RequestConfig } from "./types";
+import { clearSession, getSession, setSession } from "@/lib/auth/session-store";
 
-let currentToken: string | null = null;
+import { attachInterceptors } from "./interceptors";
+import type { RequestConfig } from "./types";
 
 /**
- * Permite que módulos de autenticação definam o token de sessão em memória.
+ * Permite que módulos legados ou store definam o token de sessão.
+ * Sincroniza diretamente com o session-store versionado.
  */
 export function setAuthToken(token: string | null): void {
-  currentToken = token;
-  if (typeof window !== "undefined") {
-    if (token) {
-      localStorage.setItem("auth_token", token);
-    } else {
-      localStorage.removeItem("auth_token");
-    }
+  if (token) {
+    const existing = getSession();
+    setSession({
+      token,
+      userId: existing?.userId || "user_demo",
+      expiresAt:
+        existing?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    });
+  } else {
+    clearSession();
   }
 }
 
 /**
- * Recupera o token de autenticação atual (em memória ou localStorage).
+ * Recupera o token de autenticação ativo a partir do session-store.
  */
 export function getAuthToken(): string | null {
-  if (currentToken) return currentToken;
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("auth_token");
-  }
-  return null;
+  return getSession()?.token ?? null;
 }
 
 /**
- * Criação da instância centralizada do Axios configurada conforme o edital.
+ * Criação da instância centralizada do Axios com timeout e headers base.
  */
-const axiosInstance: AxiosInstance = axios.create({
+export const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 10000,
   headers: {
@@ -44,41 +41,8 @@ const axiosInstance: AxiosInstance = axios.create({
   },
 });
 
-// Interceptor de Requisição: Injeção automática de Bearer token
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = getAuthToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: unknown) => Promise.reject(error),
-);
-
-// Interceptor de Resposta: Normalização de erros e tratamento de 401
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError<{ message?: string; error?: string }>) => {
-    const statusCode = error.response?.status || 0;
-    const responseData = error.response?.data;
-
-    const message =
-      responseData?.message ||
-      responseData?.error ||
-      error.message ||
-      "Ocorreu um erro inesperado na comunicação com o servidor.";
-
-    // Notificação ou gatilho em caso de não-autorizado (401)
-    if (statusCode === 401 && typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("http:unauthorized"));
-    }
-
-    return Promise.reject(
-      new ApiError(message, statusCode, responseData || error.toJSON?.()),
-    );
-  },
-);
+// Conecta os interceptors de requisição (Bearer / X-Guest-Id) e de resposta (ApiError / 401)
+attachInterceptors(axiosInstance);
 
 /**
  * Cliente HTTP isolado que expõe métodos tipados sem vazar tipos do Axios.

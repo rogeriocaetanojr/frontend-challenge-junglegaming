@@ -1,3 +1,8 @@
-export { http, setAuthToken, getAuthToken } from "./client";
-export { ApiError, type RequestConfig, type HttpResponse } from "./types";
+export { axiosInstance, getAuthToken, http, setAuthToken } from "./client";
+export {
+  attachInterceptors,
+  authRequestInterceptor,
+  errorResponseInterceptor,
+} from "./interceptors";
 export { parseResponse } from "./parse";
+export { ApiError, type HttpResponse, type RequestConfig } from "./types";
