@@ -84,9 +84,9 @@ describe("CartPage (src/features/cart/CartPage.tsx)", () => {
     await renderCartPage();
 
     expect(container?.textContent).toContain("Emerald Ape #042");
-    expect(container?.textContent).toContain("Carrinho de Compras");
+    expect(container?.textContent).toContain("ID do token: #0042");
     expect(container?.textContent).toContain("2"); // quantidade
-    expect(container?.textContent).toContain("2.3800 ETH"); // subtotal linha
+    expect(container?.textContent).toContain("2.38 ETH"); // subtotal linha
   });
 
   it("deve permitir remover um item através do botão de lixeira", async () => {
@@ -124,8 +124,8 @@ describe("CartPage (src/features/cart/CartPage.tsx)", () => {
 
     await renderCartPage();
 
-    expect(container?.textContent).toContain("Resumo do Pedido");
-    expect(container?.textContent).toContain("1.1900 ETH");
-    expect(container?.textContent).toContain("Prosseguir para o Checkout");
+    expect(container?.textContent).toContain("Resumo da carteira");
+    expect(container?.textContent).toContain("1.19 ETH");
+    expect(container?.textContent).toContain("Conectar e finalizar");
   });
 });

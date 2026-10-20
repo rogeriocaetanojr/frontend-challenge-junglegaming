@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { formatEth } from "@/lib/formatters";
 import { type CartItem, useCartStore } from "@/store/cart-store";
 
 export interface CartItemListProps {
@@ -38,95 +37,135 @@ export function CartItemList({ items }: CartItemListProps) {
   }
 
   return (
-    <div className="space-y-3.5 font-mono" role="list" aria-label="Itens do carrinho">
-      {items.map((item) => {
-        const itemPrice =
-          typeof item.price === "number"
-            ? item.price
-            : parseFloat(String(item.priceEth || 0));
-        const subtotalItem = (itemPrice * item.quantity).toFixed(4);
-        const canDecrease = item.quantity > 1;
-        const canIncrease = item.maxSupply ? item.quantity < item.maxSupply : true;
+    <div
+      className="space-y-4 font-mono select-none"
+      role="region"
+      aria-label="Tabela de NFTs no carrinho"
+    >
+      {/* Cabeçalho da Tabela com linha divisória horizontal abaixo idêntica à barra de navegação */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-12 gap-4 px-3 sm:px-4 pb-3 text-sm font-semibold text-[#F5F1EB] tracking-wide">
+          <div className="col-span-5">NFTs</div>
+          <div className="col-span-2 text-left">Preço</div>
+          <div className="col-span-2 text-center">Edições</div>
+          <div className="col-span-2 text-left">Total</div>
+          <div className="col-span-1"></div>
+        </div>
+        <div className="h-[1px] w-full bg-[#D28A4C]/50" />
+      </div>
 
-        return (
-          <div
-            key={item.id}
-            role="listitem"
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#1E1410] border border-[#3F2319]/60 hover:border-[#D28A4C]/50 transition-all duration-200"
-          >
-            {/* Imagem + Título + Preço unitário */}
-            <div className="flex items-center gap-3.5 min-w-0 w-full sm:w-auto">
-              <div className="size-16 sm:size-20 rounded-xl bg-[#140D0A] border border-[#2E1A13] shrink-0 p-1.5 overflow-hidden flex items-center justify-center">
-                <img
-                  src={item.image || "/images/nfts/emerald-ape.png"}
-                  alt={item.title || item.name || "NFT"}
-                  className="size-full object-cover rounded-lg"
-                  loading="lazy"
-                />
+      {/* Lista de Itens mais compacta com menos espaçamento entre eles */}
+      <div className="space-y-2 pt-1" role="list" aria-label="Itens do carrinho">
+        {items.map((item) => {
+          const itemPrice =
+            typeof item.price === "number"
+              ? item.price
+              : parseFloat(String(item.priceEth || 0));
+          const subtotalItem = (itemPrice * item.quantity).toFixed(2);
+          const formattedPrice = itemPrice.toFixed(2);
+          const canIncrease = item.maxSupply ? item.quantity < item.maxSupply : true;
+
+          // Extrai ou formata ID do token para exibição fiel: ID do token: #xxxx
+          const tokenIdMatch = item.title?.match(/#(\d+)/) || item.name?.match(/#(\d+)/);
+          const tokenIdFormatted = tokenIdMatch?.[1]
+            ? `#${tokenIdMatch[1].padStart(4, "0")}`
+            : `#${item.id.replace(/\D/g, "").padStart(4, "0") || "0042"}`;
+
+          return (
+            <div
+              key={item.id}
+              role="listitem"
+              className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center p-1.5 sm:p-2 rounded-xl bg-[#1C130E] border border-[#2B1B14] hover:border-[#3F2319] transition-colors"
+            >
+              {/* Coluna 1: NFT (Thumb mais compacta + Sombra reduzida aparecendo só para a direita na altura exata da foto) */}
+              <div className="md:col-span-5 flex items-center gap-3.5 min-w-0">
+                <div className="relative shrink-0 pr-[3px]">
+                  {/* Sombra reduzida de trás: na mesma altura da foto, aparecendo apenas 3px à direita */}
+                  <div
+                    className="absolute inset-y-0 right-0 w-[6px] rounded-r-xl bg-[#090503] border-r border-y border-[#20120B] pointer-events-none"
+                    aria-hidden="true"
+                  />
+                  {/* Card frontal da imagem no tamanho ideal compacto */}
+                  <div className="relative size-16 sm:size-[68px] rounded-xl bg-[#140D0A] p-0.5 overflow-hidden flex items-center justify-center border border-[#2B1B14] z-10">
+                    <img
+                      src={item.image || "/images/nfts/emerald-ape.png"}
+                      alt={item.title || item.name || "NFT"}
+                      className="size-full object-cover rounded-lg"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <div className="min-w-0 space-y-0.5">
+                  <h3 className="text-sm font-bold text-[#F5F1EB] truncate">
+                    {item.title || item.name}
+                  </h3>
+                  <p className="text-xs text-[#8C6D58] truncate">
+                    ID do token: {tokenIdFormatted}
+                  </p>
+                </div>
               </div>
 
-              <div className="min-w-0 space-y-1">
-                <h3 className="text-sm sm:text-base font-bold text-[#F5F1EB] truncate">
-                  {item.title || item.name}
-                </h3>
-                <p className="text-xs text-[#CFB28C] truncate">
-                  Coleção: {item.collection || "Genesis Apes"}
-                </p>
-                <p className="text-xs text-[#D28A4C] font-bold">
-                  {formatEth(itemPrice)} ETH cada
-                </p>
-              </div>
-            </div>
-
-            {/* Controles de Quantidade & Subtotal & Lixeira */}
-            <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto border-t sm:border-t-0 border-[#3F2319]/40 pt-3 sm:pt-0">
-              {/* Contador [-] Qtd [+] */}
-              <div className="flex items-center gap-2 bg-[#140D0A] px-2.5 py-1 rounded-lg border border-[#3F2319]">
-                <button
-                  type="button"
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  disabled={!canDecrease}
-                  aria-label={`Diminuir quantidade de ${item.title || item.name}`}
-                  className="p-1 text-[#F5F1EB]/70 hover:text-[#D28A4C] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                >
-                  <Minus className="size-3.5" />
-                </button>
-
-                <span className="w-6 text-center text-xs sm:text-sm font-bold text-[#F5F1EB]">
-                  {item.quantity}
+              {/* Coluna 2: Preço Unitário */}
+              <div className="md:col-span-2 flex items-center justify-between md:justify-start">
+                <span className="md:hidden text-xs text-[#8C6D58]">Preço:</span>
+                <span className="text-sm sm:text-base font-medium text-[#F5F1EB]">
+                  {formattedPrice} ETH
                 </span>
-
-                <button
-                  type="button"
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  disabled={!canIncrease}
-                  aria-label={`Aumentar quantidade de ${item.title || item.name}`}
-                  className="p-1 text-[#F5F1EB]/70 hover:text-[#D28A4C] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                >
-                  <Plus className="size-3.5" />
-                </button>
               </div>
 
-              {/* Subtotal da Linha */}
-              <div className="text-right min-w-[80px]">
-                <span className="text-sm sm:text-base font-bold text-[#F5F1EB]">
+              {/* Coluna 3: Edições (Controles circulares laranjas) */}
+              <div className="md:col-span-2 flex items-center justify-between md:justify-center">
+                <span className="md:hidden text-xs text-[#8C6D58]">Edições:</span>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    aria-label={`Diminuir quantidade de ${item.title || item.name}`}
+                    className="size-6 sm:size-7 rounded-full bg-[#D28A4C] hover:bg-[#e0985b] text-[#0E0907] flex items-center justify-center font-bold text-sm transition-all cursor-pointer shadow-sm active:scale-95"
+                  >
+                    <Minus className="size-3.5 stroke-[3]" />
+                  </button>
+
+                  <span className="w-5 text-center text-sm sm:text-base font-bold text-[#F5F1EB]">
+                    {item.quantity}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    disabled={!canIncrease}
+                    aria-label={`Aumentar quantidade de ${item.title || item.name}`}
+                    className="size-6 sm:size-7 rounded-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] flex items-center justify-center font-bold text-sm transition-all cursor-pointer shadow-sm active:scale-95"
+                  >
+                    <Plus className="size-3.5 stroke-[3]" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Coluna 4: Total da Linha */}
+              <div className="md:col-span-2 flex items-center justify-between md:justify-start">
+                <span className="md:hidden text-xs text-[#8C6D58]">Total:</span>
+                <span className="text-sm sm:text-base font-bold text-[#D28A4C]">
                   {subtotalItem} ETH
                 </span>
               </div>
 
-              {/* Botão Remover */}
-              <button
-                type="button"
-                onClick={() => removeItem(item.id)}
-                aria-label={`Remover ${item.title || item.name} do carrinho`}
-                className="p-2 rounded-lg text-[#F5F1EB]/60 hover:text-[#e05252] hover:bg-[#e05252]/10 transition-colors cursor-pointer"
-              >
-                <Trash2 className="size-4" />
-              </button>
+              {/* Coluna 5: Lixeira */}
+              <div className="md:col-span-1 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  aria-label={`Remover ${item.title || item.name} do carrinho`}
+                  className="p-1.5 text-[#8C6D58] hover:text-[#e05252] transition-colors cursor-pointer"
+                >
+                  <Trash2 className="size-4 sm:size-5" />
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

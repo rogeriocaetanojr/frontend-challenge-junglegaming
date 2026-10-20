@@ -282,7 +282,7 @@ export function RootLayout() {
 
               {/* Ícone de Carrinho (ShoppingCart) com Badge Numérico no topo direito */}
               <Link
-                to="/checkout"
+                to="/cart"
                 className="relative text-[#F5F1EB] hover:text-[#D28A4C] p-1.5 transition-colors"
                 aria-label={`Carrinho de compras com ${cartCount} itens`}
               >

@@ -125,11 +125,11 @@ describe("CartPage Integration Tests (C82)", () => {
 
     await renderCart();
 
-    expect(container?.textContent).toContain("Carrinho de Compras");
-    expect(container?.textContent).toContain("3 ativos selecionados para aquisição");
+    expect(container?.textContent).toContain("Mercado");
+    expect(container?.textContent).toContain("Carrinho");
     expect(container?.textContent).toContain("Emerald Ape #042");
     expect(container?.textContent).toContain("Sage Nomad #009");
-    expect(container?.textContent).toContain("4.5700 ETH"); // subtotal: 1.19 + (1.69 * 2) = 4.57
+    expect(container?.textContent).toContain("4.57 ETH"); // subtotal: 1.19 + (1.69 * 2) = 4.57
   });
 
   it("deve permitir alterar quantidade e remover item atualizando visualmente e na store", async () => {
@@ -159,7 +159,7 @@ describe("CartPage Integration Tests (C82)", () => {
     });
 
     expect(useCartStore.getState().items[0]?.quantity).toBe(2);
-    expect(container?.textContent).toContain("2.3800 ETH");
+    expect(container?.textContent).toContain("2.38 ETH");
 
     // Remove o item via lixeira
     const removeBtn = container?.querySelector(
@@ -218,11 +218,11 @@ describe("CartPage Integration Tests (C82)", () => {
     });
 
     expect(container?.textContent).toContain("KURIO10 (10% OFF aplicado)");
-    expect(container?.textContent).toContain("Desconto promocional");
-    expect(container?.textContent).toContain("-0.2000 ETH");
+    expect(container?.textContent).toContain("Desconto do lançamento");
+    expect(container?.textContent).toContain("(-) 0.20");
   });
 
-  it("deve exibir estado de carrinho vazio quando a ação 'Limpar Carrinho' for acionada", async () => {
+  it("deve esvaziar carrinho e refletir estado vazio ao remover todos os itens", async () => {
     const { addItem } = useCartStore.getState();
 
     addItem({
@@ -234,18 +234,17 @@ describe("CartPage Integration Tests (C82)", () => {
 
     await renderCart();
 
-    const cleanActionBtn = Array.from(container?.querySelectorAll("button") || []).find(
-      (b) => b.textContent?.includes("Limpar Carrinho"),
-    );
+    const removeBtn = container?.querySelector(
+      'button[aria-label="Remover Emerald Ape #042 do carrinho"]',
+    ) as HTMLButtonElement | null;
 
-    expect(cleanActionBtn).toBeDefined();
+    expect(removeBtn).not.toBeNull();
 
     await act(async () => {
-      cleanActionBtn?.click();
+      removeBtn?.click();
     });
 
     expect(useCartStore.getState().items.length).toBe(0);
     expect(container?.textContent).toContain("Seu Carrinho está Vazio");
-    expect(container?.textContent).toContain("Nenhum item selecionado");
   });
 });

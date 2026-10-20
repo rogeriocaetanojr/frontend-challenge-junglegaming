@@ -51,10 +51,43 @@ export interface CartStoreState {
   getTotalUsd: (ethRate?: number) => string;
 }
 
+export const INITIAL_CART_ITEMS: CartItem[] = [
+  {
+    id: "nft-1",
+    title: "Emerald Ape #042",
+    name: "Emerald Ape #042",
+    price: 1.19,
+    priceEth: "1.19",
+    image: "/images/nfts/emerald-ape.png",
+    quantity: 2,
+    collection: "Genesis Apes",
+  },
+  {
+    id: "nft-5",
+    title: "Violet Nomad #314",
+    name: "Violet Nomad #314",
+    price: 1.39,
+    priceEth: "1.39",
+    image: "/images/nfts/sage-nomad.png",
+    quantity: 6,
+    collection: "Genesis Apes",
+  },
+  {
+    id: "nft-6",
+    title: "Ivory Baron #088",
+    name: "Ivory Baron #088",
+    price: 1.79,
+    priceEth: "1.79",
+    image: "/images/nfts/noct-vessel.png",
+    quantity: 9,
+    collection: "Genesis Apes",
+  },
+];
+
 export const useCartStore = create<CartStoreState>()(
   persist(
     (set, get) => ({
-      items: [],
+      items: INITIAL_CART_ITEMS,
       couponCode: null,
 
       addItem: (itemInput, quantity = 1) => {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ShieldCheck, Tag, X } from "lucide-react";
+import { Tag, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { http } from "@/lib/http";
@@ -67,13 +67,15 @@ export function CartSummary({ items, couponCode }: CartSummaryProps) {
   }, 0);
   const isCouponValid = couponCode === "KURIO10" || couponCode === "JUNGLE10";
   const localDiscount = isCouponValid ? localSubtotal * 0.1 : 0;
-  const localGas = items.length > 0 ? 0.005 : 0;
-  const localTotal = Math.max(0, localSubtotal - localDiscount) + localGas;
 
-  const displaySubtotal = (quote?.subtotal ?? localSubtotal).toFixed(4);
-  const displayDiscount = (quote?.discount ?? localDiscount).toFixed(4);
-  const displayGas = (quote?.networkFee ?? localGas).toFixed(4);
-  const displayTotal = (quote?.total ?? localTotal).toFixed(4);
+  // Formatação para exibição fiel à imagem
+  const displaySubtotal = (quote?.subtotal ?? localSubtotal).toFixed(2);
+  const rawDiscount = quote?.discount ?? localDiscount;
+  const displayDiscount = rawDiscount > 0 ? `(-) ${rawDiscount.toFixed(2)}` : "(-) 00.00";
+  const displayGas = (quote?.networkFee ?? (items.length > 0 ? 0.016 : 0)).toFixed(3);
+  const displayTotal = (
+    quote?.total ?? localSubtotal - rawDiscount + (items.length > 0 ? 0.016 : 0)
+  ).toFixed(3);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,20 +87,29 @@ export function CartSummary({ items, couponCode }: CartSummaryProps) {
   };
 
   return (
-    <div className="rounded-2xl bg-[#1E1410] border border-[#3F2319]/60 p-5 sm:p-6 space-y-6 font-mono select-none">
-      <h2 className="text-lg font-bold text-[#F5F1EB] border-b border-[#3F2319]/50 pb-3">
-        Resumo do Pedido
-      </h2>
+    <div
+      className="max-w-[360px] ml-auto space-y-4.5 font-mono select-none"
+      data-testid="cart-summary"
+    >
+      <div className="space-y-2.5">
+        <h2 className="text-sm sm:text-base font-bold text-[#F5F1EB] tracking-wide">
+          Resumo da carteira
+        </h2>
+        <div className="h-[1px] w-full bg-[#D28A4C]/50" />
+      </div>
 
-      {/* Formulário de Cupom */}
-      <div className="space-y-2">
-        <label htmlFor="coupon-input" className="text-xs text-[#CFB28C] block">
-          Possui um cupom de desconto?
+      {/* Bloco do Código Promocional */}
+      <div className="space-y-1.5">
+        <label
+          htmlFor="coupon-input"
+          className="text-xs font-semibold text-[#F5F1EB] block"
+        >
+          Código promocional
         </label>
         {couponCode ? (
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#D28A4C]/10 border border-[#D28A4C]/50 text-xs text-[#D28A4C]">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C] text-xs text-[#D28A4C]">
             <div className="flex items-center gap-2">
-              <Tag className="size-3.5" />
+              <Tag className="size-3" />
               <span className="font-bold">{couponCode} (10% OFF aplicado)</span>
             </div>
             <button
@@ -107,25 +118,23 @@ export function CartSummary({ items, couponCode }: CartSummaryProps) {
               aria-label="Remover cupom"
               className="p-1 hover:text-[#F5F1EB] transition-colors cursor-pointer"
             >
-              <X className="size-3.5" />
+              <X className="size-3" />
             </button>
           </div>
         ) : (
-          <form onSubmit={handleApplyCoupon} className="flex gap-2">
+          <form onSubmit={handleApplyCoupon} className="flex">
             <input
               id="coupon-input"
               type="text"
               value={inputCoupon}
               onChange={(e) => setInputCoupon(e.target.value)}
-              placeholder="Ex: KURIO10"
-              className="flex-1 bg-[#140D0A] border border-[#3F2319] rounded-lg px-3 py-2 text-xs text-[#F5F1EB] placeholder:text-[#F5F1EB]/30 focus:border-[#D28A4C] focus:outline-none uppercase"
+              placeholder="Digite o código promocional..."
+              className="flex-1 bg-[#140D0A] border border-r-0 border-[#D28A4C]/80 rounded-l-lg px-2.5 py-1.5 text-xs text-[#F5F1EB] placeholder:text-[#8C6D58] focus:border-[#D28A4C] focus:outline-none"
             />
             <Button
               type="submit"
-              variant="outline"
-              size="sm"
               disabled={!inputCoupon.trim()}
-              className="border-[#3F2319] hover:border-[#D28A4C] hover:text-[#D28A4C] text-xs h-auto py-2 font-mono"
+              className="rounded-l-none rounded-r-lg bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-50 text-[#0E0907] text-xs font-bold px-3.5 py-1.5 h-auto cursor-pointer transition-colors"
             >
               Aplicar
             </Button>
@@ -139,50 +148,54 @@ export function CartSummary({ items, couponCode }: CartSummaryProps) {
       </div>
 
       {/* Detalhamento financeiro */}
-      <div className="space-y-2.5 text-xs sm:text-sm border-t border-[#3F2319]/40 pt-4">
-        <div className="flex justify-between text-[#CFB28C]">
-          <span>Subtotal de ativos ({items.reduce((s, i) => s + i.quantity, 0)})</span>
-          <span className="font-bold text-[#F5F1EB]">{displaySubtotal} ETH</span>
+      <div className="space-y-2.5 text-xs sm:text-[13px] text-[#F5F1EB]">
+        <div className="flex justify-between items-center">
+          <span className="text-[#F5F1EB]/90">Subtotal</span>
+          <span className="font-medium text-[#F5F1EB]">{displaySubtotal} ETH</span>
         </div>
 
-        {Number(displayDiscount) > 0 && (
-          <div className="flex justify-between text-[#22c55e]">
-            <span>Desconto promocional</span>
-            <span className="font-bold">-{displayDiscount} ETH</span>
+        <div className="flex justify-between items-center">
+          <span className="text-[#F5F1EB]/90">Desconto do lançamento</span>
+          <span className="font-medium text-[#F5F1EB]">{displayDiscount}</span>
+        </div>
+
+        <div className="space-y-0.5">
+          <div className="flex justify-between items-center">
+            <span className="text-[#F5F1EB]/90">Taxa de rede</span>
+            <span className="font-medium text-[#F5F1EB]">{displayGas} ETH</span>
           </div>
-        )}
-
-        <div className="flex justify-between text-[#CFB28C]">
-          <span>Taxa estimada de rede (Gas)</span>
-          <span className="font-bold text-[#F5F1EB]">{displayGas} ETH</span>
-        </div>
-
-        <div className="flex justify-between items-baseline pt-3 border-t border-[#3F2319]/50 text-base sm:text-lg">
-          <span className="font-bold text-[#F5F1EB]">Total a Pagar</span>
           <div className="text-right">
-            <span className="text-xl sm:text-2xl font-bold text-[#D28A4C] block">
-              {displayTotal} ETH
-            </span>
+            <span className="text-[10px] text-[#D28A4C]">Taxa estimada</span>
           </div>
+        </div>
+
+        <div className="flex justify-between items-baseline pt-3 text-sm sm:text-base">
+          <span className="font-bold text-[#F5F1EB]">Total</span>
+          <span className="text-base sm:text-lg font-bold text-[#D28A4C]">
+            {displayTotal} ETH
+          </span>
         </div>
       </div>
 
-      {/* Botão de Ação: Prosseguir para o Checkout */}
-      <div className="space-y-3 pt-2">
+      {/* Botões de Ação */}
+      <div className="space-y-3 pt-1">
         <Button
           asChild
           disabled={items.length === 0}
-          className="w-full bg-[#D28A4C] hover:bg-[#c47b3e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-sm h-11 rounded-xl shadow-md cursor-pointer transition-colors"
+          className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
         >
           <Link to="/checkout" className="flex items-center justify-center gap-2">
-            <span>Prosseguir para o Checkout</span>
-            <ArrowRight className="size-4" />
+            <span>Conectar e finalizar</span>
           </Link>
         </Button>
 
-        <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#CFB28C]/80">
-          <ShieldCheck className="size-3.5 text-[#D28A4C]" />
-          <span>Garantia de liquidação atômica e segurança na rede</span>
+        <div className="text-center">
+          <Link
+            to="/"
+            className="text-xs text-[#D28A4C] hover:text-[#e0985b] transition-colors"
+          >
+            Continuar explorando
+          </Link>
         </div>
       </div>
     </div>
