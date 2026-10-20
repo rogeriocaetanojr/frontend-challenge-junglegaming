@@ -13,7 +13,9 @@ export type ScenarioName =
   | "auth_expired"
   | "checkout_conflict"
   | "order_timeout"
-  | "order-timeout";
+  | "order-timeout"
+  | "wallet_rejected"
+  | "wallet-rejected";
 
 /** Definição de erro HTTP forçado para rotas específicas. */
 export interface ForcedErrorDefinition {

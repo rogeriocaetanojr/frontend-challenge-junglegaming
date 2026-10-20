@@ -107,4 +107,32 @@ export const SCENARIO_REGISTRY: Record<ScenarioName, ScenarioConfig> = {
     latencyMs: 1500,
     faultRate: 0,
   },
+  wallet_rejected: {
+    name: "wallet_rejected",
+    description:
+      "Simula recusa do usuário ou provedor Web3 na tentativa de conexão da carteira.",
+    latencyMs: 150,
+    faultRate: 0,
+    forcedErrors: {
+      "/api/wallets": {
+        status: 400,
+        code: "wallet_connection_refused",
+        message: "A conexão com a carteira Web3 foi recusada pelo usuário ou provedor.",
+      },
+    },
+  },
+  "wallet-rejected": {
+    name: "wallet-rejected",
+    description:
+      "Simula recusa do usuário ou provedor Web3 na tentativa de conexão da carteira.",
+    latencyMs: 150,
+    faultRate: 0,
+    forcedErrors: {
+      "/api/wallets": {
+        status: 400,
+        code: "wallet_connection_refused",
+        message: "A conexão com a carteira Web3 foi recusada pelo usuário ou provedor.",
+      },
+    },
+  },
 };

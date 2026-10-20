@@ -78,8 +78,15 @@ export const walletSchema = z.object({
   userId: createIdSchema<"user">(),
   role: walletRoleSchema,
   network: networkSchema,
-  address: z.string().min(1, "Endereço da carteira é obrigatório"),
+  address: z
+    .string()
+    .regex(
+      /^0x[a-fA-F0-9]{40}$/,
+      "Endereço deve seguir o formato 0x seguido de 40 dígitos hexadecimais",
+    ),
   label: z.string().optional(),
+  connected: z.boolean().optional(),
+  connectedAt: isoDateSchema.optional(),
 }) satisfies z.ZodType<Wallet>;
 
 /** Schema para resultado da conexão de carteira. */

@@ -62,6 +62,8 @@ export interface Wallet {
   network: Network;
   address: string;
   label?: string;
+  connected?: boolean;
+  connectedAt?: IsoDate;
 }
 
 /** Resultado de uma tentativa de conexão de carteira. */

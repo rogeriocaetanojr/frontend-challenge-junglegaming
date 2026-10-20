@@ -6,6 +6,7 @@ import { identityHandlers } from "./identity.handlers";
 import { orderHandlers } from "./order.handlers";
 import { profileHandlers } from "./profile";
 import { quoteHandlers } from "./quote.handlers";
+import { walletsHandlers } from "./wallets";
 
 export * from "./cart.handlers";
 export * from "./catalog.handlers";
@@ -14,6 +15,7 @@ export * from "./order.handlers";
 export * from "./orders";
 export * from "./profile";
 export * from "./quote.handlers";
+export * from "./wallets";
 
 export const handlers = [
   http.get("/api/health", () => {
@@ -26,6 +28,7 @@ export const handlers = [
   ...catalogHandlers,
   ...identityHandlers,
   ...profileHandlers,
+  ...walletsHandlers,
   ...cartHandlers,
   ...quoteHandlers,
   ...orderHandlers,

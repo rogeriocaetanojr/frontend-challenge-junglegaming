@@ -6,7 +6,6 @@
  */
 import { http, HttpResponse } from "msw";
 
-import type { Network } from "@/contracts/catalog";
 import { type ApiErrorBody, asId, type IsoDate } from "@/contracts/common";
 import type {
   Credentials,
@@ -14,7 +13,6 @@ import type {
   Session,
   User,
   Wallet,
-  WalletConnectionResult,
 } from "@/contracts/identity";
 import { db, type DbUser, dbHelpers } from "@/mocks/db";
 import { scenarioEngine } from "@/mocks/scenarios";
@@ -236,87 +234,5 @@ export const identityHandlers = [
     }
 
     return HttpResponse.json({ success: true }, { status: 200 });
-  }),
-
-  // 5. Listagem de carteiras do usuário autenticado
-  http.get("*/api/wallets", async ({ request }) => {
-    const fault = await scenarioEngine.executeMiddleware(request.url);
-    if (fault) {
-      return fault;
-    }
-
-    const user = extractUserFromHeader(request);
-    if (!user) {
-      return HttpResponse.json<ApiErrorBody>(
-        {
-          code: "unauthorized",
-          message: "Autenticação obrigatória para acessar as carteiras vinculadas.",
-        },
-        { status: 401 },
-      );
-    }
-
-    const wallets = dbHelpers.findWalletsByUserId(user.id);
-    return HttpResponse.json<Wallet[]>(wallets);
-  }),
-
-  // 6. Conexão de carteira Web3
-  http.post("*/api/wallets/connect", async ({ request }) => {
-    const fault = await scenarioEngine.executeMiddleware(request.url);
-    if (fault) {
-      return fault;
-    }
-
-    const user = extractUserFromHeader(request) ?? dbHelpers.findUserById("user_demo");
-
-    if (!user) {
-      return HttpResponse.json<ApiErrorBody>(
-        {
-          code: "unauthorized",
-          message: "Nenhum usuário ativo para vincular a carteira.",
-        },
-        { status: 401 },
-      );
-    }
-
-    interface ConnectPayload {
-      network?: Network;
-      address?: string;
-      label?: string;
-    }
-
-    let body: ConnectPayload = {};
-    try {
-      body = (await request.json()) as ConnectPayload;
-    } catch {
-      // Aceita payload vazio gerando carteira padrão
-    }
-
-    const existingWallets = dbHelpers.findWalletsByUserId(user.id);
-    const network = body.network ?? "ethereum";
-    const hex = Array.from({ length: 40 }, () =>
-      Math.floor(Math.random() * 16).toString(16),
-    ).join("");
-    const address = body.address ?? `0x${hex}`;
-    const label =
-      body.label ?? `Carteira ${network.charAt(0).toUpperCase() + network.slice(1)}`;
-
-    const wallet: Wallet = {
-      id: asId<"wallet">(`wallet_${Date.now()}`),
-      userId: user.id,
-      role: existingWallets.length === 0 ? "primary" : "secondary",
-      network,
-      address,
-      label,
-    };
-
-    db.wallets.set(wallet.id, wallet);
-
-    const result: WalletConnectionResult = {
-      connected: true,
-      wallet,
-    };
-
-    return HttpResponse.json<WalletConnectionResult>(result, { status: 201 });
   }),
 ];
