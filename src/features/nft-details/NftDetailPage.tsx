@@ -94,41 +94,43 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-6 sm:py-8 space-y-6">
-      {/* Breadcrumb idêntico à referência: Início / Mercado */}
+    <div className="w-full py-6 sm:py-8 space-y-7">
+      {/* Breadcrumb alinhado perfeitamente com a logo do topo e fonte aumentada conforme referência */}
       <nav
         aria-label="Navegação estrutural"
-        className="font-mono text-sm sm:text-[15px] font-normal"
+        className="font-mono text-base sm:text-[18px] lg:text-[19px] tracking-tight font-bold"
       >
-        <ol className="flex items-center gap-2 text-[#F5F1EB]">
+        <ol className="flex items-center gap-2.5 text-[#F5F1EB]">
           <li>
             <Link
               to="/"
-              className="text-[#F5F1EB]/80 hover:text-[#F5F1EB] transition-colors"
+              className="text-[#F5F1EB] hover:text-[#D28A4C] transition-colors"
             >
               Início
             </Link>
           </li>
-          <li className="text-[#F5F1EB]/50" aria-hidden="true">
+          <li className="text-[#F5F1EB]/60 font-light" aria-hidden="true">
             /
           </li>
-          <li className="text-[#F5F1EB] font-medium" aria-current="page">
+          <li className="text-[#F5F1EB]" aria-current="page">
             Mercado
           </li>
         </ol>
       </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        {/* Painel Esquerdo: Galeria de Imagens com Zoom/Fullscreen */}
-        <NftImageGallery
-          images={currentNft.images}
-          title={currentNft.title}
-          rarity={currentNft.rarity}
-          featured={currentNft.featured}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        {/* Painel Esquerdo: Galeria com 4 miniaturas e imagem principal com zoom */}
+        <div className="lg:col-span-7 xl:col-span-7 flex justify-start w-full">
+          <NftImageGallery
+            images={currentNft.images}
+            title={currentNft.title}
+            rarity={currentNft.rarity}
+            featured={currentNft.featured}
+          />
+        </div>
 
         {/* Painel Direito: Título, Preço e Detalhes */}
-        <div className="space-y-6">
+        <div className="lg:col-span-5 xl:col-span-5 space-y-6 pt-1">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge
