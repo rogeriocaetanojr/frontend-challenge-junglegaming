@@ -334,8 +334,8 @@ export function RootLayout() {
         </div>
       </header>
 
-      {/* Conteúdo da página perfeitamente alinhado com o header */}
-      <div className="flex-1 flex flex-col w-full">
+      {/* Conteúdo da página com escala confortável de 90%, mantendo navbar intacta */}
+      <div className="flex-1 flex flex-col w-full" style={{ zoom: 0.9 }}>
         <main
           id="main-content"
           className="w-full max-w-[1420px] mx-auto px-6 sm:px-8 flex-1"
