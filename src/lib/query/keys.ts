@@ -12,6 +12,14 @@ export const queryKeys = {
   /** Chave de sessão global do usuário */
   session: () => ["session"] as const,
 
+  /** Chaves de catálogo */
+  catalog: {
+    all: ["public", "catalog"] as const,
+    list: (filters?: Record<string, unknown>) =>
+      ["public", "catalog", "list", filters ?? {}] as const,
+    detail: (id: string | number) => ["public", "catalog", "detail", String(id)] as const,
+  },
+
   /** Chaves de dados públicos e compartilhados */
   public: {
     all: ["public"] as const,

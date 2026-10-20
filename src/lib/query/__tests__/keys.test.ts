@@ -7,6 +7,22 @@ describe("Query Keys Factory (src/lib/query/keys.ts)", () => {
     expect(queryKeys.session()).toEqual(["session"]);
   });
 
+  it("deve padronizar as chaves do catálogo na raiz em ['public', 'catalog', ...]", () => {
+    expect(queryKeys.catalog.all).toEqual(["public", "catalog"]);
+    expect(queryKeys.catalog.list({ page: 1 })).toEqual([
+      "public",
+      "catalog",
+      "list",
+      { page: 1 },
+    ]);
+    expect(queryKeys.catalog.detail("nft-123")).toEqual([
+      "public",
+      "catalog",
+      "detail",
+      "nft-123",
+    ]);
+  });
+
   it("deve prefixar todas as chaves públicas com ['public', ...]", () => {
     expect(queryKeys.public.all).toEqual(["public"]);
     expect(queryKeys.public.catalog.all()).toEqual(["public", "catalog"]);
