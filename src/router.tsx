@@ -7,6 +7,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createBrowserRouter } from "react-router-dom";
 
+import { RouteErrorComponent, type RouteErrorProps } from "@/components/route-error";
+import {
+  RoutePendingComponent,
+  type RoutePendingProps,
+} from "@/components/route-pending";
 import type { Session, User } from "@/contracts/identity";
 import { RootLayout } from "@/layouts/root-layout";
 import { queryClient as defaultQueryClient } from "@/lib/query-client";
@@ -44,16 +49,34 @@ export const defaultRouterContext: RouterContext = {
 };
 
 /**
+ * Opções de feedback visual e de transição de rota (TanStack Router & react-router).
+ */
+export interface RouterOptions {
+  defaultPendingComponent?: React.ComponentType<RoutePendingProps>;
+  defaultErrorComponent?: React.ComponentType<RouteErrorProps>;
+}
+
+export const defaultRouterOptions: RouterOptions = {
+  defaultPendingComponent: RoutePendingComponent,
+  defaultErrorComponent: RouteErrorComponent,
+};
+
+/**
  * Criação da árvore de rotas injetando o RouterContext fornecido.
  */
-export function createRouter(context: RouterContext = defaultRouterContext) {
+export function createRouter(
+  context: RouterContext = defaultRouterContext,
+  options: RouterOptions = defaultRouterOptions,
+) {
   // O contexto injetado fica disponível para guardas de rota e loaders
   void context;
+  void options;
 
   return createBrowserRouter([
     {
       path: "/",
       element: <RootLayout />,
+      errorElement: <RouteErrorComponent />,
       children: [
         {
           index: true,
@@ -77,4 +100,4 @@ export function createRouter(context: RouterContext = defaultRouterContext) {
 }
 
 /** Instância singleton da árvore de rotas da aplicação. */
-export const router = createRouter(defaultRouterContext);
+export const router = createRouter(defaultRouterContext, defaultRouterOptions);
