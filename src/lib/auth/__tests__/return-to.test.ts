@@ -126,7 +126,7 @@ describe("Sanitização de Rotas de Retorno (src/lib/auth/return-to.ts)", () => 
     type BeforeLoadFn = (args: {
       context?: { auth?: { isAuthenticated?: boolean } };
       location: { pathname: string; search?: string; searchStr?: string };
-    }) => void;
+    }) => Promise<unknown> | unknown;
 
     interface RedirectResult {
       options: {
@@ -137,13 +137,13 @@ describe("Sanitização de Rotas de Retorno (src/lib/auth/return-to.ts)", () => 
       };
     }
 
-    it("deve disparar redirect para /login com parâmetro redirect sanitizado", () => {
+    it("deve disparar redirect para /login com parâmetro redirect sanitizado", async () => {
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
       expect(beforeLoad).toBeDefined();
 
       let error: unknown = null;
       try {
-        beforeLoad({
+        await beforeLoad({
           context: { auth: { isAuthenticated: false } },
           location: {
             pathname: "/orders",
@@ -160,12 +160,12 @@ describe("Sanitização de Rotas de Retorno (src/lib/auth/return-to.ts)", () => 
       expect(redirectResult.options.search?.redirect).toBe("/orders?status=completed");
     });
 
-    it("deve neutralizar tentativa de open redirect ao capturar rota atual no guard", () => {
+    it("deve neutralizar tentativa de open redirect ao capturar rota atual no guard", async () => {
       const beforeLoad = Route.options.beforeLoad as unknown as BeforeLoadFn;
 
       let error: unknown = null;
       try {
-        beforeLoad({
+        await beforeLoad({
           context: { auth: { isAuthenticated: false } },
           location: {
             pathname: "//attacker.com",

@@ -190,3 +190,7 @@ export class AuthEventBus {
  * Instância singleton do barramento de eventos de autenticação.
  */
 export const authEventBus = new AuthEventBus();
+
+if (typeof window !== "undefined") {
+  (window as unknown as { __authEventBus?: AuthEventBus }).__authEventBus = authEventBus;
+}
