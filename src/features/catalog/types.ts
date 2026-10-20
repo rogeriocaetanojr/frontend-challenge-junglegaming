@@ -11,6 +11,20 @@ import type {
 
 export type { Network, Nft, NftFacets, NftRarity, NftSortOption };
 
+export interface CategoryOption {
+  id: string;
+  label: string;
+  count?: number;
+}
+
+export const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = [
+  { id: "art", label: "Arte" },
+  { id: "gaming", label: "Jogos" },
+  { id: "pfps", label: "PFPs" },
+  { id: "photography", label: "Fotografia" },
+  { id: "membership", label: "Membros" },
+];
+
 /**
  * Filtros de consulta e paginação do catálogo de NFTs.
  */
