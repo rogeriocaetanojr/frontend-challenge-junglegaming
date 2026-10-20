@@ -14,7 +14,9 @@ import App from "./App.tsx";
  * render da raiz do React, prevenindo que requisições iniciais escapem do interceptor.
  */
 async function prepareApp(): Promise<void> {
-  if (import.meta.env.VITE_ENABLE_MOCKS === "true") {
+  const shouldEnableMocks = import.meta.env.VITE_ENABLE_MOCKS !== "false";
+
+  if (shouldEnableMocks) {
     const { startWorker } = await import("./mocks/browser");
     await startWorker();
   }
