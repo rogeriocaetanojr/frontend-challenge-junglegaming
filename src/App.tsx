@@ -9,7 +9,9 @@ export function App() {
     <>
       <RouterProvider router={router} />
       <SessionExpiredModal />
-      {import.meta.env.VITE_ENABLE_MOCKS === "true" && <ScenarioSwitcher />}
+      {import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCKS === "true" && (
+        <ScenarioSwitcher />
+      )}
     </>
   );
 }

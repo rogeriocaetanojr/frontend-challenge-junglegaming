@@ -113,16 +113,19 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   }
 
   // Prepara atributos e metadados dinâmicos baseados no NFT atual
-  const titleNumberMatch = currentNft.title?.match(/#([0-9a-zA-Z]+)/);
-  const rawTokenId =
-    titleNumberMatch?.[1] ||
-    currentNft.tokenId ||
-    (typeof currentNft.id === "string"
-      ? currentNft.id.replace(/^nft[-_]/i, "")
-      : String(currentNft.id));
-  const tokenIdText = `#${rawTokenId}`;
+  const displayTokenId = (
+    currentNft?.tokenId ||
+    (currentNft as unknown as { token_id?: string })?.token_id ||
+    currentNft?.title?.match(/#([0-9a-zA-Z]+)/)?.[1] ||
+    currentNft?.id?.toString().replace(/\D/g, "") ||
+    currentNft?.id ||
+    "042"
+  )
+    .toString()
+    .replace(/^#/, "");
+  const tokenIdText = `#${displayTokenId}`;
   const collectionText =
-    currentNft.collection?.name || currentNft.category || "Kurio Apes";
+    currentNft?.collection?.name || currentNft?.category || "Kurio Apes";
 
   // Mapeamento específico de atributos visuais para cada personagem
   const getCharacterAttributes = (): string => {
