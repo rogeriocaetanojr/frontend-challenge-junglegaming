@@ -170,6 +170,13 @@ export class AuthEventBus {
   }
 
   /**
+   * Reseta especificamente o timestamp de deduplicação sem desinscrever os listeners.
+   */
+  resetDeduplication(): void {
+    this.lastExpiredTimestamp = 0;
+  }
+
+  /**
    * Reseta os listeners e os estados de controle de concorrência.
    */
   reset(): void {
