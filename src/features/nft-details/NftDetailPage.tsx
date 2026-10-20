@@ -6,15 +6,14 @@
  * - Direita: Categoria, Coleção, Título semântico (h1), Descrição, Preço formatado, Edições/Propriedades e Ação de Compra/Carrinho.
  */
 import { Link } from "react-router-dom";
-import { AlertCircle, ArrowLeft, Check, ShieldCheck, ShoppingCart } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, ShoppingCart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { NftRarity } from "@/contracts/catalog";
 import { formatEth } from "@/lib/formatters";
-import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { NftImageGallery } from "./NftImageGallery";
 import { useNftDetail } from "./queries";
 import type { NftDetail } from "./types";
 
@@ -22,13 +21,6 @@ export interface NftDetailPageProps {
   nftId?: string;
   initialData?: NftDetail;
 }
-
-const RARITY_COLORS: Record<NftRarity, string> = {
-  legendary: "border-amber-500/40 bg-amber-500/15 text-amber-300",
-  epic: "border-purple-500/40 bg-purple-500/15 text-purple-300",
-  rare: "border-cyan-500/40 bg-cyan-500/15 text-cyan-300",
-  common: "border-border bg-surface-raised text-text-muted",
-};
 
 export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) {
   const { data: nft, isLoading, isError } = useNftDetail(nftId);
@@ -101,10 +93,6 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
     );
   }
 
-  const imageUrl = currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png";
-  const imageAlt = currentNft.images?.[0]?.alt || currentNft.title;
-  const rarityBadgeClass = RARITY_COLORS[currentNft.rarity] || RARITY_COLORS.common;
-
   return (
     <div className="max-w-5xl mx-auto py-8 space-y-8">
       {/* Botão de retorno */}
@@ -123,32 +111,13 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        {/* Painel Esquerdo: Imagem e Badges */}
-        <div className="space-y-4">
-          <div className="relative aspect-square w-full bg-surface-dark border border-border rounded-card overflow-hidden shadow-2xl">
-            <img src={imageUrl} alt={imageAlt} className="size-full object-cover" />
-            <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs font-semibold uppercase tracking-wider px-2.5 py-1",
-                  rarityBadgeClass,
-                )}
-              >
-                {currentNft.rarity}
-              </Badge>
-              {currentNft.featured && (
-                <Badge
-                  variant="default"
-                  className="gap-1 shadow-md bg-primary text-ink-deep font-semibold"
-                >
-                  <ShieldCheck className="size-3.5" />
-                  <span>Destaque</span>
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Painel Esquerdo: Galeria de Imagens com Zoom/Fullscreen */}
+        <NftImageGallery
+          images={currentNft.images}
+          title={currentNft.title}
+          rarity={currentNft.rarity}
+          featured={currentNft.featured}
+        />
 
         {/* Painel Direito: Título, Preço e Detalhes */}
         <div className="space-y-6">
