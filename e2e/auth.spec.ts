@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  CURATOR_USER,
   expectLoggedIn,
   expectLoggedOut,
   isMobileViewport,
   openLoginModal,
+  loginViaModal,
   openProfileFromNav,
   switchAuthForm,
 } from "./helpers";
@@ -116,6 +118,35 @@ test.describe("Autenticação via Modal (E2E)", () => {
     await expectLoggedOut(page);
     await page.goto("/profile");
     await expect(page).toHaveURL(/\/login\?redirect=%2Fprofile/);
+  });
+
+  test("troca de usuário não expõe dados privados da sessão anterior", async ({
+    page,
+  }) => {
+    const nameField = page.locator("#profile-displayName");
+    const openFavorites = () =>
+      page.getByRole("button", { name: "Lista de interesse" }).first().click();
+
+    // Sessão 1: usuário demo, com "Sage Nomad #009" nos favoritos
+    await loginViaModal(page);
+    await page.goto("/profile");
+    await expect(nameField).toHaveValue("Alex Jungle");
+    await openFavorites();
+    await expect(page.getByText("Sage Nomad #009").first()).toBeVisible();
+
+    await page
+      .getByRole("button", { name: /sair|logout/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/$/);
+
+    // Sessão 2: segundo usuário do seed; nada do demo pode aparecer
+    await loginViaModal(page, CURATOR_USER);
+    await page.goto("/profile");
+    await expect(nameField).toHaveValue("Sam Curator");
+    await openFavorites();
+    await expect(page.getByText("Noct Vessel #552").first()).toBeVisible();
+    await expect(page.getByText("Sage Nomad #009")).toHaveCount(0);
   });
 
   test("deve permitir fechar o modal através do botão de fechar (X)", async ({

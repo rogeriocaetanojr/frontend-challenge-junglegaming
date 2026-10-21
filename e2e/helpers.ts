@@ -118,25 +118,52 @@ export async function expectLoggedOut(page: Page) {
 }
 
 /**
- * Autentica o usuário demo sem sair da tela atual.
+ * `page.goto` que tolera uma navegação pendente da página anterior (ex.: logo após um
+ * `reload()`), que pode abortar a ida ao destino ou substituí-la por outra URL.
+ * Confere a URL final e repete a navegação algumas vezes antes de falhar.
+ */
+async function gotoSettled(page: Page, url: string, attempts = 3) {
+  const target = new URL(url, page.url());
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await page.goto(url);
+      await page.waitForURL((current) => current.pathname === target.pathname, {
+        timeout: 2_000,
+      });
+      await page.waitForTimeout(250);
+      if (new URL(page.url()).pathname === target.pathname) return;
+    } catch (error) {
+      if (attempt === attempts) throw error;
+    }
+    await page.waitForLoadState("load");
+  }
+  throw new Error(`Não foi possível estabilizar a navegação para ${url}`);
+}
+
+/** Usuários do seed do MSW (senha em hash PBKDF2 no banco simulado). */
+export const DEMO_USER = { email: "demo@jungle.com", password: "Password123!" };
+export const CURATOR_USER = { email: "curator@kurio.art", password: "Password123!" };
+
+/**
+ * Autentica um usuário (demo por padrão) sem sair da tela atual.
  * Desktop: AuthModal do cabeçalho. Mobile: rota /login com `redirect` para a tela atual,
  * que é o caminho real do usuário fora da Home (não há barra inferior nessas telas).
  */
-export async function loginViaModal(page: Page) {
+export async function loginViaModal(page: Page, credentials = DEMO_USER) {
   if (isMobileViewport(page)) {
     const returnTo = currentPath(page);
-    await page.goto(`/login?redirect=${encodeURIComponent(returnTo)}`);
+    await gotoSettled(page, `/login?redirect=${encodeURIComponent(returnTo)}`);
     const form = page.getByRole("form", { name: "Formulário de Login" });
-    await form.getByLabel(/e-mail/i).fill("demo@jungle.com");
-    await form.getByLabel(/senha/i).fill("Password123!");
+    await form.getByLabel(/e-mail/i).fill(credentials.email);
+    await form.getByLabel(/senha/i).fill(credentials.password);
     await form.locator('button[type="submit"]').click();
     await expect(page).not.toHaveURL(/\/login/);
     return;
   }
   await openLoginModal(page);
   const modal = page.getByRole("dialog");
-  await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
-  await modal.getByLabel(/senha/i).fill("Password123!");
+  await modal.getByLabel(/e-mail/i).fill(credentials.email);
+  await modal.getByLabel(/senha/i).fill(credentials.password);
   await modal.locator('button[type="submit"]').click();
   await expect(modal).not.toBeVisible();
 }

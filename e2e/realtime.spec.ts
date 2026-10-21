@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { addNftToCart, loginViaModal, resetScenarioState } from "./helpers";
+import { loginViaModal, resetScenarioState } from "./helpers";
 
 /**
  * Eventos disparados pelo servidor simulado (camada MSW). O transporte até a UI
@@ -40,8 +40,9 @@ const emitNftUpdated = (page: Page, price: string, available: number) =>
 
 test.describe("Tempo real via Socket.IO (E2E)", () => {
   test.beforeEach(async ({ page }) => {
+    // O carrinho semeado do usuário demo já contém 1x nft-1; logar sem itens de visitante
+    // mantém o estado determinístico (o merge do visitante é coberto em cart.spec.ts)
     await resetScenarioState(page);
-    await addNftToCart(page);
     await loginViaModal(page);
   });
 
