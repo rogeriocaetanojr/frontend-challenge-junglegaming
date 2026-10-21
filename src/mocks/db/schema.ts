@@ -28,6 +28,12 @@ export interface DbCoupon {
   active: boolean;
 }
 
+/** Registro de favorito de um usuário, vinculado a um NFT do catálogo. */
+export interface DbFavorite {
+  nftId: string;
+  favoritedAt: IsoDate;
+}
+
 /**
  * Registro de idempotência para criação de pedidos.
  * Associa (userId, idempotencyKey) ao hash canônico da requisição e ao pedido gerado.
@@ -54,4 +60,6 @@ export interface InMemoryDatabase {
   coupons: Map<string, DbCoupon>;
   idempotency: Map<string, IdempotencyRecord>;
   sessions: Map<string, Session>;
+  /** Favoritos por usuário: chave é o userId, valor é a lista de favoritos. */
+  favorites: Map<string, DbFavorite[]>;
 }

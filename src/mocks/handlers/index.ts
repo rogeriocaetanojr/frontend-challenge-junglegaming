@@ -3,6 +3,7 @@ import { http, HttpResponse } from "msw";
 import { cartHandlers } from "./cart.handlers";
 import { catalogHandlers } from "./catalog.handlers";
 import { checkoutHandlers } from "./checkout.handlers";
+import { favoritesHandlers } from "./favorites.handlers";
 import { identityHandlers } from "./identity.handlers";
 import { orderHandlers } from "./order.handlers";
 import { profileHandlers } from "./profile";
@@ -13,6 +14,7 @@ import { realtimeSocketHandlers } from "@/mocks/realtime/socket-server";
 export * from "./cart.handlers";
 export * from "./catalog.handlers";
 export * from "./checkout.handlers";
+export * from "./favorites.handlers";
 export * from "./identity.handlers";
 export * from "./order.handlers";
 export * from "./orders";
@@ -36,5 +38,6 @@ export const handlers = [
   ...quoteHandlers,
   ...checkoutHandlers,
   ...orderHandlers,
+  ...favoritesHandlers,
   ...realtimeSocketHandlers,
 ];

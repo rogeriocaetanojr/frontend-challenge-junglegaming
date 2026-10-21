@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/features/cart/api";
-import { useFavoritesStore } from "@/store/favorites-store";
+import { useFavorites } from "@/features/favorites/api";
 import { NftActionPanel } from "./NftActionPanel";
 import { NftDetailHeader } from "./NftDetailHeader";
 import { NftImageGallery } from "./NftImageGallery";
@@ -31,22 +31,17 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
   const { addItem, error: cartError } = useCart();
-  const isFavorite = useFavoritesStore((state) =>
-    currentNft ? state.isFavorite(String(currentNft.id)) : false,
-  );
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const { isFavorite: isFavoriteFn, toggleFavorite } = useFavorites();
+  const isFavorite = currentNft ? isFavoriteFn(String(currentNft.id)) : false;
 
   const handleFavoriteChange = () => {
     if (!currentNft) return;
     toggleFavorite({
       id: String(currentNft.id),
       title: currentNft.title,
-      name: currentNft.title,
       collection: currentNft.collection,
       price: currentNft.price,
-      priceEth: Number(currentNft.price) || 0,
-      image: currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png",
-      creator: currentNft.creator,
+      images: currentNft.images,
     });
   };
 

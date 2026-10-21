@@ -8,10 +8,17 @@ import type { Nft } from "@/contracts/catalog";
 import type { Cart, Order, Quote } from "@/contracts/commerce";
 import type { IsoDate } from "@/contracts/common";
 import type { Session, Wallet } from "@/contracts/identity";
-import type { DbCoupon, DbUser, IdempotencyRecord, InMemoryDatabase } from "./schema";
+import type {
+  DbCoupon,
+  DbFavorite,
+  DbUser,
+  IdempotencyRecord,
+  InMemoryDatabase,
+} from "./schema";
 import {
   SEED_CARTS,
   SEED_COUPONS,
+  SEED_FAVORITES,
   SEED_NFTS,
   SEED_ORDERS,
   SEED_QUOTES,
@@ -33,6 +40,7 @@ export const db: InMemoryDatabase = {
   coupons: new Map<string, DbCoupon>(),
   idempotency: new Map<string, IdempotencyRecord>(),
   sessions: new Map<string, Session>(),
+  favorites: new Map<string, DbFavorite[]>(),
 };
 
 /**
@@ -75,6 +83,7 @@ export function resetDb(): InMemoryDatabase {
   db.coupons.clear();
   db.idempotency.clear();
   db.sessions.clear();
+  db.favorites.clear();
 
   for (const nft of structuredClone(SEED_NFTS)) {
     db.nfts.set(nft.id, nft);
@@ -102,6 +111,10 @@ export function resetDb(): InMemoryDatabase {
 
   for (const coupon of structuredClone(SEED_COUPONS)) {
     db.coupons.set(coupon.code.toUpperCase(), coupon);
+  }
+
+  for (const [userId, favorites] of Object.entries(structuredClone(SEED_FAVORITES))) {
+    db.favorites.set(userId, favorites);
   }
 
   // Sessão padrão para o usuário demo

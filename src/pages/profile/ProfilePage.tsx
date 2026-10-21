@@ -15,7 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
-import { useFavoritesStore } from "@/store/favorites-store";
+import { useFavorites } from "@/features/favorites/api";
 
 type TabId =
   "dados" | "carteiras" | "atividade" | "lista" | "ofertas" | "arquivos" | "suporte";
@@ -68,9 +68,7 @@ export function ProfilePage() {
   const [isSameAsPrimary, setIsSameAsPrimary] = useState(false);
 
   // Lista de Interesses (Favoritos)
-  const favorites = useFavoritesStore((state) => state.favorites);
-  const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
-  const clearFavorites = useFavoritesStore((state) => state.clearFavorites);
+  const { favorites, removeFavorite, clearFavorites } = useFavorites();
 
   const handleWalletSave = (e: React.FormEvent) => {
     e.preventDefault();

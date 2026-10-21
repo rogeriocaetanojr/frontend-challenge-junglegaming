@@ -11,7 +11,7 @@ import type { Nft } from "@/contracts/catalog";
 import type { Cart, Order, Quote } from "@/contracts/commerce";
 import { asEthString, asId, type IsoDate } from "@/contracts/common";
 import type { Wallet } from "@/contracts/identity";
-import type { DbCoupon, DbUser } from "./schema";
+import type { DbCoupon, DbFavorite, DbUser } from "./schema";
 
 const SEED_TIMESTAMP = "2026-10-19T00:00:00.000Z" as IsoDate;
 
@@ -449,3 +449,11 @@ export const SEED_QUOTES: Quote[] = [];
 
 /** Pedidos iniciais (vazio por padrão). */
 export const SEED_ORDERS: Order[] = [];
+
+/** Favoritos iniciais por usuário. */
+export const SEED_FAVORITES: Record<string, DbFavorite[]> = {
+  user_demo: [
+    { nftId: "nft-1", favoritedAt: SEED_TIMESTAMP },
+    { nftId: "nft-2", favoritedAt: SEED_TIMESTAMP },
+  ],
+};
