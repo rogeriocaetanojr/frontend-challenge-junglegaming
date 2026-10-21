@@ -1,24 +1,16 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Tag, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { http } from "@/lib/http";
-import { type CartItem, useCartStore } from "@/store/cart-store";
-
-export interface QuoteResponse {
-  quoteId: string;
-  subtotal: number;
-  discount: number;
-  networkFee: number;
-  total: number;
-  couponCode: string | null;
-  expiresAt: string;
-}
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatEthFixed } from "@/lib/money";
+import { type CartItem, lineTotal, sumEth, useApplyCoupon, useCartQuote } from "./api";
+import { useCouponStore } from "./couponStore";
 
 export interface CartSummaryProps {
   items: CartItem[];
+  isLoading?: boolean;
   couponCode: string | null;
   onConnectAndCheckout?: (quoteData: {
     subtotal: string;
@@ -29,70 +21,34 @@ export interface CartSummaryProps {
 
 export function CartSummary({
   items,
+  isLoading = false,
   couponCode,
   onConnectAndCheckout,
 }: CartSummaryProps) {
-  const applyCoupon = useCartStore((state) => state.applyCoupon);
-  const removeCoupon = useCartStore((state) => state.removeCoupon);
+  const clearCoupon = useCouponStore((state) => state.clearCoupon);
+  const applyCouponMutation = useApplyCoupon();
+  const { data: quote, isPending: isQuotePending } = useCartQuote();
 
   const [inputCoupon, setInputCoupon] = useState("");
-  const [couponError, setCouponError] = useState<string | null>(null);
+  const couponError = applyCouponMutation.error?.message ?? null;
 
-  // Calcula cotação dinâmica via TanStack Query conectada ao backend MSW
-  const { data: quote } = useQuery({
-    queryKey: ["cart", "quote", { items, couponCode }],
-    queryFn: async () => {
-      if (items.length === 0) return null;
-
-      try {
-        const payload = {
-          items: items.map((i) => ({
-            id: i.id,
-            price:
-              typeof i.price === "number" ? i.price : parseFloat(String(i.priceEth || 0)),
-            quantity: i.quantity,
-          })),
-          couponCode: couponCode || undefined,
-        };
-        const response = await http.post<QuoteResponse>("/api/quote", payload);
-        setCouponError(null);
-        return response;
-      } catch {
-        if (couponCode) {
-          setCouponError(`Cupom '${couponCode}' inválido ou expirado.`);
-          removeCoupon();
-        }
-        return null;
-      }
-    },
-    enabled: items.length > 0,
-    staleTime: 10_000,
-  });
-
-  // Cálculo local síncrono para fallback e exibição instantânea
-  const localSubtotal = items.reduce((acc, i) => {
-    const p = typeof i.price === "number" ? i.price : parseFloat(String(i.priceEth || 0));
-    return acc + p * i.quantity;
-  }, 0);
-  const isCouponValid = couponCode === "KURIO10" || couponCode === "JUNGLE10";
-  const localDiscount = isCouponValid ? localSubtotal * 0.1 : 0;
-
-  // Formatação para exibição fiel à imagem
-  const displaySubtotal = (quote?.subtotal ?? localSubtotal).toFixed(2);
-  const rawDiscount = quote?.discount ?? localDiscount;
-  const displayDiscount = rawDiscount > 0 ? `(-) ${rawDiscount.toFixed(2)}` : "(-) 00.00";
-  const displayGas = (quote?.networkFee ?? (items.length > 0 ? 0.016 : 0)).toFixed(3);
-  const displayTotal = (
-    quote?.total ?? localSubtotal - rawDiscount + (items.length > 0 ? 0.016 : 0)
-  ).toFixed(3);
+  // Valores de exibição: sempre a cotação da API (strings decimais); subtotal local só enquanto carrega
+  const isSummaryLoading = isLoading || (items.length > 0 && isQuotePending);
+  const subtotal = quote?.subtotal ?? sumEth(items.map(lineTotal));
+  const displaySubtotal = formatEthFixed(subtotal, 2);
+  const hasDiscount = quote !== undefined && formatEthFixed(quote.discount, 2) !== "0.00";
+  const displayDiscount = hasDiscount
+    ? `(-) ${formatEthFixed(quote?.discount, 2)}`
+    : "(-) 00.00";
+  const displayGas = formatEthFixed(quote?.networkFee, 3);
+  const displayTotal = formatEthFixed(quote?.total, 3);
+  const couponIssue = quote?.coupon && quote.coupon.status !== "applied";
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = inputCoupon.trim().toUpperCase();
     if (!trimmed) return;
-    setCouponError(null);
-    applyCoupon(trimmed);
-    setInputCoupon("");
+    applyCouponMutation.mutate(trimmed, { onSuccess: () => setInputCoupon("") });
   };
 
   return (
@@ -119,11 +75,13 @@ export function CartSummary({
           <div className="flex items-center justify-between p-2 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C] text-xs text-[#D28A4C]">
             <div className="flex items-center gap-2">
               <Tag className="size-3" />
-              <span className="font-bold">{couponCode} (10% OFF aplicado)</span>
+              <span className="font-bold">
+                {couponCode} {couponIssue ? "(inválido ou expirado)" : "(aplicado)"}
+              </span>
             </div>
             <button
               type="button"
-              onClick={removeCoupon}
+              onClick={clearCoupon}
               aria-label="Remover cupom"
               className="p-1 hover:text-[#F5F1EB] transition-colors cursor-pointer"
             >
@@ -160,18 +118,30 @@ export function CartSummary({
       <div className="space-y-2.5 text-xs sm:text-[13px] text-[#F5F1EB]">
         <div className="flex justify-between items-center">
           <span className="text-[#F5F1EB]/90">Subtotal</span>
-          <span className="font-medium text-[#F5F1EB]">{displaySubtotal} ETH</span>
+          {isSummaryLoading ? (
+            <Skeleton className="h-4 w-20" />
+          ) : (
+            <span className="font-medium text-[#F5F1EB]">{displaySubtotal} ETH</span>
+          )}
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-[#F5F1EB]/90">Desconto do lançamento</span>
-          <span className="font-medium text-[#F5F1EB]">{displayDiscount}</span>
+          {isSummaryLoading ? (
+            <Skeleton className="h-4 w-16" />
+          ) : (
+            <span className="font-medium text-[#F5F1EB]">{displayDiscount}</span>
+          )}
         </div>
 
         <div className="space-y-0.5">
           <div className="flex justify-between items-center">
             <span className="text-[#F5F1EB]/90">Taxa de rede</span>
-            <span className="font-medium text-[#F5F1EB]">{displayGas} ETH</span>
+            {isSummaryLoading ? (
+              <Skeleton className="h-4 w-16" />
+            ) : (
+              <span className="font-medium text-[#F5F1EB]">{displayGas} ETH</span>
+            )}
           </div>
           <div className="text-right">
             <span className="text-[10px] text-[#D28A4C]">Taxa estimada</span>
@@ -180,9 +150,13 @@ export function CartSummary({
 
         <div className="flex justify-between items-baseline pt-3 text-sm sm:text-base">
           <span className="font-bold text-[#F5F1EB]">Total</span>
-          <span className="text-base sm:text-lg font-bold text-[#D28A4C]">
-            {displayTotal} ETH
-          </span>
+          {isSummaryLoading ? (
+            <Skeleton className="h-5 w-24" />
+          ) : (
+            <span className="text-base sm:text-lg font-bold text-[#D28A4C]">
+              {displayTotal} ETH
+            </span>
+          )}
         </div>
       </div>
 
@@ -191,7 +165,7 @@ export function CartSummary({
         {onConnectAndCheckout ? (
           <Button
             type="button"
-            disabled={items.length === 0}
+            disabled={items.length === 0 || isSummaryLoading}
             onClick={() =>
               onConnectAndCheckout({
                 subtotal: displaySubtotal,

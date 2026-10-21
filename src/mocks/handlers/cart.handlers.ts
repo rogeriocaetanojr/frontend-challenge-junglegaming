@@ -9,7 +9,7 @@ import { http, HttpResponse } from "msw";
 
 import type { Cart, CartLine } from "@/contracts/commerce";
 import { type ApiErrorBody, asId } from "@/contracts/common";
-import { db, type DbUser, dbHelpers } from "@/mocks/db";
+import { db, type DbUser, dbHelpers, saveCarts } from "@/mocks/db";
 import { scenarioEngine } from "@/mocks/scenarios";
 
 interface CartItemInput {
@@ -75,11 +75,14 @@ function getOrCreateCart(request: Request): Cart {
       version: 1,
     };
     db.carts.set(userCartId, newCart);
+    saveCarts();
     return newCart;
   }
 
   // 3. Visitante anônimo (guest) via x-cart-id ou padrão
-  const headerCartId = request.headers.get("x-cart-id")?.trim();
+  const headerCartId = (
+    request.headers.get("x-cart-id") ?? request.headers.get("x-guest-id")
+  )?.trim();
   const guestCartId = headerCartId || "cart_guest_default";
 
   const existingGuestCart = db.carts.get(guestCartId);
@@ -94,6 +97,7 @@ function getOrCreateCart(request: Request): Cart {
     version: 1,
   };
   db.carts.set(guestCartId, newGuestCart);
+  saveCarts();
   return newGuestCart;
 }
 
@@ -188,6 +192,7 @@ export const cartHandlers = [
 
     cart.version += 1;
     db.carts.set(cart.id, cart);
+    saveCarts();
 
     return HttpResponse.json<Cart>(cart, { status: 200 });
   }),
@@ -230,6 +235,7 @@ export const cartHandlers = [
       );
       cart.version += 1;
       db.carts.set(cart.id, cart);
+      saveCarts();
       return HttpResponse.json<Cart>(cart, { status: 200 });
     }
 
@@ -263,6 +269,7 @@ export const cartHandlers = [
 
     cart.version += 1;
     db.carts.set(cart.id, cart);
+    saveCarts();
 
     return HttpResponse.json<Cart>(cart, { status: 200 });
   }),
@@ -304,6 +311,7 @@ export const cartHandlers = [
     );
     cart.version += 1;
     db.carts.set(cart.id, cart);
+    saveCarts();
 
     return HttpResponse.json<Cart>(cart, { status: 200 });
   }),
@@ -319,6 +327,7 @@ export const cartHandlers = [
     cart.lines = [];
     cart.version += 1;
     db.carts.set(cart.id, cart);
+    saveCarts();
 
     return HttpResponse.json<Cart>(cart, { status: 200 });
   }),
@@ -350,7 +359,7 @@ export const cartHandlers = [
 
     const guestCartId =
       body.guestCartId ||
-      request.headers.get("x-cart-id")?.trim() ||
+      (request.headers.get("x-cart-id") ?? request.headers.get("x-guest-id"))?.trim() ||
       "cart_guest_default";
 
     const userCart = getOrCreateCart(request);
@@ -377,9 +386,11 @@ export const cartHandlers = [
       guestCart.lines = [];
       guestCart.version += 1;
       db.carts.set(guestCart.id, guestCart);
+      saveCarts();
 
       userCart.version += 1;
       db.carts.set(userCart.id, userCart);
+      saveCarts();
     }
 
     return HttpResponse.json<Cart>(userCart, { status: 200 });

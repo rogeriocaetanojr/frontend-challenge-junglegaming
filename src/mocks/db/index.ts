@@ -39,7 +39,33 @@ export const db: InMemoryDatabase = {
  * Limpa todas as coleções e as repovoa com clones estruturados das seeds iniciais.
  * Deve ser chamado antes de cada suíte ou caso de teste para garantir isolamento.
  */
+const CARTS_STORAGE_KEY = "@nft-marketplace:mock:carts";
+
+/** Persiste os carrinhos do mock no navegador (sustenta o refresh da página). */
+export function saveCarts(): void {
+  try {
+    localStorage.setItem(CARTS_STORAGE_KEY, JSON.stringify([...db.carts.values()]));
+  } catch {
+    // Storage indisponível: o carrinho segue válido apenas em memória
+  }
+}
+
+function readPersistedCarts(): Cart[] {
+  try {
+    const raw = localStorage.getItem(CARTS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Cart[]) : [];
+  } catch {
+    // Dados corrompidos são ignorados e o cenário padrão é mantido
+    return [];
+  }
+}
+
 export function resetDb(): InMemoryDatabase {
+  try {
+    localStorage.removeItem(CARTS_STORAGE_KEY);
+  } catch {
+    // Storage indisponível
+  }
   db.nfts.clear();
   db.users.clear();
   db.wallets.clear();
@@ -144,4 +170,12 @@ export const dbHelpers = {
 };
 
 // Popula o banco singleton na inicialização do módulo.
+// Na carga do app, o carrinho persistido sobrevive ao refresh; o reset explícito o descarta
+const persistedCarts = import.meta.env.MODE === "test" ? [] : readPersistedCarts();
 resetDb();
+if (persistedCarts.length > 0) {
+  for (const cart of persistedCarts) {
+    db.carts.set(cart.id, cart);
+  }
+  saveCarts();
+}

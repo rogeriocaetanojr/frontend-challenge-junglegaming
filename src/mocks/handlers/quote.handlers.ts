@@ -85,7 +85,9 @@ function resolveCartForQuote(request: Request, cartIdFromInput?: string): Cart |
   }
 
   // 3. Busca por x-cart-id de visitante
-  const headerCartId = request.headers.get("x-cart-id")?.trim();
+  const headerCartId = (
+    request.headers.get("x-cart-id") ?? request.headers.get("x-guest-id")
+  )?.trim();
   if (headerCartId) {
     const guestCart = db.carts.get(headerCartId);
     if (guestCart) {

@@ -5,7 +5,7 @@ import { AlertCircle, ArrowLeft, Mail, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useCartStore } from "@/store/cart-store";
+import { useCart } from "@/features/cart/api";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { NftActionPanel } from "./NftActionPanel";
 import { NftDetailHeader } from "./NftDetailHeader";
@@ -30,7 +30,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const [userRating, setUserRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
-  const addItem = useCartStore((state) => state.addItem);
+  const { addItem, error: cartError } = useCart();
   const isFavorite = useFavoritesStore((state) =>
     currentNft ? state.isFavorite(String(currentNft.id)) : false,
   );
@@ -50,25 +50,19 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
     });
   };
 
-  const handleBuy = (quantity = 1) => {
+  const handleBuy = async (quantity = 1) => {
     if (!currentNft) return;
 
-    addItem(
-      {
-        id: String(currentNft.id),
-        title: currentNft.title,
-        name: currentNft.title,
-        collection: currentNft.collection?.name || "Genesis Apes",
-        price: Number(currentNft.price) || 0,
-        priceEth: currentNft.price,
-        image: currentNft.images?.[0]?.url || "/images/nfts/emerald-ape.png",
-        creator: currentNft.creator?.name || "Kurio Studios",
-        quantity,
-      },
-      quantity,
-    );
+    const edition =
+      currentNft.editions.find((item) => item.available > 0) ?? currentNft.editions[0];
+    if (!edition) return;
 
-    navigate({ to: "/cart" });
+    try {
+      await addItem({ nftId: String(currentNft.id), editionId: edition.id, quantity });
+      navigate({ to: "/cart" });
+    } catch {
+      // A mensagem de conflito/validação é exibida via cartError
+    }
   };
 
   if (isLoading && !currentNft) {
@@ -360,6 +354,12 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
             initialFavorite={isFavorite}
             onFavoriteChange={handleFavoriteChange}
           />
+
+          {cartError && (
+            <p role="alert" className="text-xs font-mono text-[#e05252]">
+              {cartError}
+            </p>
+          )}
 
           {/* Metadados Técnicos em #CFB28C aproximados para cima com fonte maior */}
           <div className="space-y-1 pt-0.5 text-xs sm:text-[14.5px] text-[#CFB28C] font-mono">

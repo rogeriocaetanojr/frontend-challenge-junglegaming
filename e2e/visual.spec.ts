@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { addNftToCart } from "./helpers";
+
 /**
  * Suíte de Regressão Visual E2E (Playwright) — Seção 9 do Edital.
  *
@@ -65,27 +67,7 @@ test.describe("Regressão Visual (E2E)", () => {
   test("deve corresponder à baseline visual da tela do Carrinho com itens", async ({
     page,
   }) => {
-    await page.goto("/");
-    // Inicializa item estável no carrinho via localStorage
-    await page.evaluate(() => {
-      const cartState = {
-        state: {
-          items: [
-            {
-              id: "1",
-              title: "Emerald Ape #042",
-              price: "2.45",
-              priceEth: 2.45,
-              image: "/images/nfts/emerald-ape.png",
-              quantity: 1,
-            },
-          ],
-          appliedCoupon: "JUNGLE10",
-        },
-        version: 0,
-      };
-      localStorage.setItem("@nft-marketplace:cart", JSON.stringify(cartState));
-    });
+    await addNftToCart(page);
 
     await page.goto("/cart");
     await page.waitForLoadState("networkidle");
@@ -110,29 +92,9 @@ test.describe("Regressão Visual (E2E)", () => {
   test("deve corresponder à baseline visual da tela de Pagamento / Checkout", async ({
     page,
   }) => {
-    await page.goto("/");
-    // Configura sessão e carrinho prévio para o checkout
-    await page.evaluate(() => {
-      const cartState = {
-        state: {
-          items: [
-            {
-              id: "1",
-              title: "Emerald Ape #042",
-              price: "2.45",
-              priceEth: 2.45,
-              image: "/images/nfts/emerald-ape.png",
-              quantity: 1,
-            },
-          ],
-        },
-        version: 0,
-      };
-      localStorage.setItem("@nft-marketplace:cart", JSON.stringify(cartState));
-    });
+    await addNftToCart(page);
 
-    // Autentica pela API simulada (a rota de pagamento é privada)
-    await page.reload();
+    // Autentica pela API simulada (a rota de pagamento é privada); o carrinho do visitante é mesclado
     await page
       .getByRole("banner")
       .getByRole("button", { name: /^entrar$/i })

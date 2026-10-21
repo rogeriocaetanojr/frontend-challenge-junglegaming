@@ -1,10 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+import { addNftToCart } from "./helpers";
+
 test.describe("Checkout integrado à API simulada (E2E)", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await addNftToCart(page);
     await page
       .getByRole("banner")
       .getByRole("button", { name: /^entrar$/i })

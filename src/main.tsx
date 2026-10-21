@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import "@/features/cart/sync";
 import { queryClient } from "@/lib/query-client";
 import { hydrateAuthSession } from "@/store/auth-store";
 import "@/styles/index.css";

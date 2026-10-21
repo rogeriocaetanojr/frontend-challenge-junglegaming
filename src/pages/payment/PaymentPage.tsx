@@ -3,29 +3,29 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Tag, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
-import { useCartStore } from "@/store/cart-store";
 import { TransactionSuccessModal } from "@/features/cart/TransactionSuccessModal";
 import { useCheckout } from "@/features/checkout/useCheckout";
-import { http } from "@/lib/http";
-
-interface PaymentQuote {
-  quoteId: string;
-  subtotal: number;
-  discount: number;
-  networkFee: number;
-  total: number;
-}
+import { formatEthFixed } from "@/lib/money";
+import {
+  lineTotal,
+  sumEth,
+  useApplyCoupon,
+  useCart,
+  useCartQuote,
+} from "@/features/cart/api";
+import { useCouponStore } from "@/features/cart/couponStore";
 
 export function PaymentPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
   // Itens do carrinho
-  const items = useCartStore((state) => state.items);
-  const couponCode = useCartStore((state) => state.couponCode);
-  const applyCoupon = useCartStore((state) => state.applyCoupon);
-  const removeCoupon = useCartStore((state) => state.removeCoupon);
-  const clearCart = useCartStore((state) => state.clearCart);
+  const { items, clearCart } = useCart();
+  const couponCode = useCouponStore((state) => state.couponCode);
+  const removeCoupon = useCouponStore((state) => state.clearCoupon);
+  const applyCouponMutation = useApplyCoupon();
+  const quoteQuery = useCartQuote();
+  const quote = quoteQuery.data;
 
   // Estados do Formulário "Perfil do colecionador" (lado esquerdo)
   const [displayName, setDisplayName] = useState(user?.name || "Rogerio Caetano");
@@ -61,7 +61,6 @@ export function PaymentPage() {
   const [isQuoting, setIsQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isReceiptDismissed, setIsReceiptDismissed] = useState(false);
-  const [quote, setQuote] = useState<PaymentQuote | null>(null);
   const isSubmittingRef = useRef(false);
 
   const isProcessing = isQuoting || status === "submitting" || status === "polling";
@@ -69,27 +68,23 @@ export function PaymentPage() {
   const isSuccessModalOpen = status === "success" && !isReceiptDismissed;
   const checkoutError = quoteError ?? (status === "error" ? error?.message : null);
 
-  // Cálculos de subtotal e total
-  const rawSubtotal = items.reduce(
-    (acc, item) => acc + (Number(item.priceEth) || item.price || 0) * item.quantity,
-    0,
-  );
-  // Se o carrinho estiver vazio por algum motivo, mantemos o valor de fallback realista da imagem
-  const subtotalNum = rawSubtotal > 0 ? rawSubtotal : 26.83;
-  const discountNum = couponCode ? subtotalNum * 0.1 : 0;
-  const networkFeeNum = 0.016;
-  const totalNum = subtotalNum - discountNum + networkFeeNum;
-
-  const displaySubtotal = subtotalNum.toFixed(2);
-  const displayDiscount = discountNum > 0 ? `(-) ${discountNum.toFixed(2)}` : "(-) 00.00";
-  const displayTotal = totalNum.toFixed(3);
+  // Valores exibidos: sempre a cotação emitida pela API (strings decimais de ETH)
+  const subtotalEth = quote?.subtotal ?? sumEth(items.map(lineTotal));
+  const displaySubtotal = formatEthFixed(subtotalEth, 2);
+  const discountEth = formatEthFixed(quote?.discount, 2);
+  const displayDiscount = discountEth !== "0.00" ? `(-) ${discountEth}` : "(-) 00.00";
+  const displayNetworkFee = formatEthFixed(quote?.networkFee, 3);
+  const displayTotal = formatEthFixed(quote?.total, 3);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     if (promoInputValue.trim()) {
-      applyCoupon(promoInputValue.trim().toUpperCase());
-      setPromoInputValue("");
-      setShowPromoInput(false);
+      applyCouponMutation.mutate(promoInputValue.trim(), {
+        onSuccess: () => {
+          setPromoInputValue("");
+          setShowPromoInput(false);
+        },
+      });
     }
   };
 
@@ -100,16 +95,17 @@ export function PaymentPage() {
     setQuoteError(null);
 
     try {
-      // 1. Cotação de referência (validação de cupom, taxas e total)
-      const freshQuote = await http.post<PaymentQuote>("/api/quote", {
-        items: items.map((item) => ({
-          id: item.id,
-          price: Number(item.priceEth) || item.price,
-          quantity: item.quantity,
-        })),
-        couponCode: couponCode || undefined,
-      });
-      setQuote(freshQuote);
+      // 1. Cotação de referência recém-emitida pela API (preço, cupom, taxas e total)
+      const { data: freshQuote } = await quoteQuery.refetch({ throwOnError: true });
+      if (!freshQuote) {
+        throw new Error("Não foi possível obter a cotação do pedido.");
+      }
+      const blocking = freshQuote.issues.find((issue) => issue.type !== "price_changed");
+      if (blocking) {
+        throw new Error(
+          "Há divergências no carrinho (disponibilidade ou cupom). Revise os itens antes de continuar.",
+        );
+      }
 
       // 2. Criação idempotente do pedido (o hook envia o header Idempotency-Key)
       await submitOrder({
@@ -138,7 +134,7 @@ export function PaymentPage() {
 
   const handleCloseModal = () => {
     setIsReceiptDismissed(true);
-    clearCart();
+    void clearCart().catch(() => undefined);
     navigate({ to: "/" });
   };
 
@@ -489,9 +485,7 @@ export function PaymentPage() {
             {/* Lista dos NFTs adquiridos */}
             <div className="space-y-2.5">
               {items.map((item) => {
-                const itemTotal = (
-                  (Number(item.priceEth) || item.price || 0) * item.quantity
-                ).toFixed(2);
+                const itemTotal = formatEthFixed(lineTotal(item), 2);
                 const tokenId = item.id.replace(/\D/g, "") || "042";
                 const formattedTokenId = `#0${tokenId.padStart(3, "0").slice(-3)}`;
 
@@ -504,13 +498,13 @@ export function PaymentPage() {
                       <div className="size-13 rounded-lg overflow-hidden bg-[#140D0A] shrink-0 border border-[#2B1B14]">
                         <img
                           src={item.image}
-                          alt={item.title || item.name}
+                          alt={item.title}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-xs sm:text-[13px] font-bold text-[#F5F1EB] truncate max-w-[150px]">
-                          {item.title || item.name}
+                          {item.title}
                         </h3>
                         <p className="text-[11px] text-[#A69788]">
                           ID do token: {formattedTokenId}
@@ -536,7 +530,7 @@ export function PaymentPage() {
               {couponCode ? (
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-xs text-[#D28A4C]">
                   <Tag className="size-3" />
-                  <span>{couponCode} (10% OFF aplicado)</span>
+                  <span>{couponCode} (aplicado)</span>
                   <button
                     type="button"
                     onClick={removeCoupon}
@@ -592,7 +586,7 @@ export function PaymentPage() {
               </div>
               <div className="flex justify-between items-center text-[#F5F1EB]">
                 <span className="text-[#A69788]">Taxa de rede</span>
-                <span className="font-mono">{networkFeeNum} ETH</span>
+                <span className="font-mono">{displayNetworkFee} ETH</span>
               </div>
               <p className="text-[10px] text-center text-[#A69788] pt-0.5">
                 Taxa estimada
@@ -716,9 +710,9 @@ export function PaymentPage() {
         isOpen={isSuccessModalOpen}
         onClose={handleCloseModal}
         items={items}
-        subtotal={(quote?.subtotal ?? subtotalNum).toFixed(2)}
-        networkFee={`${quote?.networkFee ?? networkFeeNum} ETH`}
-        total={(quote?.total ?? totalNum).toFixed(3)}
+        subtotal={displaySubtotal}
+        networkFee={`${displayNetworkFee} ETH`}
+        total={displayTotal}
         transactionHash={order?.transactionHash}
         date={
           order?.createdAt

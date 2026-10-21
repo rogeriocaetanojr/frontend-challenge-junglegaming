@@ -9,7 +9,7 @@ import {
 import { LogOut, Search, ShoppingCart, User as UserIcon, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
-import { useCartStore } from "@/store/cart-store";
+import { useCartCount } from "@/features/cart/api";
 import { AuthModal } from "@/features/auth/AuthModal";
 import { Footer } from "./components/footer";
 
@@ -27,7 +27,7 @@ export function ScrollToTop() {
 }
 
 export function RootLayout() {
-  const cartCount = useCartStore((state) => state.items.length);
+  const cartCount = useCartCount();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);

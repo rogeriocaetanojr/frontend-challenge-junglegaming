@@ -2,15 +2,35 @@ import { Link } from "@tanstack/react-router";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { type CartItem, useCartStore } from "@/store/cart-store";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatEthFixed } from "@/lib/money";
+import { type CartItem, lineTotal } from "./api";
 
 export interface CartItemListProps {
   items: CartItem[];
+  isLoading?: boolean;
+  /** Mensagem de erro de mutação (ex.: conflito de disponibilidade). */
+  error?: string | null;
+  onChangeQuantity: (item: CartItem, quantity: number) => void;
+  onRemove: (item: CartItem) => void;
 }
 
-export function CartItemList({ items }: CartItemListProps) {
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
+export function CartItemList({
+  items,
+  isLoading = false,
+  error,
+  onChangeQuantity,
+  onRemove,
+}: CartItemListProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-2" role="status" aria-label="Carregando carrinho">
+        {[0, 1, 2].map((index) => (
+          <Skeleton key={index} className="h-[84px] w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -54,26 +74,28 @@ export function CartItemList({ items }: CartItemListProps) {
         <div className="h-[1px] w-full bg-[#D28A4C]/50" />
       </div>
 
+      {error && (
+        <p role="alert" className="text-xs text-[#e05252]">
+          {error}
+        </p>
+      )}
+
       {/* Lista de Itens mais compacta com menos espaçamento entre eles */}
       <div className="space-y-2 pt-1" role="list" aria-label="Itens do carrinho">
         {items.map((item) => {
-          const itemPrice =
-            typeof item.price === "number"
-              ? item.price
-              : parseFloat(String(item.priceEth || 0));
-          const subtotalItem = (itemPrice * item.quantity).toFixed(2);
-          const formattedPrice = itemPrice.toFixed(2);
-          const canIncrease = item.maxSupply ? item.quantity < item.maxSupply : true;
+          const subtotalItem = formatEthFixed(lineTotal(item), 2);
+          const formattedPrice = formatEthFixed(item.price, 2);
+          const canIncrease = item.quantity < item.maxSupply;
 
           // Extrai ou formata ID do token para exibição fiel: ID do token: #xxxx
-          const tokenIdMatch = item.title?.match(/#(\d+)/) || item.name?.match(/#(\d+)/);
+          const tokenIdMatch = item.title.match(/#(\d+)/);
           const tokenIdFormatted = tokenIdMatch?.[1]
             ? `#${tokenIdMatch[1].padStart(4, "0")}`
             : `#${item.id.replace(/\D/g, "").padStart(4, "0") || "0042"}`;
 
           return (
             <div
-              key={item.id}
+              key={`${item.id}:${item.editionId}`}
               role="listitem"
               className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center p-1.5 sm:p-2 rounded-xl bg-[#1C130E] border border-[#2B1B14] hover:border-[#3F2319] transition-colors"
             >
@@ -89,7 +111,7 @@ export function CartItemList({ items }: CartItemListProps) {
                   <div className="relative size-16 sm:size-[68px] rounded-xl bg-[#140D0A] p-0.5 overflow-hidden flex items-center justify-center border border-[#2B1B14] z-10">
                     <img
                       src={item.image || "/images/nfts/emerald-ape.png"}
-                      alt={item.title || item.name || "NFT"}
+                      alt={item.title || "NFT"}
                       className="size-full object-cover rounded-lg"
                       loading="lazy"
                     />
@@ -98,7 +120,7 @@ export function CartItemList({ items }: CartItemListProps) {
 
                 <div className="min-w-0 space-y-0.5">
                   <h3 className="text-sm font-bold text-[#F5F1EB] truncate">
-                    {item.title || item.name}
+                    {item.title}
                   </h3>
                   <p className="text-xs text-[#8C6D58] truncate">
                     ID do token: {tokenIdFormatted}
@@ -120,8 +142,8 @@ export function CartItemList({ items }: CartItemListProps) {
                 <div className="flex items-center gap-2.5">
                   <button
                     type="button"
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    aria-label={`Diminuir quantidade de ${item.title || item.name}`}
+                    onClick={() => onChangeQuantity(item, item.quantity - 1)}
+                    aria-label={`Diminuir quantidade de ${item.title}`}
                     className="size-6 sm:size-7 rounded-full bg-[#D28A4C] hover:bg-[#e0985b] text-[#0E0907] flex items-center justify-center font-bold text-sm transition-all cursor-pointer shadow-sm active:scale-95"
                   >
                     <Minus className="size-3.5 stroke-[3]" />
@@ -133,9 +155,9 @@ export function CartItemList({ items }: CartItemListProps) {
 
                   <button
                     type="button"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => onChangeQuantity(item, item.quantity + 1)}
                     disabled={!canIncrease}
-                    aria-label={`Aumentar quantidade de ${item.title || item.name}`}
+                    aria-label={`Aumentar quantidade de ${item.title}`}
                     className="size-6 sm:size-7 rounded-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] flex items-center justify-center font-bold text-sm transition-all cursor-pointer shadow-sm active:scale-95"
                   >
                     <Plus className="size-3.5 stroke-[3]" />
@@ -155,8 +177,8 @@ export function CartItemList({ items }: CartItemListProps) {
               <div className="md:col-span-1 flex items-center justify-end">
                 <button
                   type="button"
-                  onClick={() => removeItem(item.id)}
-                  aria-label={`Remover ${item.title || item.name} do carrinho`}
+                  onClick={() => onRemove(item)}
+                  aria-label={`Remover ${item.title} do carrinho`}
                   className="p-1.5 text-[#8C6D58] hover:text-[#e05252] transition-colors cursor-pointer"
                 >
                   <Trash2 className="size-4 sm:size-5" />

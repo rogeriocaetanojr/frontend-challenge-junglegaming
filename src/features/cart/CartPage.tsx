@@ -1,14 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 
-import { useCartStore } from "@/store/cart-store";
+import { useCart } from "./api";
+import { useCouponStore } from "./couponStore";
 import { CartItemList } from "./CartItemList";
 import { CartSummary } from "./CartSummary";
 import { CollectorsAlsoSaw } from "./CollectorsAlsoSaw";
 
 export function CartPage() {
   const navigate = useNavigate();
-  const items = useCartStore((state) => state.items);
-  const couponCode = useCartStore((state) => state.couponCode);
+  const { items, isLoading, error, setQuantity, removeItem } = useCart();
+  const couponCode = useCouponStore((state) => state.couponCode);
 
   const handleGoToPayment = () => {
     navigate({ to: "/payment" });
@@ -46,12 +47,21 @@ export function CartPage() {
         {/* Grid Principal: Lista à Esquerda (8 cols) | Resumo à Direita (4 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-2">
           <div className="lg:col-span-8">
-            <CartItemList items={items} />
+            <CartItemList
+              items={items}
+              isLoading={isLoading}
+              error={error}
+              onChangeQuantity={(item, quantity) =>
+                void setQuantity(item, quantity).catch(() => undefined)
+              }
+              onRemove={(item) => void removeItem(item).catch(() => undefined)}
+            />
           </div>
 
           <div className="lg:col-span-4 sticky top-24">
             <CartSummary
               items={items}
+              isLoading={isLoading}
               couponCode={couponCode}
               onConnectAndCheckout={handleGoToPayment}
             />

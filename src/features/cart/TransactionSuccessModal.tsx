@@ -1,7 +1,8 @@
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { CartItem } from "@/store/cart-store";
+import { formatEthFixed } from "@/lib/money";
+import { type CartItem, lineTotal } from "./api";
 
 export interface TransactionSuccessModalProps {
   isOpen: boolean;
@@ -169,12 +170,11 @@ export function TransactionSuccessModal({
           {/* Lista de itens adquiridos */}
           <div className="space-y-2 max-h-[190px] overflow-y-auto pr-1">
             {items.map((item) => {
-              const tokenIdMatch =
-                item.title?.match(/#(\d+)/) || item.name?.match(/#(\d+)/);
+              const tokenIdMatch = item.title.match(/#(\d+)/);
               const tokenIdFormatted = tokenIdMatch?.[1]
                 ? `#${tokenIdMatch[1].padStart(4, "0")}`
                 : `#${item.id.replace(/\D/g, "").padStart(4, "0") || "0042"}`;
-              const itemSubtotal = (item.price * item.quantity).toFixed(2);
+              const itemSubtotal = formatEthFixed(lineTotal(item), 2);
 
               return (
                 <div
@@ -186,13 +186,13 @@ export function TransactionSuccessModal({
                     <div className="size-11 sm:size-12 rounded-lg bg-[#140D0A] p-0.5 overflow-hidden shrink-0 border border-[#2B1B14]">
                       <img
                         src={item.image || "/images/nfts/emerald-ape.png"}
-                        alt={item.title || item.name || "NFT"}
+                        alt={item.title || "NFT"}
                         className="size-full object-cover rounded-md"
                       />
                     </div>
                     <div className="min-w-0 space-y-0.5">
                       <p className="font-bold text-[#F5F1EB] text-xs truncate">
-                        {item.title || item.name}
+                        {item.title}
                       </p>
                       <p className="text-[10px] text-[#CFB28C] truncate">
                         ID do token: {tokenIdFormatted}
