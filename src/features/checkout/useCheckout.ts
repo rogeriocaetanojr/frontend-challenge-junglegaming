@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { getSession } from "@/lib/auth/session-store";
 import { ApiError, http } from "@/lib/http";
 import type { CheckoutOrderResponse, CheckoutStatus, CreateOrderPayload } from "./types";
 
@@ -19,13 +20,70 @@ export interface UseCheckoutReturn {
   resetCheckout: () => void;
 }
 
+const PENDING_ORDER_STORAGE_KEY = "checkout:pending-order";
+
+/** Pedido em andamento: a chave de idempotência e, após a criação, o `orderId`. */
+interface PendingOrder {
+  userId: string;
+  idempotencyKey: string;
+  orderId?: string;
+}
+
+/** Lê o pedido pendente da sessão do navegador, ignorando o de outro usuário. */
+function readPendingOrder(): PendingOrder | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_ORDER_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PendingOrder>;
+    const userId = getSession()?.userId;
+    if (
+      !userId ||
+      parsed.userId !== userId ||
+      typeof parsed.idempotencyKey !== "string"
+    ) {
+      return null;
+    }
+    return {
+      userId,
+      idempotencyKey: parsed.idempotencyKey,
+      orderId: typeof parsed.orderId === "string" ? parsed.orderId : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writePendingOrder(idempotencyKey: string, orderId?: string): void {
+  const userId = getSession()?.userId;
+  if (!userId) return;
+  try {
+    const pending: PendingOrder = { userId, idempotencyKey, orderId };
+    sessionStorage.setItem(PENDING_ORDER_STORAGE_KEY, JSON.stringify(pending));
+  } catch {
+    // Storage indisponível: a recuperação após refresh fica desativada, o fluxo segue
+  }
+}
+
+function clearPendingOrder(): void {
+  try {
+    sessionStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+  } catch {
+    // Sem storage não há o que limpar
+  }
+}
+
 /**
  * Hook gerador de máquina de estados de Checkout com idempotência e polling de confirmação.
  */
 export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn {
   const { pollingInterval = 1000, maxPollAttempts = 15, onSuccess, onError } = options;
 
-  const [status, setStatus] = useState<CheckoutStatus>("idle");
+  // Pedido pendente de um carregamento anterior (refresh ou timeout): retoma em vez de recriar
+  const [recovered] = useState<PendingOrder | null>(readPendingOrder);
+
+  const [status, setStatus] = useState<CheckoutStatus>(
+    recovered?.orderId ? "polling" : "idle",
+  );
   const [order, setOrder] = useState<CheckoutOrderResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
@@ -35,12 +93,14 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
       ? crypto.randomUUID()
       : `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-  const [idempotencyKey, setIdempotencyKey] = useState<string>(generateKey);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(
+    () => recovered?.idempotencyKey ?? generateKey(),
+  );
 
   const activePollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef<boolean>(true);
   // Trava síncrona contra reenvio enquanto houver pedido sendo criado ou confirmado
-  const inFlightRef = useRef<boolean>(false);
+  const inFlightRef = useRef<boolean>(Boolean(recovered?.orderId));
 
   useEffect(() => {
     if (status !== "submitting" && status !== "polling") {
@@ -59,6 +119,7 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
   }, []);
 
   const resetCheckout = useCallback(() => {
+    clearPendingOrder();
     if (activePollingTimerRef.current) {
       clearTimeout(activePollingTimerRef.current);
       activePollingTimerRef.current = null;
@@ -96,6 +157,7 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
           setOrder(currentOrder);
 
           if (currentOrder.status === "CONFIRMED") {
+            clearPendingOrder();
             setStatus("success");
             onSuccess?.(currentOrder);
             return;
@@ -103,6 +165,7 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
 
           if (currentOrder.status === "FAILED") {
             const failErr = new Error("A transação falhou ao ser processada na rede.");
+            clearPendingOrder();
             setIdempotencyKey(generateKey());
             setError(failErr);
             setStatus("error");
@@ -131,11 +194,16 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
     pollFnRef.current = startPolling;
   }, [startPolling]);
 
+  useEffect(() => {
+    if (recovered?.orderId) pollFnRef.current?.(recovered.orderId, 0);
+  }, [recovered]);
+
   const submitOrder = useCallback(
     async (payload: CreateOrderPayload): Promise<CheckoutOrderResponse | null> => {
       if (inFlightRef.current) return null;
       inFlightRef.current = true;
 
+      writePendingOrder(idempotencyKey);
       setStatus("submitting");
       setError(null);
 
@@ -155,12 +223,14 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
         setOrder(initialOrder);
 
         if (initialOrder.status === "CONFIRMED") {
+          clearPendingOrder();
           setStatus("success");
           onSuccess?.(initialOrder);
           return initialOrder;
         }
 
         // Inicia polling caso retorne PENDING
+        writePendingOrder(idempotencyKey, initialOrder.orderId);
         setStatus("polling");
         startPolling(initialOrder.orderId, 0);
         return initialOrder;
@@ -172,6 +242,7 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
           submitErr.statusCode < 500 &&
           submitErr.statusCode !== 408
         ) {
+          clearPendingOrder();
           setIdempotencyKey(generateKey());
         }
         const err =
