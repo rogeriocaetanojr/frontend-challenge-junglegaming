@@ -74,7 +74,7 @@ export function useFavorites() {
         id: String(nft.id),
         name: nft.title || nft.name || `NFT #${nft.id}`,
         priceEth: Number(nft.priceEth ?? nft.price) || 0,
-        image: nft.images?.[0]?.url || nft.image || "/images/nfts/emerald-ape.png",
+        image: nft.images?.[0]?.url || nft.image || "/images/nfts/emerald-ape.webp",
         collectionName: nft.collection?.name || "Coleção Exclusiva",
         favoritedAt: new Date().toISOString(),
       };

@@ -110,7 +110,7 @@ export function CartItemList({
                   {/* Card frontal da imagem no tamanho ideal compacto */}
                   <div className="relative size-16 sm:size-[68px] max-md:size-full max-md:min-h-24 max-md:rounded-none max-md:p-0 max-md:border-0 rounded-xl bg-[#140D0A] p-0.5 overflow-hidden flex items-center justify-center border border-[#2B1B14] z-10">
                     <img
-                      src={item.image || "/images/nfts/emerald-ape.png"}
+                      src={item.image || "/images/nfts/emerald-ape.webp"}
                       alt={item.title || "NFT"}
                       className="size-full object-cover rounded-lg max-md:rounded-none"
                       loading="lazy"

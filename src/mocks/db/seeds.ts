@@ -23,7 +23,7 @@ export const SEED_DEMO_USER: DbUser = {
   id: asId<"user">("user_demo"),
   name: "Alex Jungle",
   email: "demo@jungle.com",
-  avatarUrl: "/images/nfts/emerald-ape.png",
+  avatarUrl: "/images/nfts/emerald-ape.webp",
   createdAt: "2026-01-01T00:00:00.000Z" as IsoDate,
   passwordHash:
     "pbkdf2$6b7572696f2d64656d6f2d73616c7431$532c3c7f5aa8b791773ed94b86883fc8c0abe28d6859ddab343c633c4d784804",
@@ -34,7 +34,7 @@ export const SEED_CURATOR_USER: DbUser = {
   id: asId<"user">("user_curator"),
   name: "Sam Curator",
   email: "curator@kurio.art",
-  avatarUrl: "/images/nfts/golden-bear.png",
+  avatarUrl: "/images/nfts/golden-bear.webp",
   createdAt: "2026-02-01T00:00:00.000Z" as IsoDate,
   passwordHash:
     "pbkdf2$6b7572696f2d63757261746f72733231$ec40310c845159e9d7a8c1873b5ae03d5b96b053a39fd02ac324164716a36672",
@@ -101,7 +101,7 @@ export const SEED_NFTS: Nft[] = [
       "Chimpanzé icônico estilizado em 3D com jaqueta bomber verde esmeralda, óculos escuros e medalhão de ouro.",
     images: [
       {
-        url: "/images/nfts/emerald-ape.png",
+        url: "/images/nfts/emerald-ape.webp",
         alt: "Emerald Ape #042",
       },
     ],
@@ -137,7 +137,7 @@ export const SEED_NFTS: Nft[] = [
       "Explorador digital em moletom roxo violeta com chapéu bucket oliva e feição contemplativa serena.",
     images: [
       {
-        url: "/images/nfts/sage-nomad.png",
+        url: "/images/nfts/sage-nomad.webp",
         alt: "Sage Nomad #009",
       },
     ],
@@ -166,7 +166,7 @@ export const SEED_NFTS: Nft[] = [
       "Figura aristocrática com blazer marfim de alta alfaiataria sobre gola alta escura e postura imponente.",
     images: [
       {
-        url: "/images/nfts/noct-vessel.png",
+        url: "/images/nfts/noct-vessel.webp",
         alt: "Noct Vessel #552",
       },
     ],
@@ -195,7 +195,7 @@ export const SEED_NFTS: Nft[] = [
       "Mente generativa expressa em cores serenas, simbolizando a fusão de algoritmos e consciência visual.",
     images: [
       {
-        url: "/images/nfts/sage-nomad.png",
+        url: "/images/nfts/sage-nomad.webp",
         alt: "Cosmic Bloom #118",
       },
     ],
@@ -224,7 +224,7 @@ export const SEED_NFTS: Nft[] = [
       "Avatar representativo da tribo nômade espacial, em trajes confortáveis para viagens interplanetárias.",
     images: [
       {
-        url: "/images/nfts/sage-nomad.png",
+        url: "/images/nfts/sage-nomad.webp",
         alt: "Violet Nomad #314",
       },
     ],
@@ -253,7 +253,7 @@ export const SEED_NFTS: Nft[] = [
       "Membro honorário da confraria dos primatas distinta, com terno bege e acabamento textural hiper-realista.",
     images: [
       {
-        url: "/images/nfts/noct-vessel.png",
+        url: "/images/nfts/noct-vessel.webp",
         alt: "Ivory Baron #888",
       },
     ],
@@ -282,7 +282,7 @@ export const SEED_NFTS: Nft[] = [
       "Campeão gamer em agasalho esportivo creme e fones de ouvido acústicos com cancelamento de ruído.",
     images: [
       {
-        url: "/images/nfts/golden-bear.png",
+        url: "/images/nfts/golden-bear.webp",
         alt: "Golden Bear #207",
       },
     ],
@@ -311,7 +311,7 @@ export const SEED_NFTS: Nft[] = [
       "Produtor musical com fones de monitoramento de estúdio e sorriso contagiante, emitindo ondas sonoras raras.",
     images: [
       {
-        url: "/images/nfts/golden-bear.png",
+        url: "/images/nfts/golden-bear.webp",
         alt: "Golden Signal #140",
       },
     ],
@@ -340,7 +340,7 @@ export const SEED_NFTS: Nft[] = [
       "Edição especial da série de primatas sonoros em sintonia com a rede Ethereum e trilha sonora imersiva.",
     images: [
       {
-        url: "/images/nfts/golden-bear.png",
+        url: "/images/nfts/golden-bear.webp",
         alt: "Golden Signal #160",
       },
     ],
@@ -369,7 +369,7 @@ export const SEED_NFTS: Nft[] = [
       "Retrato fotográfico de alta precisão capturando os detalhes finos da textura têxtil e reflexo dos óculos.",
     images: [
       {
-        url: "/images/nfts/emerald-ape.png",
+        url: "/images/nfts/emerald-ape.webp",
         alt: "Emerald Visionary #088",
       },
     ],
@@ -398,7 +398,7 @@ export const SEED_NFTS: Nft[] = [
       "Elegante primata em traje de gala com traços arquitetônicos clássicos e expressão nobre.",
     images: [
       {
-        url: "/images/nfts/noct-vessel.png",
+        url: "/images/nfts/noct-vessel.webp",
         alt: "Noct Vessel #701",
       },
     ],
@@ -427,7 +427,7 @@ export const SEED_NFTS: Nft[] = [
       "Nômade das planícies digitais com gorro tático e moletom texturizado em tons terrosos.",
     images: [
       {
-        url: "/images/nfts/sage-nomad.png",
+        url: "/images/nfts/sage-nomad.webp",
         alt: "Sage Nomad #022",
       },
     ],

@@ -21,7 +21,7 @@ export interface NftImageGalleryProps {
   className?: string;
 }
 
-const FALLBACK_IMAGE = "/images/nfts/emerald-ape.png";
+const FALLBACK_IMAGE = "/images/nfts/emerald-ape.webp";
 
 export function NftImageGallery({ images, title, className }: NftImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);

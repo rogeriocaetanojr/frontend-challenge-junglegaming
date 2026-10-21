@@ -193,8 +193,8 @@ export function HomePage() {
             ) : (
               /* Malha de NFTs em 3 colunas no desktop */
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 max-md:gap-x-3 max-md:gap-y-5 max-md:pb-10 max-md:[&>*:nth-child(even)]:mt-8">
-                {items.map((nft) => (
-                  <NftCard key={nft.id} nft={nft} />
+                {items.map((nft, index) => (
+                  <NftCard key={nft.id} nft={nft} priority={index < 4} />
                 ))}
               </div>
             )}

@@ -111,7 +111,7 @@ export function useCart() {
         id: line.nftId,
         editionId: line.editionId,
         title: nft.title,
-        image: nft.images[0]?.url ?? "/images/nfts/emerald-ape.png",
+        image: nft.images[0]?.url ?? "/images/nfts/emerald-ape.webp",
         collection: nft.collection.name,
         price: edition.price,
         quantity: line.quantity,

@@ -15,7 +15,7 @@ export function FeaturedBanners() {
         <div className="border border-[#38220F] rounded-[24px] overflow-hidden flex flex-col sm:flex-row shadow-lg shadow-black/40 transition-all duration-300 hover:border-[#D28A4C]/30">
           <div className="w-full sm:w-[200px] lg:w-[230px] shrink-0 aspect-[4/3] sm:aspect-auto sm:self-stretch overflow-hidden bg-[#140D0A]">
             <img
-              src="/images/nfts/emerald-ape.png"
+              src="/images/nfts/emerald-ape.webp"
               alt="Lançamentos Gênesis"
               className="size-full object-cover"
             />
@@ -49,7 +49,7 @@ export function FeaturedBanners() {
         <div className="border border-[#38220F] rounded-[24px] overflow-hidden flex flex-col sm:flex-row shadow-lg shadow-black/40 transition-all duration-300 hover:border-[#D28A4C]/30">
           <div className="w-full sm:w-[200px] lg:w-[230px] shrink-0 aspect-[4/3] sm:aspect-auto sm:self-stretch overflow-hidden bg-[#140D0A]">
             <img
-              src="/images/nfts/noct-vessel.png"
+              src="/images/nfts/noct-vessel.webp"
               alt="Arte digital selecionada"
               className="size-full object-cover"
             />

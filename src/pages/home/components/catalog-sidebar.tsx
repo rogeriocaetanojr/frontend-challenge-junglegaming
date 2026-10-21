@@ -37,6 +37,7 @@ export function CatalogSidebar({
 }: CatalogSidebarProps) {
   const [minPrice, setMinPrice] = React.useState<number>(appliedMinPrice ?? 0.02);
   const [maxPrice, setMaxPrice] = React.useState<number>(appliedMaxPrice ?? 13.38);
+  const priceMidpoint = (minPrice + maxPrice) / 2;
 
   const handleApplyPrice = () => {
     onApplyPriceRange(minPrice, maxPrice);
@@ -48,9 +49,9 @@ export function CatalogSidebar({
       <div className="bg-[#241612] border border-[#38220F] rounded-2xl p-5 sm:p-6 space-y-6 text-left shadow-lg">
         {/* 1. Bloco Coleções */}
         <div className="space-y-3">
-          <h3 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
+          <h2 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
             Coleções
-          </h3>
+          </h2>
 
           <nav className="flex flex-col space-y-1" aria-label="Categorias de coleções">
             {COLLECTIONS.map((item) => {
@@ -68,7 +69,7 @@ export function CatalogSidebar({
                   aria-pressed={isSelected}
                 >
                   <span>{item.name}</span>
-                  <span className="font-mono text-[#CFB28C]/60 text-xs">
+                  <span className="font-mono text-[#CFB28C]/85 text-xs">
                     ({item.count})
                   </span>
                 </button>
@@ -79,9 +80,9 @@ export function CatalogSidebar({
 
         {/* 2. Bloco Faixa de Preço */}
         <div className="space-y-4 pt-6 border-t border-[#38220F]">
-          <h3 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
+          <h2 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
             Faixa de preço
-          </h3>
+          </h2>
 
           {/* Duplo Seletor com Slider Duplo Real e Arrastável */}
           <div className="space-y-4">
@@ -97,11 +98,14 @@ export function CatalogSidebar({
                 }}
               />
 
-              {/* Slider de Preço Mínimo */}
+              {/* Slider de Preço Mínimo: ocupa só a faixa até o ponto médio, para que os dois
+                  inputs não se sobreponham (área de toque mínima de 24px exigida pela auditoria).
+                  A escala valor/pixel é a mesma da trilha inteira, então o arraste não salta. */}
               <input
                 type="range"
                 min="0"
-                max="20"
+                max={priceMidpoint}
+                style={{ left: 0, width: `${(priceMidpoint / 20) * 100}%` }}
                 step="0.01"
                 value={minPrice}
                 onChange={(e) => {
@@ -109,16 +113,17 @@ export function CatalogSidebar({
                   setMinPrice(val);
                 }}
                 aria-label="Ajustar preço mínimo"
-                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none cursor-pointer z-10
+                className="absolute inset-y-0 appearance-none bg-transparent pointer-events-none cursor-pointer z-10
                   [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D28A4C] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#140D0A] [&::-webkit-slider-thumb]:shadow
                   [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#D28A4C] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#140D0A] [&::-moz-range-thumb]:shadow"
               />
 
-              {/* Slider de Preço Máximo */}
+              {/* Slider de Preço Máximo: ocupa a faixa do ponto médio até o fim */}
               <input
                 type="range"
-                min="0"
+                min={priceMidpoint}
                 max="20"
+                style={{ left: `${(priceMidpoint / 20) * 100}%`, right: 0 }}
                 step="0.01"
                 value={maxPrice}
                 onChange={(e) => {
@@ -126,7 +131,7 @@ export function CatalogSidebar({
                   setMaxPrice(val);
                 }}
                 aria-label="Ajustar preço máximo"
-                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none cursor-pointer z-20
+                className="absolute inset-y-0 appearance-none bg-transparent pointer-events-none cursor-pointer z-20
                   [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D28A4C] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#140D0A] [&::-webkit-slider-thumb]:shadow
                   [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#D28A4C] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#140D0A] [&::-moz-range-thumb]:shadow"
               />
@@ -149,9 +154,9 @@ export function CatalogSidebar({
 
         {/* 3. Bloco Rede */}
         <div className="space-y-3 pt-6 border-t border-[#38220F]">
-          <h3 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
+          <h2 className="font-mono text-xs sm:text-sm font-bold text-[#F5F1EB] tracking-wider uppercase">
             Rede
-          </h3>
+          </h2>
 
           <div className="flex flex-col space-y-1">
             {NETWORKS.map((network) => {
@@ -169,7 +174,7 @@ export function CatalogSidebar({
                   aria-pressed={isSelected}
                 >
                   <span>{network.name}</span>
-                  <span className="font-mono text-[#CFB28C]/60 text-xs">
+                  <span className="font-mono text-[#CFB28C]/85 text-xs">
                     ({network.count})
                   </span>
                 </button>
@@ -192,7 +197,7 @@ export function CatalogSidebar({
 
         <div className="w-full aspect-square rounded-xl overflow-hidden border border-[#38220F] bg-[#140D0A] shadow-md group">
           <img
-            src="/images/nfts/sage-nomad.png"
+            src="/images/nfts/sage-nomad.webp"
             alt="NFT em Destaque - Sage Nomad"
             className="size-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />

@@ -118,7 +118,7 @@ describe("NftDetailPage Integration & Accessibility (C75)", () => {
       'img[alt="Emerald Ape #042"]',
     ) as HTMLImageElement | null;
     expect(mainImg).not.toBeNull();
-    expect(mainImg?.src).toContain("emerald-ape.png");
+    expect(mainImg?.src).toContain("emerald-ape.webp");
 
     // Metadados da coleção e ID
     expect(container?.textContent).toContain("Coleção: Genesis Apes");

@@ -7,7 +7,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ featuredNft }: HeroSectionProps) {
-  const heroImage = featuredNft?.image || "/images/nfts/emerald-ape.png";
+  const heroImage = featuredNft?.image || "/images/nfts/emerald-ape.webp";
 
   const handleScrollToCatalog = () => {
     const catalog = document.getElementById("catalog-section");
@@ -47,7 +47,7 @@ export function HeroSection({ featuredNft }: HeroSectionProps) {
             className="aspect-square w-full rounded-[16px] object-cover"
           />
           <img
-            src="/images/nfts/sage-nomad.png"
+            src="/images/nfts/sage-nomad.webp"
             alt=""
             aria-hidden="true"
             className="absolute -bottom-2 -left-3 size-12 rounded-xl border-2 border-[#241612] object-cover"
@@ -113,7 +113,7 @@ export function HeroSection({ featuredNft }: HeroSectionProps) {
         {/* Indicador Central de 3 bolinhas (...) um pouco acima da linha final da imagem da hero */}
         <div
           className="absolute left-1/2 -translate-x-1/2 bottom-3 sm:bottom-4 lg:bottom-6 flex items-center justify-center gap-2.5 z-10"
-          aria-label="Indicador de carrossel da home"
+          aria-hidden="true"
         >
           <span className="size-2 rounded-full bg-[#D28A4C]" />
           <span className="size-2 rounded-full bg-[#3F2B20] hover:bg-neutral-500 transition-colors cursor-pointer" />

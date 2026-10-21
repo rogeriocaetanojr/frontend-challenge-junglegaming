@@ -8,9 +8,11 @@ import type { NftItem } from "@/types/nft";
 
 interface NftCardProps {
   nft: NftItem;
+  /** Cards acima da dobra carregam a imagem sem lazy-loading (candidatos a LCP). */
+  priority?: boolean;
 }
 
-export function NftCard({ nft }: NftCardProps) {
+export function NftCard({ nft, priority = false }: NftCardProps) {
   const rawNft = nft as unknown as {
     id: string;
     name?: string;
@@ -48,7 +50,8 @@ export function NftCard({ nft }: NftCardProps) {
               src={image}
               alt={title}
               className="size-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
             />
           </Link>
 
@@ -77,7 +80,7 @@ export function NftCard({ nft }: NftCardProps) {
           <span className="font-bold text-[#D28A4C]">{formatEth(price)}</span>
 
           {rawNft.originalPriceEth && (
-            <span className="text-xs text-[#CFB28C]/60 line-through">
+            <span className="text-xs text-[#CFB28C]/85 line-through">
               {formatEth(rawNft.originalPriceEth)}
             </span>
           )}

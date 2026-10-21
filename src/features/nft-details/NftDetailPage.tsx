@@ -282,7 +282,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
               <div className="flex items-center gap-1.5 text-xs sm:text-[14.5px] text-[#F5F1EB] font-mono max-md:ml-auto max-md:gap-1.5">
                 {/* Radios interativos: visuais no desktop; no mobile ficam em sr-only para preservar a acessibilidade sem duplicar o resumo visual */}
                 <div
-                  className="flex items-center gap-1 max-md:sr-only"
+                  className="flex items-center max-md:sr-only"
                   role="radiogroup"
                   aria-label="Avaliação por estrelas"
                 >
@@ -298,7 +298,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
                         onClick={() => setUserRating(starValue)}
                         onMouseEnter={() => setHoverRating(starValue)}
                         onMouseLeave={() => setHoverRating(null)}
-                        className="p-0.5 -m-0.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D28A4C] cursor-pointer transition-transform hover:scale-115"
+                        className="inline-flex items-center justify-center size-6 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D28A4C] cursor-pointer transition-transform hover:scale-115"
                       >
                         <Star
                           className={cn(

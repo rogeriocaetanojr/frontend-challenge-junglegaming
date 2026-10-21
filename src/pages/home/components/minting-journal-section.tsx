@@ -13,7 +13,7 @@ interface ArticleItem {
 const ARTICLES: ArticleItem[] = [
   {
     id: "1",
-    image: "/images/nfts/noct-vessel.png",
+    image: "/images/nfts/noct-vessel.webp",
     date: "12 de setembro",
     readTime: "Leitura de 6 min",
     title: "Como funciona a propriedade de NFTs",
@@ -21,7 +21,7 @@ const ARTICLES: ArticleItem[] = [
   },
   {
     id: "2",
-    image: "/images/nfts/emerald-ape.png",
+    image: "/images/nfts/emerald-ape.webp",
     date: "13 de setembro",
     readTime: "Leitura de 2 min",
     title: "10 artistas digitais para acompanhar",
@@ -29,7 +29,7 @@ const ARTICLES: ArticleItem[] = [
   },
   {
     id: "3",
-    image: "/images/nfts/sage-nomad.png",
+    image: "/images/nfts/sage-nomad.webp",
     date: "15 de setembro",
     readTime: "Leitura de 3 min",
     title: "Raridade, atributos e procedência",
@@ -37,7 +37,7 @@ const ARTICLES: ArticleItem[] = [
   },
   {
     id: "4",
-    image: "/images/nfts/golden-bear.png",
+    image: "/images/nfts/golden-bear.webp",
     date: "15 de setembro",
     readTime: "Leitura de 2 min",
     title: "Como proteger sua carteira",

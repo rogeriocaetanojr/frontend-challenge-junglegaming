@@ -17,7 +17,7 @@ import type { Nft, NftRarity } from "@/contracts/catalog";
 import { formatEth } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
-export const FALLBACK_NFT_IMAGE = "/images/nfts/emerald-ape.png";
+export const FALLBACK_NFT_IMAGE = "/images/nfts/emerald-ape.webp";
 
 export interface NftCardProps {
   nft: Nft;

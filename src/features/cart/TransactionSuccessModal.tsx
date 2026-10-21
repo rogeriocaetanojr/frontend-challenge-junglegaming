@@ -185,7 +185,7 @@ export function TransactionSuccessModal({
                   <div className="flex items-center gap-2.5 w-1/2 min-w-0">
                     <div className="size-11 sm:size-12 rounded-lg bg-[#140D0A] p-0.5 overflow-hidden shrink-0 border border-[#2B1B14]">
                       <img
-                        src={item.image || "/images/nfts/emerald-ape.png"}
+                        src={item.image || "/images/nfts/emerald-ape.webp"}
                         alt={item.title || "NFT"}
                         className="size-full object-cover rounded-md"
                       />

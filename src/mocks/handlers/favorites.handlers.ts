@@ -44,7 +44,7 @@ function toResponse(favorite: DbFavorite): FavoriteItemResponse | null {
     id: nft.id,
     name: nft.title,
     priceEth: Number(nft.price) || 0,
-    image: nft.images[0]?.url || "/images/nfts/emerald-ape.png",
+    image: nft.images[0]?.url || "/images/nfts/emerald-ape.webp",
     collectionName: nft.collection.name,
     favoritedAt: favorite.favoritedAt,
   };

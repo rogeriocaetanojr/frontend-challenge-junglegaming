@@ -22,11 +22,11 @@ test.describe("Perfil e carteiras (E2E)", () => {
   test("atualiza nome e avatar com persistência após refresh", async ({ page }) => {
     await page.locator("#profile-displayName").fill("Colecionador E2E");
 
-    page.once("dialog", (dialog) => dialog.accept("/images/nfts/sage-nomad.png"));
+    page.once("dialog", (dialog) => dialog.accept("/images/nfts/sage-nomad.webp"));
     await page.getByRole("button", { name: "Alterar", exact: true }).click();
     await expect(page.getByRole("img", { name: "Avatar" })).toHaveAttribute(
       "src",
-      "/images/nfts/sage-nomad.png",
+      "/images/nfts/sage-nomad.webp",
     );
 
     await save(page);
@@ -36,7 +36,7 @@ test.describe("Perfil e carteiras (E2E)", () => {
     await expect(page.locator("#profile-displayName")).toHaveValue("Colecionador E2E");
     await expect(page.getByRole("img", { name: "Avatar" })).toHaveAttribute(
       "src",
-      "/images/nfts/sage-nomad.png",
+      "/images/nfts/sage-nomad.webp",
     );
   });
 

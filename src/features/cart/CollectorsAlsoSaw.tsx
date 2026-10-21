@@ -32,31 +32,31 @@ export function CollectorsAlsoSaw({ className }: CollectorsAlsoSawProps) {
         id: "118",
         name: "Cosmic Bloom #118",
         price: "1.29 ETH",
-        image: "/images/nfts/sage-nomad.png",
+        image: "/images/nfts/sage-nomad.webp",
       },
       {
         id: "314",
         name: "Violet Nomad #314",
         price: "1.39 ETH",
-        image: "/images/nfts/sage-nomad.png",
+        image: "/images/nfts/sage-nomad.webp",
       },
       {
         id: "088",
         name: "Ivory Baron #088",
         price: "1.79 ETH",
-        image: "/images/nfts/noct-vessel.png",
+        image: "/images/nfts/noct-vessel.webp",
       },
       {
         id: "207",
         name: "Golden Beat #207",
         price: "0.99 ETH",
-        image: "/images/nfts/golden-bear.png",
+        image: "/images/nfts/golden-bear.webp",
       },
       {
         id: "160",
         name: "Golden Signal #160",
         price: "0.39 ETH",
-        image: "/images/nfts/golden-bear.png",
+        image: "/images/nfts/golden-bear.webp",
       },
     ],
     [],
@@ -76,7 +76,7 @@ export function CollectorsAlsoSaw({ className }: CollectorsAlsoSawProps) {
       id: String(nft.id).replace(/\D/g, "") || String(nft.id),
       name: nft.title,
       price: `${formatEth(nft.price)} ETH`,
-      image: nft.images?.[0]?.url || "/images/nfts/sage-nomad.png",
+      image: nft.images?.[0]?.url || "/images/nfts/sage-nomad.webp",
     }));
   }, [data, activePage, defaultItems]);
 

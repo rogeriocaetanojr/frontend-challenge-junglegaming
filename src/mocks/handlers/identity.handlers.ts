@@ -170,7 +170,7 @@ export const identityHandlers = [
       id: userId,
       name,
       email,
-      avatarUrl: "/images/nfts/emerald-ape.png",
+      avatarUrl: "/images/nfts/emerald-ape.webp",
       createdAt: new Date().toISOString() as IsoDate,
       passwordHash: await hashPassword(password),
     };
