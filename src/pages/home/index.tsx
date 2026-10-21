@@ -37,7 +37,7 @@ export function HomePage() {
   const activeTab: CatalogTab = search.tab ?? "all";
 
   const filters = React.useMemo(() => toNftFilters(search), [search]);
-  const { data, isLoading, isError } = useNfts(filters, page, HOME_PAGE_SIZE);
+  const { data, isLoading, isError, refetch } = useNfts(filters, page, HOME_PAGE_SIZE);
 
   /** Aplica um patch aos search params; qualquer mudança de filtro reinicia a paginação. */
   const updateSearch = React.useCallback(
@@ -130,7 +130,7 @@ export function HomePage() {
             {isLoading ? (
               <NftGridSkeleton count={HOME_PAGE_SIZE} />
             ) : isError ? (
-              <div className="max-w-md mx-auto text-center py-16 space-y-4">
+              <div role="alert" className="max-w-md mx-auto text-center py-16 space-y-4">
                 <div className="size-16 mx-auto rounded-full bg-[#140D0A] border border-[#2A2421] flex items-center justify-center text-red-400">
                   <PackageSearch className="size-8" />
                 </div>
@@ -144,7 +144,7 @@ export function HomePage() {
                   </p>
                 </div>
                 <Button
-                  onClick={handleResetFilters}
+                  onClick={() => void refetch()}
                   variant="outline"
                   size="sm"
                   className="border-[#2A2421] text-neutral-300 hover:text-white"

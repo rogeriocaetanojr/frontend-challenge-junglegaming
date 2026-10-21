@@ -91,10 +91,42 @@ function readPersistedFavorites(): [string, DbFavorite[]][] {
   }
 }
 
+const IDENTITY_STORAGE_KEY = "@nft-marketplace:mock:identity";
+
+interface PersistedIdentity {
+  users: [string, DbUser][];
+  sessions: [string, Session][];
+  wallets: [string, Wallet][];
+}
+
+/** Persiste usuários, sessões e carteiras do mock (perfil e login sobrevivem ao refresh). */
+export function saveIdentity(): void {
+  try {
+    const snapshot: PersistedIdentity = {
+      users: [...db.users.entries()],
+      sessions: [...db.sessions.entries()],
+      wallets: [...db.wallets.entries()],
+    };
+    localStorage.setItem(IDENTITY_STORAGE_KEY, JSON.stringify(snapshot));
+  } catch {
+    // Storage indisponível: os dados seguem válidos apenas em memória
+  }
+}
+
+function readPersistedIdentity(): PersistedIdentity | null {
+  try {
+    const raw = localStorage.getItem(IDENTITY_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as PersistedIdentity) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function resetDb(): InMemoryDatabase {
   try {
     localStorage.removeItem(CARTS_STORAGE_KEY);
     localStorage.removeItem(FAVORITES_STORAGE_KEY);
+    localStorage.removeItem(IDENTITY_STORAGE_KEY);
   } catch {
     // Storage indisponível
   }
@@ -211,7 +243,17 @@ export const dbHelpers = {
 const persistedCarts = import.meta.env.MODE === "test" ? [] : readPersistedCarts();
 const persistedFavorites =
   import.meta.env.MODE === "test" ? [] : readPersistedFavorites();
+const persistedIdentity =
+  import.meta.env.MODE === "test" ? null : readPersistedIdentity();
 resetDb();
+if (persistedIdentity) {
+  for (const [id, user] of persistedIdentity.users) db.users.set(id, user);
+  for (const [token, session] of persistedIdentity.sessions)
+    db.sessions.set(token, session);
+  db.wallets.clear();
+  for (const [id, wallet] of persistedIdentity.wallets) db.wallets.set(id, wallet);
+  saveIdentity();
+}
 if (persistedFavorites.length > 0) {
   for (const [userId, favorites] of persistedFavorites) {
     db.favorites.set(userId, favorites);

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatEthFixed } from "@/lib/money";
 import { type CartItem, lineTotal, sumEth, useApplyCoupon, useCartQuote } from "./api";
 import { useCouponStore } from "./couponStore";
+import { useQuoteChangeNotice } from "./useQuoteChangeNotice";
 
 export interface CartSummaryProps {
   items: CartItem[];
@@ -42,6 +43,7 @@ export function CartSummary({
     : "(-) 00.00";
   const displayGas = formatEthFixed(quote?.networkFee, 3);
   const displayTotal = formatEthFixed(quote?.total, 3);
+  const priceNotice = useQuoteChangeNotice(quote?.total);
   const couponIssue = quote?.coupon && quote.coupon.status !== "applied";
 
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -56,6 +58,11 @@ export function CartSummary({
       className="max-w-[360px] ml-auto space-y-4.5 font-mono select-none"
       data-testid="cart-summary"
     >
+      {priceNotice && (
+        <p role="status" aria-live="polite" className="text-xs text-[#D28A4C]">
+          {priceNotice}
+        </p>
+      )}
       <div className="space-y-2.5">
         <h2 className="text-sm sm:text-base font-bold text-[#F5F1EB] tracking-wide">
           Resumo da carteira

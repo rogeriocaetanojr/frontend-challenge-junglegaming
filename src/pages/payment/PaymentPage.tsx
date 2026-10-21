@@ -5,6 +5,7 @@ import { ChevronDown, Tag, X } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { TransactionSuccessModal } from "@/features/cart/TransactionSuccessModal";
 import { useCheckout } from "@/features/checkout/useCheckout";
+import { useQuoteChangeNotice } from "@/features/cart/useQuoteChangeNotice";
 import { formatEthFixed } from "@/lib/money";
 import {
   lineTotal,
@@ -26,6 +27,7 @@ export function PaymentPage() {
   const applyCouponMutation = useApplyCoupon();
   const quoteQuery = useCartQuote();
   const quote = quoteQuery.data;
+  const priceNotice = useQuoteChangeNotice(quote?.total);
 
   // Estados do Formulário "Perfil do colecionador" (lado esquerdo)
   const [displayName, setDisplayName] = useState(user?.name || "Rogerio Caetano");
@@ -93,12 +95,19 @@ export function PaymentPage() {
     isSubmittingRef.current = true;
     setIsQuoting(true);
     setQuoteError(null);
+    const reviewedTotal = quote?.total;
 
     try {
       // 1. Cotação de referência recém-emitida pela API (preço, cupom, taxas e total)
       const { data: freshQuote } = await quoteQuery.refetch({ throwOnError: true });
       if (!freshQuote) {
         throw new Error("Não foi possível obter a cotação do pedido.");
+      }
+      // Cotação desatualizada: exige nova confirmação com os valores atuais
+      if (reviewedTotal !== undefined && freshQuote.total !== reviewedTotal) {
+        throw new Error(
+          `Os valores do pedido mudaram (novo total ${formatEthFixed(freshQuote.total, 3)} ETH). Revise e confirme novamente.`,
+        );
       }
       const blocking = freshQuote.issues.find((issue) => issue.type !== "price_changed");
       if (blocking) {
@@ -686,6 +695,15 @@ export function PaymentPage() {
 
             {/* Botão Oficial: Confirmar compra */}
             <div className="pt-2">
+              {priceNotice && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="mb-3 text-xs text-[#D28A4C]"
+                >
+                  {priceNotice}
+                </p>
+              )}
               {checkoutError && (
                 <p role="alert" className="mb-3 text-xs text-red-300">
                   {checkoutError}

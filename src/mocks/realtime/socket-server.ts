@@ -21,9 +21,22 @@ export const realtimeSocket = ws.link("ws://localhost/*");
 interface BoundConnection {
   userId?: Id<"user">;
   emit: (event: string, payload: unknown) => void;
+  close?: () => void;
 }
 
 const connections = new Set<BoundConnection>();
+
+/** Entregas efetivas por conexão (inspecionadas pelos testes E2E). */
+export const realtimeDeliveries: {
+  event: string;
+  userId?: string;
+  resourceId?: string;
+}[] = [];
+
+/** Indica se há ao menos uma conexão vinculada a uma sessão autenticada. */
+export function hasBoundRealtimeConnection(): boolean {
+  return [...connections].some((connection) => connection.userId);
+}
 
 function resolveUserFromToken(token: string): DbUser | null {
   if (!token) return null;
@@ -54,6 +67,11 @@ function broadcast(
   for (const connection of connections) {
     if (userId && connection.userId !== userId) continue;
     connection.emit(event, payload);
+    realtimeDeliveries.push({
+      event,
+      userId: connection.userId,
+      resourceId: (payload as { resource?: { id?: string } })?.resource?.id,
+    });
   }
 }
 
@@ -71,11 +89,18 @@ export function setupRealtimeSocketBridge(): void {
 
 setupRealtimeSocketBridge();
 
+/** Derruba todas as conexões ativas pelo lado do servidor (simula queda de rede). */
+export function dropRealtimeConnections(): void {
+  for (const connection of connections) connection.close?.();
+  connections.clear();
+}
+
 export const realtimeSocketHandlers = [
   realtimeSocket.addEventListener("connection", (handlerConnection) => {
     const io = toSocketIo(handlerConnection);
     const connection: BoundConnection = {
       emit: (event, payload) => io.client.emit(event, payload),
+      close: () => handlerConnection.client.close(),
     };
     connections.add(connection);
 

@@ -290,13 +290,19 @@ export function ProfilePage() {
               </h1>
 
               {feedbackMessage && (
-                <div className="mb-6 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm">
+                <div
+                  role="status"
+                  className="mb-6 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm"
+                >
                   {feedbackMessage}
                 </div>
               )}
 
               {(updateError || passwordError) && (
-                <div className="mb-6 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm">
+                <div
+                  role="alert"
+                  className="mb-6 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm"
+                >
                   {updateError || passwordError}
                 </div>
               )}
@@ -598,13 +604,19 @@ export function ProfilePage() {
               </div>
 
               {walletFeedback && (
-                <div className="my-4 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm">
+                <div
+                  role="status"
+                  className="my-4 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm"
+                >
                   {walletFeedback}
                 </div>
               )}
 
               {walletAddError && (
-                <div className="my-4 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm">
+                <div
+                  role="alert"
+                  className="my-4 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm"
+                >
                   {walletAddError}
                 </div>
               )}

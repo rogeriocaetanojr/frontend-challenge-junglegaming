@@ -6,7 +6,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "@/features/cart/sync";
 import { hasValidSession } from "@/lib/auth/session-store";
 import { queryClient } from "@/lib/query-client";
-import { connectRealtime, setupRealtimeLifecycle } from "@/lib/realtime";
 import { hydrateAuthSession } from "@/store/auth-store";
 import "@/styles/index.css";
 import App from "./App.tsx";
@@ -28,7 +27,10 @@ async function prepareApp(): Promise<void> {
 
 prepareApp()
   .then(hydrateAuthSession)
-  .then(() => {
+  // Import tardio: o engine.io-client captura `globalThis.WebSocket` ao carregar o módulo,
+  // então ele precisa ser avaliado depois do MSW instalar o interceptor de WebSocket.
+  .then(() => import("@/lib/realtime"))
+  .then(({ connectRealtime, setupRealtimeLifecycle }) => {
     setupRealtimeLifecycle(queryClient);
     if (hasValidSession()) connectRealtime(queryClient);
 
