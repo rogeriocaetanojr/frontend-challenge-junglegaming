@@ -206,7 +206,13 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const editionOptions = ["1/1", "1/10", "1/50", "ABERTA"];
 
   return (
-    <div className="w-full py-6 sm:py-8 max-md:pb-52 space-y-6 font-mono text-[#F5F1EB]">
+    <div className="relative w-full py-6 sm:py-8 max-md:pb-52 space-y-6 font-mono text-[#F5F1EB] max-md:min-h-screen">
+      {/* Fundo mobile-only em #2F1D15 cobrindo a viewport completa (não afeta desktop) */}
+      <div
+        className="md:hidden fixed inset-0 bg-[#2F1D15] -z-10 pointer-events-none"
+        aria-hidden="true"
+      />
+
       {/* Breadcrumb alinhado perfeitamente com a logo do topo */}
       <MobilePageHeader
         backTo="/"
@@ -267,15 +273,16 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
           />
 
           {/* Preço em ETH + Estrelas de Avaliação + Contagem */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="space-y-2 max-md:space-y-2.5">
+            <div className="flex items-center justify-between flex-wrap gap-2 max-md:flex-nowrap max-md:w-full max-md:gap-3">
               <span className="text-2xl sm:text-[27px] font-bold text-[#D28A4C] font-mono leading-none tracking-tight">
                 {currentNft.price} ETH
               </span>
 
-              <div className="flex items-center gap-1.5 text-xs sm:text-[14.5px] text-[#F5F1EB] font-mono">
+              <div className="flex items-center gap-1.5 text-xs sm:text-[14.5px] text-[#F5F1EB] font-mono max-md:ml-auto max-md:gap-1.5">
+                {/* Radios interativos: visuais no desktop; no mobile ficam em sr-only para preservar a acessibilidade sem duplicar o resumo visual */}
                 <div
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 max-md:sr-only"
                   role="radiogroup"
                   aria-label="Avaliação por estrelas"
                 >
@@ -306,7 +313,21 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
                     );
                   })}
                 </div>
-                <span>19 avaliações de colecionadores</span>
+                <span className="max-md:hidden">19 avaliações de colecionadores</span>
+                {/* Resumo compacto mobile (Figma): ★ 5.0 (19) */}
+                <span
+                  className="hidden max-md:inline-flex items-center gap-1.5 text-[13px] leading-none tracking-tight"
+                  aria-hidden="true"
+                >
+                  <Star
+                    className="size-[15px] fill-[#F2C94C] text-[#F2C94C]"
+                    aria-hidden="true"
+                  />
+                  <span className="font-bold text-[#F5F1EB]">
+                    {userRating.toFixed(1)}
+                  </span>
+                  <span className="text-[#CFB28C]/85 font-normal">(19)</span>
+                </span>
               </div>
             </div>
 
