@@ -1,12 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { addNftToCart } from "./helpers";
+import { addNftToCart, resetScenarioState } from "./helpers";
 
 test.describe("Carrinho integrado à API simulada (E2E)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await resetScenarioState(page);
   });
 
   test("visitante começa com carrinho vazio e mantém itens após refresh", async ({

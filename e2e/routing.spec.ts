@@ -4,13 +4,12 @@ import { expect, test } from "@playwright/test";
  * Roteamento (TanStack Router): estado do catálogo na URL, proteção de rotas privadas,
  * aliases legados e tratamento de rotas inexistentes.
  */
+import { resetScenarioState } from "./helpers";
+
 test.describe("Roteamento e estado na URL (E2E)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
+    await resetScenarioState(page);
+    await page.evaluate(() => sessionStorage.clear());
   });
 
   test("deve restaurar a página do catálogo a partir da URL após refresh", async ({
