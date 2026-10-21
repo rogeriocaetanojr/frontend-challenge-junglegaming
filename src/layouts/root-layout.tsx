@@ -350,8 +350,12 @@ export function RootLayout() {
           <Outlet />
         </main>
 
-        {/* Footer Oficial KURIO (oculto na página de perfil) */}
-        {pathname !== "/profile" && <Footer />}
+        {/* Footer Oficial KURIO (oculto na página de perfil; no mobile aparece apenas na Home) */}
+        {pathname !== "/profile" && (
+          <div className={pathname === "/" ? undefined : "max-md:hidden"}>
+            <Footer />
+          </div>
+        )}
       </div>
 
       {/* Bottom Navigation mobile (frame Início do Figma) */}
