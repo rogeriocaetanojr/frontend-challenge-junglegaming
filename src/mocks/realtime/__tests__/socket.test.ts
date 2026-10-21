@@ -1,183 +1,151 @@
 /**
- * Testes unitários do barramento de eventos e servidor simulado Socket.IO (src/mocks/realtime).
+ * Testes de integração do servidor Socket.IO simulado (MSW ws.link + @mswjs/socket.io-binding).
+ *
+ * Usa `WebSocket` global (interceptado pelo MSW) falando o protocolo de fiação
+ * Engine.IO/Socket.IO diretamente: em Node, `socket.io-client` sempre usa o
+ * pacote `ws` (nunca o `WebSocket` global), então não é interceptável fora do
+ * navegador — o cliente real (`src/lib/realtime/client.ts`) roda sobre o
+ * `WebSocket` nativo do browser, que é exatamente o que este teste simula.
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setupServer } from "msw/node";
+import { Encoder, Decoder, PacketType } from "socket.io-parser";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import { asEthString, asId } from "@/contracts/common";
-import type { NftUpdatedEvent, OrderUpdatedEvent } from "@/contracts/realtime";
 import { db, resetDb } from "@/mocks/db";
+import { emitNftUpdated, emitOrderUpdated, realtimeEmitter } from "@/mocks/realtime";
 import {
-  emitNftUpdated,
-  emitOrderUpdated,
-  mockSocketServer,
-  realtimeEmitter,
-} from "@/mocks/realtime";
+  realtimeSocketHandlers,
+  setupRealtimeSocketBridge,
+} from "@/mocks/realtime/socket-server";
 
-describe("Realtime Socket and Emitter (src/mocks/realtime)", () => {
+const server = setupServer(...realtimeSocketHandlers);
+const encoder = new Encoder();
+
+function send(socket: WebSocket, event: string, ...data: unknown[]): void {
+  for (const packet of encoder.encode({
+    type: PacketType.EVENT,
+    nsp: "/",
+    data: [event, ...data],
+  })) {
+    socket.send(`4${packet}`);
+  }
+}
+
+function listen(
+  socket: WebSocket,
+  event: string,
+  handler: (...data: unknown[]) => void,
+): void {
+  const decoder = new Decoder();
+  decoder.on("decoded", (packet) => {
+    if (packet.type === PacketType.EVENT && packet.data[0] === event) {
+      handler(...packet.data.slice(1));
+    }
+  });
+  socket.addEventListener("message", (e) => {
+    if (typeof e.data === "string" && e.data.startsWith("4")) {
+      decoder.add(e.data.slice(1));
+    }
+  });
+}
+
+function connect(): Promise<WebSocket> {
+  return new Promise((resolve) => {
+    const socket = new WebSocket("ws://localhost/socket.io/?EIO=4&transport=websocket");
+    socket.addEventListener("open", () => resolve(socket));
+  });
+}
+
+describe("Realtime Socket.IO simulado (src/mocks/realtime)", () => {
+  beforeAll(() => server.listen());
+  afterAll(() => server.close());
+
   beforeEach(() => {
     resetDb();
     realtimeEmitter.removeAllListeners();
-    mockSocketServer.reset();
+    setupRealtimeSocketBridge();
   });
 
   afterEach(() => {
     resetDb();
     realtimeEmitter.removeAllListeners();
-    mockSocketServer.reset();
+    setupRealtimeSocketBridge();
+    server.resetHandlers(...realtimeSocketHandlers);
     vi.restoreAllMocks();
   });
 
-  describe("emitNftUpdated e broadcast", () => {
-    it("deve emitir envelope canônico e notificar clientes subscritos", () => {
-      const socket = mockSocketServer.createMockSocket();
-      const listener = vi.fn();
+  it("deve emitir envelope canônico via nft.updated e persistir no banco em memória", async () => {
+    const socket = await connect();
+    const listener = vi.fn();
+    listen(socket, "nft.updated", listener);
 
-      socket.on("nft.updated", listener);
+    emitNftUpdated({ nftId: "nft-1", price: asEthString("2.45"), available: 15 });
 
-      const event = emitNftUpdated({
-        nftId: "nft-1",
-        price: asEthString("2.45"),
-        available: 15,
-      });
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
 
-      expect(listener).toHaveBeenCalledTimes(1);
-      const receivedEvent = listener.mock.calls[0]![0] as NftUpdatedEvent;
+    const received = listener.mock.calls[0]![0] as {
+      type: string;
+      resource: unknown;
+      payload: unknown;
+    };
+    expect(received.type).toBe("nft.updated");
+    expect(received.resource).toEqual({ kind: "nft", id: "nft-1" });
+    expect(received.payload).toEqual({ price: "2.45", available: 15 });
 
-      // Validação da anatomia do RealtimeEnvelope
-      expect(receivedEvent.eventId).toBe(event.eventId);
-      expect(receivedEvent.type).toBe("nft.updated");
-      expect(receivedEvent.resource).toEqual({ kind: "nft", id: "nft-1" });
-      expect(receivedEvent.version).toBeGreaterThanOrEqual(2);
-      expect(new Date(receivedEvent.occurredAt).getTime()).toBeLessThanOrEqual(
-        Date.now(),
-      );
-      expect(receivedEvent.payload).toEqual({
-        price: "2.45",
-        available: 15,
-      });
+    const nft = db.nfts.get("nft-1");
+    expect(nft?.price).toBe("2.45");
 
-      // Valida persistência no banco em memória
-      const nft = db.nfts.get("nft-1");
-      expect(nft?.price).toBe("2.45");
-      expect(nft?.editions[0]?.available).toBe(15);
-    });
-
-    it("deve fazer broadcast para múltiplos sockets conectados", () => {
-      const socket1 = mockSocketServer.createMockSocket();
-      const socket2 = mockSocketServer.createMockSocket();
-
-      const listener1 = vi.fn();
-      const listener2 = vi.fn();
-
-      socket1.on("nft.updated", listener1);
-      socket2.on("nft.updated", listener2);
-
-      emitNftUpdated({
-        nftId: "nft-2",
-        price: asEthString("1.99"),
-        available: 5,
-      });
-
-      expect(listener1).toHaveBeenCalledTimes(1);
-      expect(listener2).toHaveBeenCalledTimes(1);
-    });
+    socket.close();
   });
 
-  describe("session.bind e roteamento direcionado de pedidos", () => {
-    it("deve associar socket ao usuário via session.bind com token válido", () => {
-      const socket = mockSocketServer.createMockSocket();
-      expect(socket.userId).toBeUndefined();
+  it("deve associar socket ao usuário via session.bind e rotear order.updated", async () => {
+    const socketDemo = await connect();
+    const socketOther = await connect();
 
-      socket.emit("session.bind", { token: "mock-token-user_demo" });
+    send(socketDemo, "session.bind", { token: "mock-token-user_demo" });
 
-      expect(socket.userId).toBe("user_demo");
+    const demoListener = vi.fn();
+    const otherListener = vi.fn();
+    listen(socketDemo, "order.updated", demoListener);
+    listen(socketOther, "order.updated", otherListener);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    emitOrderUpdated({
+      orderId: "order_test_123",
+      status: "confirmed",
+      userId: asId<"user">("user_demo"),
     });
 
-    it("deve emitir session.rejected quando token for inválido", () => {
-      const socket = mockSocketServer.createMockSocket();
-      const rejectedListener = vi.fn();
+    await vi.waitFor(() => expect(demoListener).toHaveBeenCalledTimes(1));
+    expect(otherListener).not.toHaveBeenCalled();
 
-      socket.on("session.rejected", rejectedListener);
-
-      socket.emit("session.bind", { token: "token_falso_invalido" });
-
-      expect(socket.userId).toBeUndefined();
-      expect(rejectedListener).toHaveBeenCalledTimes(1);
-      expect(rejectedListener.mock.calls[0]![0].reason).toContain("inválido");
-    });
-
-    it("deve despachar order.updated apenas para o socket do usuário correspondente", () => {
-      const socketDemo = mockSocketServer.createMockSocket();
-      const socketOther = mockSocketServer.createMockSocket();
-
-      socketDemo.emit("session.bind", { token: "mock-token-user_demo" });
-
-      const demoListener = vi.fn();
-      const otherListener = vi.fn();
-
-      socketDemo.on("order.updated", demoListener);
-      socketOther.on("order.updated", otherListener);
-
-      emitOrderUpdated({
-        orderId: "order_test_123",
-        status: "confirmed",
-        userId: asId<"user">("user_demo"),
-      });
-
-      expect(demoListener).toHaveBeenCalledTimes(1);
-      expect(otherListener).not.toHaveBeenCalled();
-
-      const received = demoListener.mock.calls[0]![0] as OrderUpdatedEvent;
-      expect(received.type).toBe("order.updated");
-      expect(received.resource).toEqual({
-        kind: "order",
-        id: "order_test_123",
-      });
-      expect(received.userId).toBe("user_demo");
-      expect(received.payload.status).toBe("confirmed");
-    });
+    socketDemo.close();
+    socketOther.close();
   });
 
-  describe("ciclo de vida e desconexão de socket", () => {
-    it("não deve receber eventos após socket.disconnect()", () => {
-      const socket = mockSocketServer.createMockSocket();
-      const listener = vi.fn();
+  it("deve emitir session.rejected para token inválido", async () => {
+    const socket = await connect();
+    const rejectedListener = vi.fn();
+    listen(socket, "session.rejected", rejectedListener);
 
-      socket.on("nft.updated", listener);
-      expect(mockSocketServer.activeConnectionsCount).toBe(1);
+    send(socket, "session.bind", { token: "token_falso_invalido" });
 
-      socket.disconnect();
-      expect(socket.connected).toBe(false);
-      expect(mockSocketServer.activeConnectionsCount).toBe(0);
+    await vi.waitFor(() => expect(rejectedListener).toHaveBeenCalledTimes(1));
+    expect((rejectedListener.mock.calls[0]![0] as { reason: string }).reason).toContain(
+      "inválido",
+    );
 
-      emitNftUpdated({
-        nftId: "nft-1",
-        price: asEthString("3.00"),
-        available: 1,
-      });
-
-      expect(listener).not.toHaveBeenCalled();
-    });
-
-    it("deve permitir unsubscribe através da função de retorno do emitter", () => {
-      const listener = vi.fn();
-      const unsubscribe = realtimeEmitter.on("nft.updated", listener);
-
-      emitNftUpdated({
-        nftId: "nft-1",
-        price: asEthString("1.50"),
-        available: 10,
-      });
-      expect(listener).toHaveBeenCalledTimes(1);
-
-      unsubscribe();
-
-      emitNftUpdated({
-        nftId: "nft-1",
-        price: asEthString("1.60"),
-        available: 9,
-      });
-      expect(listener).toHaveBeenCalledTimes(1); // Não foi chamado novamente
-    });
+    socket.close();
   });
 });

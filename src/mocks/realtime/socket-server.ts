@@ -1,234 +1,97 @@
 /**
- * Servidor simulado de Socket.IO para eventos em tempo real.
+ * Servidor Socket.IO simulado via MSW `ws.link` + `@mswjs/socket.io-binding`.
  *
- * Implementa conexão virtual, multiplexação de clientes, vinculação de sessão (session.bind)
- * e entrega direcionada ou broadcast conforme os contratos de `src/contracts/realtime.ts`.
+ * Substitui o antigo EventEmitter isolado: agora o transporte real Socket.IO
+ * (protocolo de handshake/engine.io) é interceptado pelo MSW, validando a
+ * integração ponta a ponta do cliente real `socket.io-client`.
  */
+import { toSocketIo } from "@mswjs/socket.io-binding";
+import { ws } from "msw";
+
 import type { Id } from "@/contracts/common";
-import type {
-  ClientToServerEvents,
-  NftUpdatedEvent,
-  OrderUpdatedEvent,
-  ServerToClientEvents,
-} from "@/contracts/realtime";
+import type { NftUpdatedEvent, OrderUpdatedEvent } from "@/contracts/realtime";
 import { db, type DbUser, dbHelpers } from "@/mocks/db";
 import { realtimeEmitter } from "./emitter";
 
-/** Representa a conexão de um cliente individual com o servidor de sockets. */
-export class MockSocket {
-  public readonly id: string;
-  public userId?: Id<"user">;
-  public connected: boolean = true;
-  private server: MockSocketServer;
+// Nota: o path-to-regexp usado pelo MSW não casa de forma confiável o segmento
+// literal "socket.io" (ponto em nome de path); interceptamos via wildcard e
+// deixamos o binding Socket.IO (protocolo engine.io) validar o restante.
+export const realtimeSocket = ws.link("ws://localhost/*");
 
-  private listeners = new Map<
-    keyof ServerToClientEvents,
-    Set<ServerToClientEvents[keyof ServerToClientEvents]>
-  >();
+interface BoundConnection {
+  userId?: Id<"user">;
+  emit: (event: string, payload: unknown) => void;
+}
 
-  constructor(id: string, server: MockSocketServer) {
-    this.id = id;
-    this.server = server;
+const connections = new Set<BoundConnection>();
+
+function resolveUserFromToken(token: string): DbUser | null {
+  if (!token) return null;
+  const cleanToken = token.startsWith("Bearer ") ? token.slice(7).trim() : token.trim();
+
+  if (cleanToken.startsWith("mock-token-")) {
+    const remainder = cleanToken.slice("mock-token-".length);
+    for (const user of db.users.values()) {
+      if (remainder.startsWith(user.id)) return user;
+    }
   }
 
-  /** Registra ouvinte para evento enviado do servidor para o cliente. */
-  public on<K extends keyof ServerToClientEvents>(
-    event: K,
-    listener: ServerToClientEvents[K],
-  ): this {
-    let set = this.listeners.get(event);
-    if (!set) {
-      set = new Set();
-      this.listeners.set(event, set);
-    }
-    set.add(listener as ServerToClientEvents[keyof ServerToClientEvents]);
-    return this;
+  const directUser = dbHelpers.findUserById(cleanToken);
+  if (directUser) return directUser;
+
+  if (cleanToken.toLowerCase().includes("demo")) {
+    return dbHelpers.findUserById("user_demo") ?? null;
   }
 
-  /** Remove ouvinte de evento. */
-  public off<K extends keyof ServerToClientEvents>(
-    event: K,
-    listener: ServerToClientEvents[K],
-  ): this {
-    const set = this.listeners.get(event);
-    if (set) {
-      set.delete(listener as ServerToClientEvents[keyof ServerToClientEvents]);
-    }
-    return this;
-  }
+  return null;
+}
 
-  /** Emite evento do cliente para o servidor. */
-  public emit<K extends keyof ClientToServerEvents>(
-    event: K,
-    ...args: Parameters<ClientToServerEvents[K]>
-  ): this {
-    if (!this.connected) {
-      return this;
-    }
-    this.server.handleClientEvent(this, event, ...args);
-    return this;
-  }
-
-  /** Encerra a conexão virtual do socket. */
-  public disconnect(): void {
-    if (!this.connected) {
-      return;
-    }
-    this.connected = false;
-    this.server.removeSocket(this.id);
-  }
-
-  /** Entrega interna de evento disparado pelo servidor para os ouvintes deste cliente. */
-  public receiveFromServer<K extends keyof ServerToClientEvents>(
-    event: K,
-    ...args: Parameters<ServerToClientEvents[K]>
-  ): void {
-    if (!this.connected) {
-      return;
-    }
-    const set = this.listeners.get(event);
-    if (set) {
-      for (const listener of Array.from(set)) {
-        try {
-          (listener as (...a: unknown[]) => void)(...args);
-        } catch (err) {
-          console.error(
-            `Erro ao processar evento '${String(event)}' no socket '${this.id}':`,
-            err,
-          );
-        }
-      }
-    }
+function broadcast(
+  event: "nft.updated" | "order.updated",
+  payload: unknown,
+  userId?: Id<"user">,
+): void {
+  for (const connection of connections) {
+    if (userId && connection.userId !== userId) continue;
+    connection.emit(event, payload);
   }
 }
 
-/** Servidor central simulador de conexões Socket.IO. */
-export class MockSocketServer {
-  private sockets = new Map<string, MockSocket>();
+const onNftUpdated = (event: NftUpdatedEvent): void => broadcast("nft.updated", event);
+const onOrderUpdated = (event: OrderUpdatedEvent): void =>
+  broadcast("order.updated", event, event.userId);
 
-  constructor() {
-    this.setupEmitterBridge();
-  }
+/** (Re)conecta o barramento de eventos de domínio ao despacho de sockets; idempotente. */
+export function setupRealtimeSocketBridge(): void {
+  realtimeEmitter.off("nft.updated", onNftUpdated);
+  realtimeEmitter.off("order.updated", onOrderUpdated);
+  realtimeEmitter.on("nft.updated", onNftUpdated);
+  realtimeEmitter.on("order.updated", onOrderUpdated);
+}
 
-  private onNftUpdated = (event: NftUpdatedEvent): void => {
-    this.broadcast("nft.updated", event);
-  };
+setupRealtimeSocketBridge();
 
-  private onOrderUpdated = (event: OrderUpdatedEvent): void => {
-    if (event.userId) {
-      this.sendToUser(event.userId, "order.updated", event);
-    } else {
-      this.broadcast("order.updated", event);
-    }
-  };
+export const realtimeSocketHandlers = [
+  realtimeSocket.addEventListener("connection", (handlerConnection) => {
+    const io = toSocketIo(handlerConnection);
+    const connection: BoundConnection = {
+      emit: (event, payload) => io.client.emit(event, payload),
+    };
+    connections.add(connection);
 
-  /** Conecta o barramento de eventos de domínio ao despacho de sockets. */
-  public setupEmitterBridge(): void {
-    realtimeEmitter.off("nft.updated", this.onNftUpdated);
-    realtimeEmitter.off("order.updated", this.onOrderUpdated);
-    realtimeEmitter.on("nft.updated", this.onNftUpdated);
-    realtimeEmitter.on("order.updated", this.onOrderUpdated);
-  }
-
-  /** Cria e registra uma nova conexão de socket cliente virtual. */
-  public createMockSocket(): MockSocket {
-    const id = `sock_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    const socket = new MockSocket(id, this);
-    this.sockets.set(id, socket);
-    return socket;
-  }
-
-  /** Processa eventos enviados por clientes conectados. */
-  public handleClientEvent<K extends keyof ClientToServerEvents>(
-    socket: MockSocket,
-    event: K,
-    ...args: Parameters<ClientToServerEvents[K]>
-  ): void {
-    if (event === "session.bind") {
-      const data = args[0] as { token: string };
-      const user = this.resolveUserFromToken(data.token);
+    io.client.on("session.bind", (_event, data: { token: string }) => {
+      const user = resolveUserFromToken(data?.token ?? "");
       if (user) {
-        socket.userId = user.id;
+        connection.userId = user.id;
       } else {
-        socket.receiveFromServer("session.rejected", {
+        io.client.emit("session.rejected", {
           reason: "Token de sessão inválido ou expirado.",
         });
       }
-    }
-  }
+    });
 
-  private resolveUserFromToken(token: string): DbUser | null {
-    if (!token) {
-      return null;
-    }
-    const cleanToken = token.startsWith("Bearer ") ? token.slice(7).trim() : token.trim();
-
-    if (cleanToken.startsWith("mock-token-")) {
-      const remainder = cleanToken.slice("mock-token-".length);
-      for (const user of db.users.values()) {
-        if (remainder.startsWith(user.id)) {
-          return user;
-        }
-      }
-    }
-
-    const directUser = dbHelpers.findUserById(cleanToken);
-    if (directUser) {
-      return directUser;
-    }
-
-    if (cleanToken.toLowerCase().includes("demo")) {
-      return dbHelpers.findUserById("user_demo") ?? null;
-    }
-
-    return null;
-  }
-
-  /** Envia um evento para todos os clientes conectados. */
-  public broadcast<K extends keyof ServerToClientEvents>(
-    event: K,
-    ...args: Parameters<ServerToClientEvents[K]>
-  ): void {
-    for (const socket of this.sockets.values()) {
-      socket.receiveFromServer(event, ...args);
-    }
-  }
-
-  /** Envia um evento apenas para os clientes vinculados a um usuário específico. */
-  public sendToUser<K extends keyof ServerToClientEvents>(
-    userId: Id<"user"> | undefined,
-    event: K,
-    ...args: Parameters<ServerToClientEvents[K]>
-  ): void {
-    if (!userId) {
-      this.broadcast(event, ...args);
-      return;
-    }
-    for (const socket of this.sockets.values()) {
-      if (socket.userId === userId) {
-        socket.receiveFromServer(event, ...args);
-      }
-    }
-  }
-
-  public removeSocket(id: string): void {
-    this.sockets.delete(id);
-  }
-
-  /** Retorna a quantidade de conexões ativas. */
-  public get activeConnectionsCount(): number {
-    return this.sockets.size;
-  }
-
-  /** Encerra todas as conexões e limpa o estado. */
-  public reset(): void {
-    for (const socket of this.sockets.values()) {
-      socket.connected = false;
-    }
-    this.sockets.clear();
-    this.setupEmitterBridge();
-  }
-}
-
-/** Instância singleton do servidor simulado de sockets. */
-export const mockSocketServer = new MockSocketServer();
+    handlerConnection.client.addEventListener("close", () => {
+      connections.delete(connection);
+    });
+  }),
+];

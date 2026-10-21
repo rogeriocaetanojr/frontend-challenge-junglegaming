@@ -36,6 +36,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.90.0",
+    "socket.io-client": "^4.8.4",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7",
     "zustand": "^5.0.15"
@@ -45,6 +46,7 @@
     "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
+    "@mswjs/socket.io-binding": "^0.2.0",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-plugin-query": "^5.104.4",
@@ -65,6 +67,7 @@
     "msw": "^3.0.3",
     "oxlint": "^1.88.0",
     "prettier": "^3.9.10",
+    "socket.io-parser": "^4.2.7",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.71.2",

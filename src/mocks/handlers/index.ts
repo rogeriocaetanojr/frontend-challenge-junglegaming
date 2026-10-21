@@ -8,6 +8,7 @@ import { orderHandlers } from "./order.handlers";
 import { profileHandlers } from "./profile";
 import { quoteHandlers } from "./quote.handlers";
 import { walletsHandlers } from "./wallets";
+import { realtimeSocketHandlers } from "@/mocks/realtime/socket-server";
 
 export * from "./cart.handlers";
 export * from "./catalog.handlers";
@@ -35,4 +36,5 @@ export const handlers = [
   ...quoteHandlers,
   ...checkoutHandlers,
   ...orderHandlers,
+  ...realtimeSocketHandlers,
 ];
