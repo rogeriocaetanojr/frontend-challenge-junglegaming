@@ -4,7 +4,7 @@
  * Fornece dados representativos fiéis aos contratos de domínio e ao design do Figma:
  * - 12 NFTs em várias categorias, coleções, raridades e redes.
  * - Preços estritamente formatados como `EthString`.
- * - Usuário de teste demo com carteiras primária e secundária.
+ * - Dois usuários (demo e curadora) para validar o isolamento de dados entre contas.
  * - Cupons de desconto ativos e de teste.
  */
 import type { Nft } from "@/contracts/catalog";
@@ -15,17 +15,32 @@ import type { DbCoupon, DbFavorite, DbUser } from "./schema";
 
 const SEED_TIMESTAMP = "2026-10-19T00:00:00.000Z" as IsoDate;
 
-/** Usuário padrão de demonstração. Senha conhecida para login: `Password123!` */
+/**
+ * Usuário padrão de demonstração. Senha para login: `Password123!`.
+ * O hash PBKDF2 usa salt fixo para manter o seed determinístico (nunca senha em claro).
+ */
 export const SEED_DEMO_USER: DbUser = {
   id: asId<"user">("user_demo"),
   name: "Alex Jungle",
   email: "demo@jungle.com",
   avatarUrl: "/images/nfts/emerald-ape.png",
   createdAt: "2026-01-01T00:00:00.000Z" as IsoDate,
-  passwordHash: "Password123!",
+  passwordHash:
+    "pbkdf2$6b7572696f2d64656d6f2d73616c7431$532c3c7f5aa8b791773ed94b86883fc8c0abe28d6859ddab343c633c4d784804",
 };
 
-export const SEED_USERS: DbUser[] = [SEED_DEMO_USER];
+/** Segundo usuário, usado para validar troca de conta e isolamento. Senha: `Password123!`. */
+export const SEED_CURATOR_USER: DbUser = {
+  id: asId<"user">("user_curator"),
+  name: "Sam Curator",
+  email: "curator@kurio.art",
+  avatarUrl: "/images/nfts/golden-bear.png",
+  createdAt: "2026-02-01T00:00:00.000Z" as IsoDate,
+  passwordHash:
+    "pbkdf2$6b7572696f2d63757261746f72733231$ec40310c845159e9d7a8c1873b5ae03d5b96b053a39fd02ac324164716a36672",
+};
+
+export const SEED_USERS: DbUser[] = [SEED_DEMO_USER, SEED_CURATOR_USER];
 
 /** Carteiras vinculadas ao usuário demo. */
 export const SEED_WALLETS: Wallet[] = [
@@ -44,6 +59,14 @@ export const SEED_WALLETS: Wallet[] = [
     network: "polygon",
     address: "0x28C6c06298d514Db089934071355E5743bf21d60",
     label: "Polygon Gaming Vault",
+  },
+  {
+    id: asId<"wallet">("wallet_curator_eth"),
+    userId: asId<"user">("user_curator"),
+    role: "primary",
+    network: "ethereum",
+    address: "0x9F3a1B2c4D5e6F708192a3B4c5D6e7F8091A2b3C",
+    label: "Curator Vault",
   },
 ];
 
@@ -456,4 +479,5 @@ export const SEED_FAVORITES: Record<string, DbFavorite[]> = {
     { nftId: "nft-1", favoritedAt: SEED_TIMESTAMP },
     { nftId: "nft-2", favoritedAt: SEED_TIMESTAMP },
   ],
+  user_curator: [{ nftId: "nft-3", favoritedAt: SEED_TIMESTAMP }],
 };

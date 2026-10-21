@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { db, dbHelpers, resetDb, SEED_NFTS } from "@/mocks/db";
+import { verifyPassword } from "@/mocks/db/repositories/users";
 
 describe("InMemoryDatabase (src/mocks/db)", () => {
   beforeEach(() => {
@@ -16,17 +17,20 @@ describe("InMemoryDatabase (src/mocks/db)", () => {
 
   it("deve inicializar com as seeds completas de NFTs, usuários, carteiras e cupons", () => {
     expect(db.nfts.size).toBe(12);
-    expect(db.users.size).toBe(1);
-    expect(db.wallets.size).toBe(2);
+    expect(db.users.size).toBe(2);
+    expect(db.wallets.size).toBe(3);
     expect(db.coupons.size).toBe(3);
     expect(db.carts.size).toBe(1);
   });
 
-  it("deve conter o usuário demo com senha conhecida e carteiras associadas", () => {
+  it("deve conter o usuário demo com senha conhecida e carteiras associadas", async () => {
     const user = dbHelpers.findUserByEmail("demo@jungle.com");
     expect(user).toBeDefined();
     expect(user?.name).toBe("Alex Jungle");
-    expect(user?.passwordHash).toBe("Password123!");
+    // A senha nunca fica em claro: o seed guarda apenas o hash PBKDF2
+    expect(user?.passwordHash).toMatch(/^pbkdf2\$[0-9a-f]{32}\$[0-9a-f]{64}$/);
+    expect(await verifyPassword("Password123!", user!.passwordHash)).toBe(true);
+    expect(await verifyPassword("Password123?", user!.passwordHash)).toBe(false);
 
     if (user) {
       const wallets = dbHelpers.findWalletsByUserId(user.id);
@@ -34,6 +38,16 @@ describe("InMemoryDatabase (src/mocks/db)", () => {
       expect(wallets.some((w) => w.network === "ethereum")).toBe(true);
       expect(wallets.some((w) => w.network === "polygon")).toBe(true);
     }
+  });
+
+  it("deve conter um segundo usuário isolado, com carteira própria", async () => {
+    const curator = dbHelpers.findUserByEmail("curator@kurio.art");
+    expect(curator).toBeDefined();
+    expect(await verifyPassword("Password123!", curator!.passwordHash)).toBe(true);
+
+    const wallets = dbHelpers.findWalletsByUserId(curator!.id);
+    expect(wallets).toHaveLength(1);
+    expect(wallets.every((w) => w.userId === curator!.id)).toBe(true);
   });
 
   it("deve encontrar cupons ativos e ignorar maiúsculas/minúsculas", () => {
@@ -80,7 +94,7 @@ describe("InMemoryDatabase (src/mocks/db)", () => {
     resetDb();
 
     // 4. Valida restauração completa
-    expect(db.users.size).toBe(1);
+    expect(db.users.size).toBe(2);
     expect(db.coupons.has("JUNGLE10")).toBe(true);
 
     const restoredNft = db.nfts.get("nft-1");

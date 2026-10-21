@@ -15,6 +15,7 @@ import type {
   Wallet,
 } from "@/contracts/identity";
 import { db, type DbUser, dbHelpers } from "@/mocks/db";
+import { hashPassword, verifyPassword } from "@/mocks/db/repositories/users";
 import { scenarioEngine } from "@/mocks/scenarios";
 
 /** Extrai e valida o usuário associado ao token do cabeçalho Authorization. */
@@ -108,7 +109,7 @@ export const identityHandlers = [
     }
 
     const user = dbHelpers.findUserByEmail(email);
-    if (!user || user.passwordHash !== password) {
+    if (!user || !(await verifyPassword(password, user.passwordHash))) {
       return HttpResponse.json<ApiErrorBody>(
         {
           code: "unauthorized",
@@ -171,7 +172,7 @@ export const identityHandlers = [
       email,
       avatarUrl: "/images/nfts/emerald-ape.png",
       createdAt: new Date().toISOString() as IsoDate,
-      passwordHash: password,
+      passwordHash: await hashPassword(password),
     };
     db.users.set(newUser.id, newUser);
 

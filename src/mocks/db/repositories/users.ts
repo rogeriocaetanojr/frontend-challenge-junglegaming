@@ -46,26 +46,17 @@ export async function hashPassword(password: string, saltHex?: string): Promise<
   return `pbkdf2$${actualSaltHex}$${hashStr}`;
 }
 
-/**
- * Valida a senha contra o hash armazenado.
- * Suporta o formato PBKDF2 e preserva retrocompatibilidade com senhas de seeds em texto puro.
- */
+/** Valida a senha contra o hash PBKDF2 armazenado. Senhas em claro nunca são aceitas. */
 export async function verifyPassword(
   password: string,
   storedHash: string,
 ): Promise<boolean> {
-  if (storedHash.startsWith("pbkdf2$")) {
-    const parts = storedHash.split("$");
-    if (parts.length !== 3) {
-      return false;
-    }
-    const saltHex = parts[1];
-    const computed = await hashPassword(password, saltHex);
-    return computed === storedHash;
+  const parts = storedHash.split("$");
+  if (parts.length !== 3 || parts[0] !== "pbkdf2") {
+    return false;
   }
-
-  // Compatibilidade com senhas das seeds iniciais (ex.: "Password123!")
-  return password === storedHash;
+  const computed = await hashPassword(password, parts[1]);
+  return computed === storedHash;
 }
 
 export const usersRepository = {
