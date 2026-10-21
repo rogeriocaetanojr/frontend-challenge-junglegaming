@@ -7,6 +7,19 @@ export async function addNftToCart(page: Page, nftId = "1") {
   await expect(page).toHaveURL(/\/cart$/);
 }
 
+/** Autentica o usuário demo pelo AuthModal do cabeçalho. */
+export async function loginViaModal(page: Page) {
+  await page
+    .getByRole("banner")
+    .getByRole("button", { name: /^entrar$/i })
+    .click();
+  const modal = page.getByRole("dialog");
+  await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
+  await modal.getByLabel(/senha/i).fill("Password123!");
+  await modal.locator('button[type="submit"]').click();
+  await expect(modal).not.toBeVisible();
+}
+
 /** Reseta banco mock, cenários e storage local via painel do ScenarioSwitcher. */
 export async function resetScenarioState(page: Page) {
   await page.goto("/?scenarios=1");

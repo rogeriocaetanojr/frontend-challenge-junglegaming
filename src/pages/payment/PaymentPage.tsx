@@ -694,7 +694,7 @@ export function PaymentPage() {
               <button
                 type="button"
                 onClick={handleConfirmPurchase}
-                disabled={isProcessing}
+                disabled={isProcessing || items.length === 0}
                 aria-busy={isProcessing}
                 className="disabled:opacity-60 disabled:cursor-not-allowed w-full bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-sm sm:text-base py-3 sm:py-3.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
               >

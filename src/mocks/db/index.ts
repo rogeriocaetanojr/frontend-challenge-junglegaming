@@ -68,9 +68,33 @@ function readPersistedCarts(): Cart[] {
   }
 }
 
+const FAVORITES_STORAGE_KEY = "@nft-marketplace:mock:favorites";
+
+/** Persiste os favoritos do mock no navegador (sustenta o refresh da página). */
+export function saveFavorites(): void {
+  try {
+    localStorage.setItem(
+      FAVORITES_STORAGE_KEY,
+      JSON.stringify([...db.favorites.entries()]),
+    );
+  } catch {
+    // Storage indisponível: os favoritos seguem válidos apenas em memória
+  }
+}
+
+function readPersistedFavorites(): [string, DbFavorite[]][] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as [string, DbFavorite[]][]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function resetDb(): InMemoryDatabase {
   try {
     localStorage.removeItem(CARTS_STORAGE_KEY);
+    localStorage.removeItem(FAVORITES_STORAGE_KEY);
   } catch {
     // Storage indisponível
   }
@@ -185,7 +209,15 @@ export const dbHelpers = {
 // Popula o banco singleton na inicialização do módulo.
 // Na carga do app, o carrinho persistido sobrevive ao refresh; o reset explícito o descarta
 const persistedCarts = import.meta.env.MODE === "test" ? [] : readPersistedCarts();
+const persistedFavorites =
+  import.meta.env.MODE === "test" ? [] : readPersistedFavorites();
 resetDb();
+if (persistedFavorites.length > 0) {
+  for (const [userId, favorites] of persistedFavorites) {
+    db.favorites.set(userId, favorites);
+  }
+  saveFavorites();
+}
 if (persistedCarts.length > 0) {
   for (const cart of persistedCarts) {
     db.carts.set(cart.id, cart);

@@ -24,6 +24,12 @@ export function NftActionPanel({
 }: NftActionPanelProps) {
   const [quantity, setQuantity] = useState<number>(Math.max(1, initialQuantity));
   const [isFavorite, setIsFavorite] = useState<boolean>(initialFavorite);
+  const [syncedFavorite, setSyncedFavorite] = useState<boolean>(initialFavorite);
+  // Ressincroniza quando o estado do servidor chega após a montagem (ex.: refresh).
+  if (initialFavorite !== syncedFavorite) {
+    setSyncedFavorite(initialFavorite);
+    setIsFavorite(initialFavorite);
+  }
 
   const handleDecreaseQuantity = () => {
     setQuantity((prev) => {

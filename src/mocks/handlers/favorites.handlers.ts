@@ -4,7 +4,7 @@
 import { http, HttpResponse } from "msw";
 
 import type { ApiErrorBody, IsoDate } from "@/contracts/common";
-import { db, dbHelpers, type DbFavorite, type DbUser } from "@/mocks/db";
+import { db, dbHelpers, saveFavorites, type DbFavorite, type DbUser } from "@/mocks/db";
 import { scenarioEngine } from "@/mocks/scenarios";
 
 export interface FavoriteItemResponse {
@@ -114,6 +114,7 @@ export const favoritesHandlers = [
     if (!favorites.some((fav) => fav.nftId === nftId)) {
       favorites.push({ nftId, favoritedAt: new Date().toISOString() as IsoDate });
       db.favorites.set(user.id, favorites);
+      saveFavorites();
     }
 
     return HttpResponse.json<FavoriteItemResponse[]>(listFavorites(user.id), {
@@ -135,6 +136,7 @@ export const favoritesHandlers = [
       user.id,
       favorites.filter((fav) => fav.nftId !== nftId),
     );
+    saveFavorites();
 
     return HttpResponse.json<FavoriteItemResponse[]>(listFavorites(user.id), {
       status: 200,
