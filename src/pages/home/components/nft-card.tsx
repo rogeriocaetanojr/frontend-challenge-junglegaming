@@ -1,8 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 
 import { useFavorites } from "@/features/favorites/api";
-import { useAuthStore } from "@/store/auth-store";
 
 import { formatEth } from "@/lib/formatters";
 import type { NftItem } from "@/types/nft";
@@ -27,16 +26,10 @@ export function NftCard({ nft }: NftCardProps) {
   const image = rawNft.images?.[0]?.url ?? rawNft.image ?? "";
   const price = rawNft.priceEth ?? rawNft.price ?? "0";
 
-  const navigate = useNavigate();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(String(nft.id));
 
   const handleFavorite = () => {
-    if (!isAuthenticated) {
-      void navigate({ to: "/login", search: { redirect: "/" } });
-      return;
-    }
     toggleFavorite({ id: String(nft.id), title, price: String(price), image });
   };
 

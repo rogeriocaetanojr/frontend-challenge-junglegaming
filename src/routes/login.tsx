@@ -46,14 +46,32 @@ export function LoginPage() {
 
   return (
     <main
-      className="flex min-h-[calc(100vh-140px)] w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
+      className="flex w-full flex-col max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-[100dvh] max-md:overflow-hidden max-md:bg-[#140D0A] max-md:px-6 max-md:pt-6 max-md:pb-3 max-md:font-mono max-md:text-[#F5F1EB] md:min-h-[calc(100vh-140px)] md:items-center md:justify-center md:px-4 md:py-12 md:sm:px-6 md:lg:px-8"
       aria-labelledby="login-heading"
     >
-      <div className="w-full max-w-md">
-        <h1 id="login-heading" className="sr-only">
-          Página de Autenticação
-        </h1>
-        <LoginForm redirectPath={search.redirect} />
+      <h1 id="login-heading" className="sr-only">
+        Página de Autenticação
+      </h1>
+
+      {/* Mobile: réplica fiel da casca interna do AuthModal (logo + título + LoginForm flat) */}
+      <p
+        className="md:hidden mt-6 mb-5 text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] select-none"
+        aria-hidden="true"
+      >
+        KURIO
+      </p>
+      <h2
+        className="hidden max-md:flex w-full justify-center items-center text-center text-base font-bold text-[#F5F1EB] mt-5 mb-1 whitespace-nowrap"
+        aria-live="polite"
+      >
+        Entrar
+      </h2>
+
+      <div className="w-full max-md:flex-1 max-md:min-h-0 md:max-w-md">
+        <LoginForm
+          redirectPath={search.redirect}
+          className="max-md:flex-1 max-md:min-h-0 max-md:max-w-none max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:shadow-none max-md:[&_h2]:hidden"
+        />
       </div>
     </main>
   );

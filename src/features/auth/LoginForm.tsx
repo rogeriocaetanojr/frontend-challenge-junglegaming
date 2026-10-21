@@ -98,7 +98,7 @@ export function LoginForm({
 
   return (
     <div
-      className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
+      className={`flex flex-col w-full max-w-md md:rounded-card md:border md:border-border md:bg-surface-dark md:p-8 md:shadow-card ${className}`}
     >
       <div className="mb-2 text-center max-md:hidden">
         <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
