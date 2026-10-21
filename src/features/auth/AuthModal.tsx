@@ -54,27 +54,35 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           >
             KURIO
           </p>
-          <div
-            id="auth-modal-title"
-            className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0 max-md:text-2xl max-md:mt-6 max-md:mb-2"
-          >
-            <button
-              type="button"
-              onClick={() => setActiveTab("login")}
-              className={`${TAB_BASE} ${activeTab === "login" ? TAB_ACTIVE : TAB_IDLE} max-md:text-[#F5F1EB] max-md:font-bold max-md:pointer-events-none`}
+          <div id="auth-modal-title">
+            {/* Mobile: título simples refletindo a aba ativa */}
+            <h2
+              className="hidden max-md:flex w-full justify-center items-center text-center text-base font-bold text-[#F5F1EB] mt-6 mb-2 whitespace-nowrap"
+              aria-live="polite"
             >
-              Entrar
-            </button>
-            <span className="text-[#CFB28C]/40 font-light text-base select-none max-md:hidden">
-              |
-            </span>
-            <button
-              type="button"
-              onClick={() => setActiveTab("register")}
-              className={`${TAB_BASE} ${activeTab === "register" ? TAB_ACTIVE : TAB_IDLE} max-md:hidden`}
-            >
-              Criar conta
-            </button>
+              {activeTab === "login" ? "Entrar" : "Criar perfil de colecionador"}
+            </h2>
+
+            {/* Desktop: abas Entrar | Criar conta */}
+            <div className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0 max-md:hidden">
+              <button
+                type="button"
+                onClick={() => setActiveTab("login")}
+                className={`${TAB_BASE} ${activeTab === "login" ? TAB_ACTIVE : TAB_IDLE}`}
+              >
+                Entrar
+              </button>
+              <span className="text-[#CFB28C]/40 font-light text-base select-none">
+                |
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab("register")}
+                className={`${TAB_BASE} ${activeTab === "register" ? TAB_ACTIVE : TAB_IDLE}`}
+              >
+                Criar conta
+              </button>
+            </div>
           </div>
 
           {activeTab === "login" ? (

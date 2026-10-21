@@ -136,7 +136,7 @@ export function RegisterForm({
     <div
       className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-2 text-center">
+      <div className="mb-2 text-center max-md:hidden">
         <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
           Criar sua Conta
         </h2>
@@ -148,7 +148,7 @@ export function RegisterForm({
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-1 flex-col justify-between gap-2"
+        className="flex flex-1 flex-col justify-between gap-2 max-md:justify-start max-md:gap-3 max-md:w-full max-md:mt-8"
         aria-label="Formulário de Cadastro"
       >
         {errors.root && (
@@ -174,7 +174,7 @@ export function RegisterForm({
             type="text"
             autoComplete="name"
             placeholder="Nome de usuário"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.name ? "true" : "false"}
             aria-describedby={errors.name ? "register-name-error" : undefined}
@@ -204,7 +204,7 @@ export function RegisterForm({
             type="email"
             autoComplete="email"
             placeholder="Digite seu e-mail"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={errors.email ? "register-email-error" : undefined}
@@ -233,7 +233,7 @@ export function RegisterForm({
             id="register-password"
             autoComplete="new-password"
             placeholder="Senha"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.password ? "true" : "false"}
             aria-describedby={errors.password ? "register-password-error" : undefined}
@@ -262,7 +262,7 @@ export function RegisterForm({
             id="register-confirm-password"
             autoComplete="new-password"
             placeholder="Confirmar senha"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.confirmPassword ? "true" : "false"}
             aria-describedby={
@@ -284,7 +284,7 @@ export function RegisterForm({
         {/* Botão de Submissão */}
         <Button
           type="submit"
-          className="w-full h-9 mt-1 text-xs font-semibold"
+          className="w-full h-9 mt-1 text-xs font-semibold max-md:h-14 max-md:py-4 max-md:text-base max-md:font-bold max-md:rounded-xl"
           disabled={isPending}
           aria-busy={isPending}
         >
@@ -297,14 +297,17 @@ export function RegisterForm({
               <span>Criando conta...</span>
             </span>
           ) : (
-            "Criar conta"
+            <>
+              <span className="max-md:hidden">Criar conta</span>
+              <span className="hidden max-md:inline">Criar perfil</span>
+            </>
           )}
         </Button>
 
         <SocialAuth compact />
 
         {/* Link para Login */}
-        <div className="text-center text-xs text-text-muted">
+        <div className="text-center text-xs text-text-muted max-md:text-sm">
           Já tem uma conta?{" "}
           <a
             href={loginHref}
@@ -318,7 +321,8 @@ export function RegisterForm({
             }
             className="font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
           >
-            Faça login
+            <span className="max-md:hidden">Faça login</span>
+            <span className="hidden max-md:inline">Entre</span>
           </a>
         </div>
       </form>
