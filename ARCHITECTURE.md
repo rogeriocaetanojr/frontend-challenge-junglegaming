@@ -74,30 +74,25 @@ Todos os endpoints estão implementados na camada de interceptação do Mock Ser
 
 ## 3. Política de Sessão, Autenticação e Expiração
 
-- **Store de Autenticação (`src/store/auth-store.ts`)**:
-  - Implementado com **Zustand** e persistência local sob a chave `@nft-marketplace:auth`.
-  - Gerencia o ciclo de vida da sessão (`UserSession` contendo `id`, `name`, `email`, `walletAddress`, `balanceEth` e `token`).
-  - Provedor de ações: `login`, `connectWallet`, `disconnectWallet` e `logout`.
-- **Sincronização com o Cliente HTTP (`src/lib/http/client.ts`)**:
-  - Na autenticação ou reidratação do store (`onRehydrateStorage`), o token JWT Bearer é automaticamente repassado para `setAuthToken(token)`.
-  - As requisições HTTP subjacentes injetam `Authorization: Bearer <token>` de maneira centralizada via interceptor do Axios.
-- **Auto-Logout e Tratamento Reativo de Expiração (401)**:
-  - O interceptor de resposta do Axios emite o evento global da janela `window.dispatchEvent(new CustomEvent("http:unauthorized"))` sempre que um código `401 Unauthorized` é retornado pela API.
-  - O `authStore` registra um listener para o evento `http:unauthorized`, executando imediatamente `logout()` (limpeza de estado e `setAuthToken(null)`), evitando estados inconsistentes de autenticação.
-- **Isolamento de Dados por Usuário**:
-  - Todas as chaves privadas do TanStack Query utilizam a fábrica padronizada `queryKeys.user(userId)` (`src/lib/query/keys.ts`), garantindo que dados de carrinho, pedidos e perfil nunca vazem entre sessões distintas.
+- **Sessão persistida (`src/lib/auth/session-store.ts`)**: o token, a expiração e o `userId` ficam em `localStorage` (`@nft-marketplace:session`). Na inicialização, `hydrateAuthSession` (`src/store/auth-store.ts`) recupera a sessão por `GET /api/auth/session` antes do primeiro render, o que mantém o usuário logado após refresh.
+- **Store de autenticação (`src/store/auth-store.ts`)**: store Zustand **derivada da API**. Ela só fica autenticada depois de uma sessão real e guarda apenas `user` e `isAuthenticated`. Ações: `syncSession`, `updateUser` e `logout`.
+- **Barramento de autenticação (`src/lib/auth/events.ts`)**: os eventos `auth:login`, `auth:logout` e `auth:expired` (este com deduplicação sob concorrência) coordenam os módulos sem acoplamento: merge do carrinho, conexão e desconexão do socket e limpeza do cupom.
+- **Expiração (401)**: o interceptor do Axios (`src/lib/http/interceptors.ts`) emite `auth:expired` quando havia sessão e `auth:unauthorized` quando o usuário era anônimo. O `SessionExpiredModal` (`role="alertdialog"`) limpa a sessão, guarda a rota atual e devolve o usuário a ela após o novo login (`/login?redirect=…`, sanitizado contra open redirect).
+- **Rotas privadas**: a rota de layout `_auth` resolve a sessão com `ensureQueryData` e, se não houver sessão, redireciona para `/login` preservando `redirect`. Checkout (`/payment`), perfil, carteiras e favoritos ficam sob essa guarda.
+- **Logout e troca de usuário**: o `logout` notifica a API, limpa o storage da sessão, executa `queryClient.clear()` e emite `auth:logout`, que encerra o socket e limpa o cupom. As chaves privadas do TanStack Query usam `queryKeys.user(userId)` (`src/lib/query/keys.ts`), então nenhum dado de carrinho, pedidos, favoritos ou perfil é compartilhado entre contas. O isolamento é coberto pelo E2E "troca de usuário não expõe dados privados da sessão anterior".
+- **Senhas**: o banco simulado guarda somente hashes PBKDF2 (SHA-256, salt de 16 bytes) no formato `pbkdf2$<salt>$<hash>`. Login, cadastro e troca de senha passam por `hashPassword`/`verifyPassword` (`src/mocks/db/repositories/users.ts`); senhas em claro não são aceitas.
 
 ---
 
 ## 4. Estado do Carrinho, Precisão Decimal (ETH) e Merge de Visitante
 
-- **Gerenciamento de Estado Global (`src/store/cart-store.ts`)**:
-  - Implementado com **Zustand** e middleware `persist` gravando no `localStorage` sob a chave `@nft-marketplace:cart`.
-  - **Ações Atômicas e Seletores**: Prover `addItem`, `removeItem`, `clearCart`, `isInCart`, `getItemCount`, `getTotalEth` e `getTotalUsd`.
-- **Precisão Numérica Rigorosa (IEEE 754)**:
-  - Cálculos financeiros de soma, desconto e taxas de rede utilizam `BigNumber.js` e conversões em Wei (`src/lib/money/eth.ts`), eliminando discrepâncias de ponto flutuante em JavaScript (`0.1 + 0.2 = 0.30000000000000004`).
-- **Merge de Visitante Idempotente**:
-  - Visitantes recebem um `guestId` persistente (UUID v4 canônico). Ao efetuar login, o endpoint `POST /api/cart/merge` mescla os itens do carrinho anônimo na conta do usuário autenticado de forma estritamente idempotente.
+- **Fonte da verdade na API**: o carrinho é servido por `GET /api/cart` e alterado por `POST/PATCH/DELETE /api/cart/items` (`src/features/cart/api.ts`). Não existe cópia local do carrinho: o cliente só mantém o cache do TanStack Query, com chaves `["user", id, "cart"]` para o usuário autenticado e `["public", "cart", guestId]` para o visitante.
+- **Persistência após refresh**: o banco simulado persiste os carrinhos no `localStorage` (`saveCarts` em `src/mocks/db`), simulando o armazenamento do servidor. O visitante é identificado pelo header `X-Guest-Id`.
+- **Merge do visitante**: no `auth:login`, `POST /api/cart/merge` incorpora os itens do visitante ao carrinho do usuário. A rota `/payment` aguarda esse merge (`waitForCartMerge`) antes de consultar o carrinho. Como um refresh logo após o login pode abortar a requisição, o app repete o merge na inicialização sempre que há sessão; o servidor esvazia o carrinho do visitante ao mesclar, então a repetição nunca duplica itens.
+- **Quantidade e remoção**: atualização otimista com rollback em caso de erro (por exemplo, conflito de disponibilidade), respeitando o limite de edições disponíveis.
+- **Cotação**: subtotal, desconto, taxa de rede e total vêm de `POST /api/quotes`, chaveados pela versão do carrinho e pelo cupom. A interface não recalcula valores por conta própria. Uma mudança no total (por exemplo, via `nft.updated`) gera um aviso acessível, e o checkout busca a cotação de novo antes de criar o pedido.
+- **Precisão decimal**: valores em ETH trafegam como `EthString` (string decimal) e são operados com `bignumber.js` (`src/lib/money`), sem aritmética de ponto flutuante. Quantidades são inteiras.
+- **Pedido pendente**: a `Idempotency-Key` e o `orderId` do pedido em andamento ficam no `sessionStorage`, isolados por usuário. Após refresh, o polling do mesmo pedido é retomado em vez de criar outro. O registro é apagado em estado terminal ou cancelamento.
 
 ---
 
@@ -150,19 +145,31 @@ A aplicação implementa um barramento de eventos em tempo real (`src/contracts/
   - Todas as artes e avatares contêm atributos `alt` descritivos e skeletons com efeito shimmer durante o carregamento de dados remotos.
 - **Escala e Conforto Visual**:
   - O conteúdo interno utiliza zoom de 90% para leitura confortável em monitores com 100% de escala, mantendo a navbar intacta no topo conforme refinamento de usabilidade.
+- **Skeletons com shimmer**: o componente `Skeleton` usa o utilitário `animate-shimmer` (`src/styles/index.css`), um gradiente translúcido que desliza sobre o fundo. Com `prefers-reduced-motion: reduce`, a animação é desligada e fica só o fundo estático. Catálogo, detalhe, relacionados e resumo do carrinho usam o mesmo componente.
+
+### Desvios e decisões em relação ao Figma
+
+- **Navegação mobile**: abaixo de 768 px o cabeçalho desktop dá lugar à barra de navegação inferior do frame "Início", exibida apenas na Home. Nas demais telas mobile, cada página traz seu próprio cabeçalho com "Voltar", também conforme o Figma.
+- **Autenticação no mobile**: fora da Home, o acesso é pela rota `/login` (ou pelo modal acionado no checkout). No mobile, o modal de autenticação ocupa a tela inteira e fecha por `Escape`; o botão X só aparece no desktop.
+- **Troca entre login e cadastro**: no mobile, as abas "Entrar | Criar conta" dão lugar aos links "Crie uma conta" e "Entre". Esses links mantêm o foco no campo atual (`preventDefault` no `mousedown`). Sem isso, o blur dispararia a validação e a mensagem de erro deslocaria o link para fora do ponto tocado, e o toque se perderia.
+- **Perfil e carteiras**: as carteiras ficam numa aba da página de perfil (`/profile`) em vez de uma rota separada, mantendo o mesmo padrão visual. Pedidos confirmados são exibidos num recibo modal que reproduz o snapshot do pedido.
 
 ---
 
 ## 9. Log de Decisões Técnicas
 
-| Data       | Commit    | Decisão                                                                | Motivo                                                                                                                 |
-| :--------- | :-------- | :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-19 | `972cf09` | Modo estrito do TypeScript e path alias `@/*`                          | Garantir segurança máxima de tipos no compilador e facilitar refatorações com imports absolutos.                       |
-| 2026-10-19 | `f0c9fe0` | Barreiras arquiteturais com ESLint (`no-restricted-imports`)           | Impedir vazamento de dependências terceiras (Axios, Socket.IO, MSW) fora de suas camadas dedicadas.                    |
-| 2026-10-19 | `8602956` | Adoção do Tailwind CSS v4 com plugin `@tailwindcss/vite`               | Performance de build superior com engine Oxide e mapeamento nativo de design tokens.                                   |
-| 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens do Figma               | Prover componentes primitivos acessíveis (WAI-ARIA) fiéis à paleta Dark Mode do Figma.                                 |
-| 2026-10-19 | `9af98ed` | Adoção do BigNumber.js para aritmética de ETH e conversão monetária    | Eliminar vulnerabilidades de ponto flutuante (IEEE 754) em operações financeiras e checkout.                           |
-| 2026-10-20 | `8a9aa28` | Estabilização de rotas, scroll e redirecionamento de compra            | Garantir que o botão Comprar leve ao carrinho e estabilizar navegação para início e mercado.                           |
-| 2026-10-20 | `e797730` | Configuração do `vercel.json` e ativação do MSW para build de produção | Garantir que a versão publicada na Vercel intercepte as requisições sem backend real externo.                          |
-| 2026-10-20 | `652a7f5` | Adaptação dos testes Playwright E2E ao AuthModal unificado             | Cobrir 100% dos fluxos de login, cadastro, alternância de abas e validação acessível no browser.                       |
-| 2026-10-20 | `24310d2` | Configuração da auditoria de qualidade com Lighthouse CI               | Versionar `lighthouserc.json` com metas rígidas (Performance ≥ 90, Acessibilidade ≥ 95, Boas Práticas ≥ 95, SEO ≥ 90). |
+| Data       | Commit    | Decisão                                                                | Motivo                                                                                                                  |
+| :--------- | :-------- | :--------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-19 | `972cf09` | Modo estrito do TypeScript e path alias `@/*`                          | Garantir segurança máxima de tipos no compilador e facilitar refatorações com imports absolutos.                        |
+| 2026-10-19 | `f0c9fe0` | Barreiras arquiteturais com ESLint (`no-restricted-imports`)           | Impedir vazamento de dependências terceiras (Axios, Socket.IO, MSW) fora de suas camadas dedicadas.                     |
+| 2026-10-19 | `8602956` | Adoção do Tailwind CSS v4 com plugin `@tailwindcss/vite`               | Performance de build superior com engine Oxide e mapeamento nativo de design tokens.                                    |
+| 2026-10-19 | `3d4229a` | Adoção do shadcn/ui customizado sobre os tokens do Figma               | Prover componentes primitivos acessíveis (WAI-ARIA) fiéis à paleta Dark Mode do Figma.                                  |
+| 2026-10-19 | `9af98ed` | Adoção do BigNumber.js para aritmética de ETH e conversão monetária    | Eliminar vulnerabilidades de ponto flutuante (IEEE 754) em operações financeiras e checkout.                            |
+| 2026-10-20 | `8a9aa28` | Estabilização de rotas, scroll e redirecionamento de compra            | Garantir que o botão Comprar leve ao carrinho e estabilizar navegação para início e mercado.                            |
+| 2026-10-20 | `e797730` | Configuração do `vercel.json` e ativação do MSW para build de produção | Garantir que a versão publicada na Vercel intercepte as requisições sem backend real externo.                           |
+| 2026-10-20 | `652a7f5` | Adaptação dos testes Playwright E2E ao AuthModal unificado             | Cobrir 100% dos fluxos de login, cadastro, alternância de abas e validação acessível no browser.                        |
+| 2026-10-20 | `24310d2` | Configuração da auditoria de qualidade com Lighthouse CI               | Versionar `lighthouserc.json` com metas rígidas (Performance ≥ 90, Acessibilidade ≥ 95, Boas Práticas ≥ 95, SEO ≥ 90).  |
+| 2026-10-21 | —         | Skeleton com shimmer acessível em todo o app                           | Requisito do edital (seção 8), com respeito a `prefers-reduced-motion`.                                                 |
+| 2026-10-21 | —         | Pedido pendente persistido em `sessionStorage` por usuário             | Recuperar o mesmo pedido após refresh ou timeout, sem compra duplicada.                                                 |
+| 2026-10-21 | —         | Segundo usuário no seed e senhas apenas em hash PBKDF2                 | Fixtures com dois usuários (seção 6) e proibição de senhas em claro (seção 3); a troca de senha volta a permitir login. |
+| 2026-10-21 | —         | Helpers E2E sensíveis à viewport                                       | Os testes mobile usam a navegação real do Figma mobile em vez de seletores exclusivos do desktop.                       |

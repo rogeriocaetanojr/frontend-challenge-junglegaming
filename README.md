@@ -1,149 +1,164 @@
 # NFT Marketplace — Desafio Frontend
 
-Aplicação completa desenvolvida para o desafio técnico de frontend da Jungle Gaming, implementando a experiência completa do **KURIO NFT Marketplace** com fidelidade ao design do Figma, arquitetura resiliente e contratos estritos.
+Implementação do **KURIO NFT Marketplace** para o desafio técnico de frontend da Jungle Gaming. Cobre descoberta, compra e conta do colecionador, nas versões desktop e mobile, com API REST e Socket.IO simulados pelo MSW.
 
 ---
 
-## 1. Visão Geral e Links
+## 1. Links
 
-- **Repositório GitHub**: [github.com/rogeriocaetanojr/frontend-challenge-junglegaming](https://github.com/rogeriocaetanojr/frontend-challenge-junglegaming)
-- **URL de Produção (Vercel):** [rogerio-challenge-junglegaming.vercel.app](https://rogerio-challenge-junglegaming.vercel.app)
-- **Protótipo / Design (Figma):** [Link do Figma](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1&p=f&t=MlMOFOydsmpZ3DUt-0)
-
----
-
-## 2. Stack Tecnológica Obrigatória
-
-| Camada            | Tecnologia                      | Descrição                                                                                    |
-| :---------------- | :------------------------------ | :------------------------------------------------------------------------------------------- |
-| **Interface**     | React 19 + TypeScript           | Componentização declarativa, estrita e imutável.                                             |
-| **Roteamento**    | TanStack Router (file-based)    | Rotas em src/routes, search params validados com Zod, loaders e guarda de rotas privadas.    |
-| **Estado Remoto** | TanStack Query v5               | Gerenciamento de cache, mutações e sincronização em segundo plano.                           |
-| **Cliente HTTP**  | Axios                           | Instância isolada com interceptors de autenticação, timeout e auto-logout (401).             |
-| **Tempo Real**    | Socket.IO (Mock Binding)        | Barramento de eventos resiliente com envelopes versionados (`nft.updated`, `order.updated`). |
-| **Estilização**   | Tailwind CSS v4 + Design Tokens | Engine Oxide de alta performance baseada nos tokens extraídos do Figma.                      |
-| **Componentes**   | shadcn/ui + Radix UI Primitives | Primitivos acessíveis em conformidade com WCAG 2.1 AA (WAI-ARIA).                            |
-| **Mocking**       | Mock Service Worker (MSW v3)    | Interceptação em nível de rede para REST e WebSocket com banco em memória.                   |
-| **Testes**        | Vitest + Playwright             | 389 testes automatizados de integração/contratos e suíte E2E em Chromium.                    |
-| **Auditoria**     | Lighthouse CI (`@lhci/cli`)     | Metas de qualidade rigorosas versionadas em `lighthouserc.json`.                             |
+- **Repositório:** [github.com/rogeriocaetanojr/frontend-challenge-junglegaming](https://github.com/rogeriocaetanojr/frontend-challenge-junglegaming)
+- **Aplicação publicada (Vercel):** [rogerio-challenge-junglegaming.vercel.app](https://rogerio-challenge-junglegaming.vercel.app)
+- **Design (Figma):** [Frontend Challenge](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1&p=f&t=MlMOFOydsmpZ3DUt-0)
 
 ---
 
-## 3. Pré-requisitos e Setup Local
+## 2. Stack
 
-- **Node.js**: `>= 22` (definido no arquivo `.nvmrc`)
-- **PNPM**: `>= 9`
+| Camada            | Tecnologia                   | Uso no projeto                                                                                   |
+| :---------------- | :--------------------------- | :----------------------------------------------------------------------------------------------- |
+| **Interface**     | React 19 + TypeScript        | Componentes tipados de ponta a ponta, com contratos em `src/contracts`.                          |
+| **Roteamento**    | TanStack Router (file-based) | Rotas em `src/routes`, search params validados com Zod, loaders e guarda `_auth` com `redirect`. |
+| **Estado remoto** | TanStack Query v5            | Cache isolado por usuário e parâmetros, mutations com invalidação e atualização otimista.        |
+| **Cliente HTTP**  | Axios                        | Instância única com interceptors de token, guest id, timeout e expiração de sessão (401).        |
+| **Tempo real**    | `socket.io-client`           | Cliente real conectado ao `@mswjs/socket.io-binding` (`nft.updated`, `order.updated`).           |
+| **Estilização**   | Tailwind CSS v4 + tokens     | Tokens extraídos do Figma em `src/styles/tokens.css`.                                            |
+| **Componentes**   | shadcn/ui + Radix UI         | Primitivos acessíveis (dialog, dropdown) adaptados à identidade visual.                          |
+| **Mocking**       | MSW v3                       | REST e WebSocket interceptados na rede, com banco em memória persistido no navegador.            |
+| **Testes**        | Vitest + Playwright          | 390 testes unitários/integração e 44 cenários E2E em Chromium desktop e Mobile Chrome.           |
+| **Auditoria**     | Lighthouse CI (`@lhci/cli`)  | Perfis em `lighthouserc.desktop.json` e `lighthouserc.mobile.json`.                              |
+
+---
+
+## 3. Setup local
+
+- **Node.js** `22` (arquivo `.nvmrc`)
+- **pnpm** `9` (campo `packageManager` do `package.json`)
 
 ```bash
-# 1. Instalação das dependências
-pnpm install
-
-# 2. Execução em desenvolvimento local (porta 5173)
-pnpm dev
-
-# 3. Build de produção (tsc -b + vite build)
-pnpm build
-
-# 4. Prévia local do build (dist/)
-pnpm preview
+pnpm install       # dependências (lockfile versionado)
+pnpm dev           # desenvolvimento com mocks em http://localhost:5173
+pnpm build         # tsc -b + vite build (mocks incluídos no build de demonstração)
+pnpm preview       # serve o build em http://localhost:4173
 ```
 
----
-
-## 4. Variáveis de Ambiente
-
-As configurações do projeto seguem o arquivo `.env.example`:
-
-| Variável                     | Descrição                                         | Padrão                  |
-| :--------------------------- | :------------------------------------------------ | :---------------------- |
-| `VITE_ENABLE_MOCKS`          | Habilita os mocks via MSW no navegador e no build | `true`                  |
-| `VITE_MOCK_DEFAULT_SCENARIO` | Define o cenário inicial dos mocks                | `default`               |
-| `VITE_API_BASE_URL`          | URL base para requisições à API REST              | `/api`                  |
-| `VITE_WS_URL`                | Endereço do servidor em tempo real (Socket.IO)    | `http://localhost:3000` |
+Não há serviço externo: a API REST e o Socket.IO são simulados pelo MSW no próprio navegador.
 
 ---
 
-## 5. Credenciais Fictícias de Demonstração
+## 4. Variáveis de ambiente
 
-O banco de dados em memória do MSW inicializa com as seguintes credenciais pré-configuradas:
+Os valores de referência estão em `.env.example`, e o `.env.development` já vem configurado.
 
-- **Usuário Padrão (Demo)**:
-  - **E-mail**: `demo@jungle.com` _(ou `alex.vance@marketplace.local`)_
-  - **Senha**: `Password123!`
-  - **Nome**: Alex Vance
-  - **Carteira Conectada**: `0x71C8364437a9C27779976872A42F340a6B233921`
-  - **Saldo Simulado**: `4.5 ETH`
-- **Segundo Usuário (Isolamento de Dados)**:
-  - **E-mail**: `collector@kurio.art`
-  - **Senha**: `Password123!`
+| Variável            | Descrição                                                                                                  | Padrão           |
+| :------------------ | :--------------------------------------------------------------------------------------------------------- | :--------------- |
+| `VITE_ENABLE_MOCKS` | Liga o MSW (REST + Socket.IO). Só o valor `"false"` desliga os mocks; o painel de cenários exige `"true"`. | `true`           |
+| `VITE_API_BASE_URL` | `baseURL` da instância Axios.                                                                              | `/api`           |
+| `VITE_REALTIME_URL` | Endereço do `socket.io-client`. Com os mocks ativos, o binding do MSW intercepta a conexão.                | `ws://localhost` |
+
+O deploy de demonstração não define nenhuma variável, então os mocks ficam ativos.
 
 ---
 
-## 6. Cenários de Simulação (MSW) e Reset de Estado
+## 5. Credenciais fictícias
 
-A aplicação conta com um banco em memória relacional determinístico (`src/mocks/db/index.ts`) e o alternador de cenários (`src/mocks/ui/scenario-switcher.tsx`):
+O banco simulado começa com dois usuários. As senhas ficam guardadas apenas como hash PBKDF2 com salt, nunca em claro.
 
-1. **Cenário `default`**:
-   - Catálogo completo com 11 NFTs categorizados em 4 coleções oficiais.
-   - Carteira e cotações ativas com saldos estáveis.
-2. **Cenário `empty`**:
-   - Catálogo e carrinho vazios, acionando estados visuais ilustrados e acessíveis de "Nenhum NFT Encontrado".
-3. **Cenário `slow-network` (Latência)**:
-   - Aplica atraso artificial de `2000ms` a `4000ms`, permitindo avaliar os **skeletons com shimmer effect**.
-4. **Cenário `network-error` (Falhas HTTP 500)**:
-   - Simula indisponibilidade de servidor para testar o fallback de erro com botão de repetição.
-5. **Acesso ao painel**:
-   - Em `pnpm dev` o painel é sempre exibido.
-   - Em produção/preview, acrescente `?scenarios=1` (ou `?scenarios=true`) à URL, ex.: `http://localhost:4173/?scenarios=1`.
-6. **Reset completo**:
-   - No painel, clique em **"Reset Database & Cenários"** (`data-testid="reset-db-button"`): restaura o banco em memória (`resetDb`), volta o cenário para `default` e limpa os dados locais, recarregando a página.
+| Usuário     | E-mail              | Senha          | Dados iniciais                                                      |
+| :---------- | :------------------ | :------------- | :------------------------------------------------------------------ |
+| Alex Jungle | `demo@jungle.com`   | `Password123!` | Carteiras principal (Ethereum) e secundária (Polygon), 2 favoritos. |
+| Sam Curator | `curator@kurio.art` | `Password123!` | Carteira principal (Ethereum), 1 favorito.                          |
+
+Use as duas contas para validar a troca de usuário e o isolamento de carrinho, favoritos, perfil, carteiras e pedidos.
+
+**Cupons:** `JUNGLE10` (10%), `WELCOME20` (20%) e `EXPIRED50` (expirado). Qualquer outro código é tratado como inválido.
 
 ---
 
-## 7. Como Reproduzir Fluxos de Falha e Idempotência
+## 6. Cenários de simulação e reset
 
-### A. Idempotência em Pedidos (`Idempotency-Key`)
+O catálogo inicial tem **12 NFTs**, com variações de categoria, rede, raridade, preço e disponibilidade, o suficiente para exercitar filtros e paginação (9 itens por página).
 
-1. No fluxo de checkout (`/checkout`), ao clicar em "CONFIRMAR COMPRA", a aplicação gera um UUID v4 no cabeçalho `Idempotency-Key`.
-2. Em caso de reenvio com payload idêntico ou perda transitória de conexão, o MSW detecta a chave e retorna o mesmo pedido com o header `Idempotent-Replayed: true`, impedindo compras duplicadas.
-3. Se a mesma chave for enviada com payload divergente, o mock rejeita imediatamente com `409 Conflict (idempotency_conflict)`.
+**Painel de cenários:** sempre visível em `pnpm dev`. No build, no preview e no deploy, acrescente `?scenarios=1` à URL, por exemplo `http://localhost:4173/?scenarios=1`.
 
-### B. Expiração de Cupom e Alteração de Preço
+| Cenário             | Efeito                                                                                  |
+| :------------------ | :-------------------------------------------------------------------------------------- |
+| `default`           | Latência de 100 ms, sem falhas.                                                         |
+| `slow_network`      | Latência de 2000 ms, que deixa visíveis os skeletons com shimmer.                       |
+| `flaky_connection`  | 35% das requisições respondem `503` transitório (erro e "Tentar novamente").            |
+| `out_of_stock`      | A cotação responde `409 conflict_availability` (edição esgotada).                       |
+| `checkout_conflict` | A criação do pedido responde `409 conflict_price_changed`.                              |
+| `auth_expired`      | Carteiras e pedidos respondem `401 session_expired` e abrem o modal de sessão expirada. |
+| `order_timeout`     | Latência de 1500 ms na criação do pedido, para exercitar pedido pendente e recuperação. |
+| `wallet_rejected`   | A conexão da carteira é recusada (`400 wallet_connection_refused`).                     |
+| `price_surge`       | Latência de 150 ms. As mudanças de preço vêm de eventos `nft.updated` (seção 7C).       |
 
-1. Adicione um NFT ao carrinho (`/cart`).
-2. Digite um cupom inválido ou expirado (ex: `EXPIRADO2026`) para verificar o feedback acessível de erro.
-3. Utilize o cupom promocional válido `JUNGLE10` para obter 10% de desconto.
+O painel também permite ajustar latência e taxa de falhas manualmente.
 
-### C. Sessão Expirada (`401 Unauthorized`)
-
-1. Ao ocorrer um erro 401 de token inválido ou expirado, o interceptor do Axios dispara um evento global capturado pelo `SessionExpiredModal`.
-2. O modal acessível (`role="alertdialog"`) orienta o colecionador a renovar o login sem perda do contexto de navegação.
+**Reset completo:** o botão **"Reset Database & Cenários"** (`data-testid="reset-db-button"`) restaura o banco a partir das seeds, volta ao cenário `default`, limpa sessão, guest id e dados persistidos e recarrega a página.
 
 ---
 
-## 8. Scripts e Comandos Operacionais
+## 7. Como reproduzir os fluxos de falha
 
-| Comando           | Descrição                                                           |
-| :---------------- | :------------------------------------------------------------------ |
-| `pnpm install`    | Instala as dependências.                                            |
-| `pnpm dev`        | Servidor de desenvolvimento com HMR.                                |
-| `pnpm build`      | Checagem de tipos (`tsc -b`) + build de produção em `dist/`.        |
-| `pnpm preview`    | Prévia local do build.                                              |
-| `pnpm typecheck`  | `tsc -b`.                                                           |
-| `pnpm lint`       | ESLint com `--max-warnings 0`.                                      |
-| `pnpm test`       | 389 testes unitários/integração (Vitest).                           |
-| `pnpm test:e2e`   | Suíte E2E Playwright.                                               |
-| `pnpm lighthouse` | Build + auditoria Lighthouse desktop e mobile + resumo consolidado. |
+### A. Idempotência e recuperação de pedido pendente
+
+1. Faça login, adicione um NFT ao carrinho e siga para `/payment` (`/checkout` redireciona para essa rota).
+2. A confirmação envia o header `Idempotency-Key`. Cliques repetidos não criam um segundo pedido: o cliente tem uma trava síncrona e o servidor responde ao replay com `Idempotent-Replayed: true`.
+3. Reutilizar a mesma chave com outro payload responde `409` (`idempotency_conflict`).
+4. Com o cenário `order_timeout`, recarregue a página enquanto o pedido está pendente. A chave e o `orderId` ficam no `sessionStorage`, isolados por usuário, e o polling é retomado sem criar outra compra. O registro é apagado quando o pedido chega a um estado terminal (`CONFIRMED` ou `FAILED`).
+
+### B. Cupom inválido ou expirado
+
+No carrinho, aplique `EXPIRED50` (expirado) ou qualquer código inexistente (inválido). A validação é sempre feita pela API.
+
+### C. Preço ou disponibilidade alterados durante a compra
+
+Com um item no carrinho, dispare o evento pelo servidor simulado no console do navegador:
+
+```js
+window.__mockRealtime.emitNftUpdated({ nftId: "nft-1", price: "2.50", available: 3 });
+```
+
+O evento passa pelo transporte Socket.IO até o `socket.io-client`. O carrinho avisa a alteração e atualiza o resumo, e o checkout exige nova confirmação com a cotação atualizada. `window.__mockRealtime.dropConnections()` derruba o socket, o que leva à reconexão e à reconciliação com a API REST.
+
+### D. Sessão expirada
+
+Ative `auth_expired` e abra o perfil ou as carteiras. O interceptor do Axios emite o evento de expiração, o `SessionExpiredModal` (`role="alertdialog"`) avisa o usuário e o login devolve à rota de origem.
+
+### E. Falhas de rede e recuperação
+
+Ative `slow_network` para ver os skeletons, ou `flaky_connection` para ver as mensagens de erro e o botão "Tentar novamente".
+
+---
+
+## 8. Scripts
+
+| Comando                | Descrição                                                    |
+| :--------------------- | :----------------------------------------------------------- |
+| `pnpm dev`             | Desenvolvimento com mocks e HMR.                             |
+| `pnpm build`           | `tsc -b` + build otimizado em `dist/`.                       |
+| `pnpm preview`         | Serve o build localmente.                                    |
+| `pnpm typecheck`       | Verificação de tipos.                                        |
+| `pnpm lint`            | ESLint com `--max-warnings 0`.                               |
+| `pnpm test`            | Testes unitários e de integração (Vitest).                   |
+| `pnpm test:e2e`        | Suíte E2E Playwright (Chromium desktop + Mobile Chrome).     |
+| `pnpm test:e2e:update` | Regenera as baselines visuais (use só de forma intencional). |
+| `pnpm lighthouse`      | Build + auditoria Lighthouse desktop e mobile + resumo.      |
 
 ### E2E (Playwright)
 
 ```bash
 pnpm exec playwright install chromium   # primeira execução
-pnpm test:e2e                           # roda a suíte (desktop + mobile)
-pnpm playwright show-report             # abre o relatório HTML (playwright-report/)
+pnpm test:e2e                           # sobe o dev server automaticamente (porta 5173)
+pnpm exec playwright show-report        # relatório HTML (playwright-report/)
 ```
 
-Traces e artefatos de falha ficam em `test-results/`.
+- Traces e screenshots das falhas ficam em `test-results/`.
+- Para rodar contra o build, execute `pnpm preview` e depois `PLAYWRIGHT_TEST_BASE_URL=http://localhost:4173 pnpm test:e2e`.
+- Cada teste parte de um estado isolado, com reset do banco simulado e do storage.
+- Os eventos de tempo real saem do servidor simulado e chegam pelo `socket.io-client`. Nenhum teste injeta dados direto no cache.
+- No projeto mobile, a navegação inferior só existe na Home, como no Figma. Fora dela, os testes autenticam pela rota `/login?redirect=…`.
+- As **baselines visuais** (`e2e/visual.spec.ts-snapshots/`) foram geradas no Windows (`*-win32.png`). Em outro sistema operacional, gere baselines próprias com `pnpm test:e2e:update` antes de comparar.
 
 ### Lighthouse
 
@@ -151,22 +166,14 @@ Traces e artefatos de falha ficam em `test-results/`.
 pnpm lighthouse
 ```
 
-Executa 3 runs por perfil (mediana) para desktop e mobile. Relatórios completos em `lighthouse-reports/desktop` e `lighthouse-reports/mobile`; resumo consolidado em **`lighthouse-reports/summary.json`**.
+Audita `/` e `/nfts/1` sobre o `pnpm preview`, com 3 execuções por página e perfil (desktop e mobile). Os relatórios HTML/JSON vão para `lighthouse-reports/desktop` e `lighthouse-reports/mobile`, e as medianas consolidadas para `lighthouse-reports/summary.json`.
 
 ---
 
-## 9. Requisitos Atendidos
+## 9. Limitações conhecidas
 
-**P0**
+- `flaky_connection` sorteia as falhas com `Math.random`: reproduz o comportamento, mas não a mesma sequência a cada execução. Para um resultado determinístico, ajuste a taxa de falhas para 0 ou 1 no painel.
+- `price_surge` e `order_timeout` só ajustam a latência. A mudança de preço é exercitada pelos eventos `nft.updated` (seção 7C), e o pedido pendente pela latência combinada com o refresh.
+- O Socket.IO roda inteiramente no navegador, via `@mswjs/socket.io-binding`. Não há servidor real nem rooms entre abas; o isolamento por usuário vem do `session.bind` de cada conexão.
 
-- **Roteamento tipado**: TanStack Router file-based, search params validados com Zod, loaders e guarda de rotas privadas.
-- **Autenticação**: instância Axios com interceptor de token, sessão persistida e auto-logout/modal em `401`.
-- **Checkout idempotente**: `Idempotency-Key` (UUID v4) por tentativa; replay retorna o mesmo pedido, payload divergente retorna `409`.
-- **Carrinho**: persistido e sincronizado via API, com merge do carrinho anônimo após login.
-
-**P1**
-
-- **Tempo real**: cliente socket.io real conectado ao binding MSW (`nft.updated`, `order.updated`) com envelopes versionados.
-- **Favoritos**: mutação otimista via TanStack Query com rollback em erro.
-- **Perfil e carteiras**: integrados à API com estados de loading/erro tratados.
-- **Qualidade**: E2E Playwright nos cenários críticos, Lighthouse automatizado, painel de cenários (`?scenarios=1`) com reset completo.
+Arquitetura, contratos REST e de eventos, política de sessão, cache e desvios do Figma estão documentados em [`ARCHITECTURE.md`](ARCHITECTURE.md).
