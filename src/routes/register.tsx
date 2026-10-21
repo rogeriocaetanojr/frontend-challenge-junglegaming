@@ -46,14 +46,32 @@ export function RegisterPage() {
 
   return (
     <main
-      className="flex min-h-[calc(100vh-140px)] w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
+      className="flex min-h-[calc(100vh-140px)] w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8 max-md:fixed max-md:inset-0 max-md:z-50 max-md:min-h-0 max-md:h-[100dvh] max-md:flex-col max-md:items-stretch max-md:justify-start max-md:overflow-hidden max-md:bg-[#140D0A] max-md:px-6 max-md:pt-6 max-md:pb-3 max-md:font-mono max-md:text-[#F5F1EB]"
       aria-labelledby="register-heading"
     >
-      <div className="w-full max-w-md">
-        <h1 id="register-heading" className="sr-only">
-          Página de Cadastro
-        </h1>
-        <RegisterForm redirectPath={search.redirect} />
+      <h1 id="register-heading" className="sr-only">
+        Página de Cadastro
+      </h1>
+
+      {/* Mobile: réplica fiel da casca interna do AuthModal (logo + título + RegisterForm flat) */}
+      <p
+        className="md:hidden mt-6 mb-5 text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] select-none"
+        aria-hidden="true"
+      >
+        KURIO
+      </p>
+      <h2
+        className="hidden max-md:flex w-full justify-center items-center text-center text-base font-bold text-[#F5F1EB] mt-5 mb-1 whitespace-nowrap"
+        aria-live="polite"
+      >
+        Criar perfil de colecionador
+      </h2>
+
+      <div className="w-full max-w-md max-md:max-w-none max-md:flex-1 max-md:min-h-0">
+        <RegisterForm
+          redirectPath={search.redirect}
+          className="max-md:flex-1 max-md:min-h-0 max-md:max-w-none max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:shadow-none max-md:[&_h2]:hidden"
+        />
       </div>
     </main>
   );

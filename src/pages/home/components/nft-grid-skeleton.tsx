@@ -7,7 +7,7 @@ interface NftGridSkeletonProps {
 export function NftGridSkeleton({ count = 6 }: NftGridSkeletonProps) {
   return (
     <div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 max-md:gap-x-3 max-md:gap-y-5"
       role="status"
       aria-label="Carregando catálogo de NFTs"
     >
