@@ -31,7 +31,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, "type
 PasswordInput.displayName = "PasswordInput";
 
 const SOCIAL_BTN =
-  "flex h-10 w-full items-center justify-center gap-2 rounded-button border border-border bg-transparent text-sm text-foreground hover:bg-white/5 transition-colors disabled:cursor-not-allowed disabled:opacity-60";
+  "flex h-10 w-full items-center justify-center gap-2 rounded-button border border-border bg-transparent text-sm text-foreground hover:bg-white/5 transition-colors disabled:cursor-not-allowed disabled:opacity-60 max-md:h-12 max-md:rounded-xl max-md:text-sm";
 
 /** Divisor "Ou continue com" + botões sociais (visuais, sem provedor configurado). */
 export function SocialAuth({ compact = false }: { compact?: boolean }) {

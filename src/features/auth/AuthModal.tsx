@@ -42,12 +42,12 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           type="button"
           onClick={onClose}
           aria-label="Fechar modal"
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-[#CFB28C]/80 hover:text-[#F5F1EB] hover:bg-[#25150E] transition-colors cursor-pointer z-20"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-[#CFB28C]/80 hover:text-[#F5F1EB] hover:bg-[#25150E] transition-colors cursor-pointer z-20 max-md:hidden"
         >
           <X className="size-4" />
         </button>
 
-        <div className="flex h-full flex-col p-6 pb-4 max-md:overflow-y-auto max-md:[scrollbar-width:none]">
+        <div className="flex h-full flex-col p-6 pb-4 max-md:overflow-y-auto max-md:[scrollbar-width:none] max-md:px-6 max-md:pt-12">
           <p
             className="md:hidden text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] mt-8 mb-6 select-none"
             aria-hidden="true"
@@ -56,20 +56,22 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           </p>
           <div
             id="auth-modal-title"
-            className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0"
+            className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0 max-md:text-2xl max-md:mt-6 max-md:mb-2"
           >
             <button
               type="button"
               onClick={() => setActiveTab("login")}
-              className={`${TAB_BASE} ${activeTab === "login" ? TAB_ACTIVE : TAB_IDLE}`}
+              className={`${TAB_BASE} ${activeTab === "login" ? TAB_ACTIVE : TAB_IDLE} max-md:text-[#F5F1EB] max-md:font-bold max-md:pointer-events-none`}
             >
               Entrar
             </button>
-            <span className="text-[#CFB28C]/40 font-light text-base select-none">|</span>
+            <span className="text-[#CFB28C]/40 font-light text-base select-none max-md:hidden">
+              |
+            </span>
             <button
               type="button"
               onClick={() => setActiveTab("register")}
-              className={`${TAB_BASE} ${activeTab === "register" ? TAB_ACTIVE : TAB_IDLE}`}
+              className={`${TAB_BASE} ${activeTab === "register" ? TAB_ACTIVE : TAB_IDLE} max-md:hidden`}
             >
               Criar conta
             </button>

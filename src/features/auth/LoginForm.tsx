@@ -100,7 +100,7 @@ export function LoginForm({
     <div
       className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-2 text-center">
+      <div className="mb-2 text-center max-md:hidden">
         <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
           Entrar no Marketplace
         </h2>
@@ -112,7 +112,7 @@ export function LoginForm({
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-1 flex-col justify-between gap-3"
+        className="flex flex-1 flex-col justify-between gap-3 max-md:justify-start max-md:gap-3 max-md:w-full max-md:mt-8"
         aria-label="Formulário de Login"
       >
         {errors.root && (
@@ -138,7 +138,7 @@ export function LoginForm({
             type="email"
             autoComplete="email"
             placeholder="Digite seu e-mail"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={errors.email ? "login-email-error" : undefined}
@@ -167,7 +167,7 @@ export function LoginForm({
             id="login-password"
             autoComplete="current-password"
             placeholder="Senha"
-            className="h-9 px-3 py-1.5 text-xs"
+            className="h-9 px-3 py-1.5 text-xs max-md:h-12 max-md:px-4 max-md:text-sm max-md:rounded-xl"
             disabled={isPending}
             aria-invalid={errors.password ? "true" : "false"}
             aria-describedby={errors.password ? "login-password-error" : undefined}
@@ -195,7 +195,7 @@ export function LoginForm({
         {/* Botão de Submissão */}
         <Button
           type="submit"
-          className="w-full h-9 mt-1 text-xs font-semibold"
+          className="w-full h-9 mt-1 text-xs font-semibold max-md:h-14 max-md:py-4 max-md:text-base max-md:font-bold max-md:rounded-xl"
           disabled={isPending}
           aria-busy={isPending}
         >
@@ -215,8 +215,9 @@ export function LoginForm({
         <SocialAuth compact />
 
         {/* Link para Registro */}
-        <div className="text-center text-xs text-text-muted">
-          Não tem uma conta?{" "}
+        <div className="text-center text-xs text-text-muted max-md:text-sm">
+          <span className="max-md:hidden">Não tem uma conta? </span>
+          <span className="hidden max-md:inline">Novo na Kurio? </span>
           <a
             href={registerHref}
             onClick={
@@ -229,7 +230,8 @@ export function LoginForm({
             }
             className="font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
           >
-            Cadastre-se
+            <span className="max-md:hidden">Cadastre-se</span>
+            <span className="hidden max-md:inline">Crie uma conta</span>
           </a>
         </div>
       </form>
