@@ -98,21 +98,17 @@ export function LoginForm({
 
   return (
     <div
-      className={`flex flex-col w-full max-w-md md:rounded-card md:border md:border-border md:bg-surface-dark md:p-8 md:shadow-card ${className}`}
+      className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-2 text-center max-md:hidden">
-        <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-          Entrar no Marketplace
-        </h2>
-        <p className="text-xs leading-snug text-text-muted">
-          Entre para gerenciar sua carteira, coleção e perfil de criador.
-        </p>
-      </div>
+      <h2 className="sr-only">Entrar no Marketplace</h2>
+      <p className="hidden md:block text-center text-xs text-[#A89F91] mt-3 mb-6">
+        Entre para gerenciar sua carteira, coleção e perfil de criador.
+      </p>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-1 flex-col justify-between gap-3 max-md:justify-start max-md:gap-2.5 max-md:w-full max-md:mt-3"
+        className="flex flex-1 flex-col justify-between gap-3 max-md:justify-start max-md:gap-2.5 max-md:w-full max-md:mt-3 md:justify-start md:gap-4"
         aria-label="Formulário de Login"
       >
         {errors.root && (
@@ -127,10 +123,7 @@ export function LoginForm({
 
         {/* Campo E-mail */}
         <div className="space-y-1">
-          <label
-            htmlFor="login-email"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="login-email" className="sr-only">
             E-mail
           </label>
           <Input
@@ -157,10 +150,7 @@ export function LoginForm({
 
         {/* Campo Senha */}
         <div className="space-y-1">
-          <label
-            htmlFor="login-password"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="login-password" className="sr-only">
             Senha
           </label>
           <PasswordInput

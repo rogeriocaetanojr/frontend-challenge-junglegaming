@@ -136,19 +136,15 @@ export function RegisterForm({
     <div
       className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-2 text-center max-md:hidden">
-        <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-          Criar sua Conta
-        </h2>
-        <p className="text-xs leading-snug text-text-muted">
-          Crie seu perfil de colecionador e conecte uma carteira quando quiser.
-        </p>
-      </div>
+      <h2 className="sr-only">Criar sua Conta</h2>
+      <p className="hidden md:block text-center text-xs text-[#A89F91] mt-3 mb-6">
+        Crie seu perfil de colecionador e conecte uma carteira quando quiser.
+      </p>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-1 flex-col justify-between gap-2 max-md:justify-start max-md:gap-2.5 max-md:w-full max-md:mt-3"
+        className="flex flex-1 flex-col justify-between gap-2 max-md:justify-start max-md:gap-2.5 max-md:w-full max-md:mt-3 md:justify-start md:gap-4"
         aria-label="Formulário de Cadastro"
       >
         {errors.root && (
@@ -163,10 +159,7 @@ export function RegisterForm({
 
         {/* Campo Nome */}
         <div className="space-y-1">
-          <label
-            htmlFor="register-name"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="register-name" className="sr-only">
             Nome Completo
           </label>
           <Input
@@ -193,10 +186,7 @@ export function RegisterForm({
 
         {/* Campo E-mail */}
         <div className="space-y-1">
-          <label
-            htmlFor="register-email"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="register-email" className="sr-only">
             E-mail
           </label>
           <Input
@@ -223,10 +213,7 @@ export function RegisterForm({
 
         {/* Campo Senha */}
         <div className="space-y-1">
-          <label
-            htmlFor="register-password"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="register-password" className="sr-only">
             Senha
           </label>
           <PasswordInput
@@ -252,10 +239,7 @@ export function RegisterForm({
 
         {/* Campo Confirmar Senha */}
         <div className="space-y-1">
-          <label
-            htmlFor="register-confirm-password"
-            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
-          >
+          <label htmlFor="register-confirm-password" className="sr-only">
             Confirmar Senha
           </label>
           <PasswordInput
