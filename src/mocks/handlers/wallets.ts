@@ -291,6 +291,36 @@ export const walletsHandlers = [
     return HttpResponse.json<Wallet>(updated!, { status: 200 });
   }),
 
+  // 4b. Remoção de carteira existente
+  http.delete("*/api/wallets/:id", async ({ request, params }) => {
+    const fault = await scenarioEngine.executeMiddleware(request.url);
+    if (fault) {
+      return fault;
+    }
+
+    const session = getActiveSession(request);
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    const id = params.id as string;
+    const existing = walletsRepository.findById(id);
+
+    if (!existing || existing.userId !== session.user.id) {
+      return HttpResponse.json<ApiErrorBody>(
+        {
+          code: "not_found",
+          message: "Carteira não encontrada para este usuário.",
+        },
+        { status: 404 },
+      );
+    }
+
+    walletsRepository.delete(id);
+
+    return HttpResponse.json({ success: true }, { status: 200 });
+  }),
+
   // 5. Simulação de conexão de carteira por ID
   http.post("*/api/wallets/:id/connect", async ({ request, params }) => {
     const fault = await scenarioEngine.executeMiddleware(request.url);

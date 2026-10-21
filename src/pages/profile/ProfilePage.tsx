@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { useFavorites } from "@/features/favorites/api";
+import { useProfile } from "@/features/profile/api";
+import { useWallets, type CreateWalletInput } from "@/features/wallets/api";
 
 type TabId =
   "dados" | "carteiras" | "atividade" | "lista" | "ofertas" | "arquivos" | "suporte";
@@ -23,8 +25,26 @@ type TabId =
 export function ProfilePage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
   const logout = useAuthStore((state) => state.logout);
+  const {
+    updateProfile,
+    isUpdating,
+    updateError,
+    updateAvatar,
+    isUpdatingAvatar,
+    changePassword,
+    isChangingPassword,
+    passwordError,
+  } = useProfile();
+  const {
+    wallets,
+    isLoading: isLoadingWallets,
+    addWallet,
+    isAdding: isAddingWallet,
+    addError: walletAddError,
+    removeWallet,
+    isRemoving: isRemovingWallet,
+  } = useWallets();
 
   const [activeTab, setActiveTab] = useState<TabId>("dados");
 
@@ -70,21 +90,58 @@ export function ProfilePage() {
   // Lista de Interesses (Favoritos)
   const { favorites, removeFavorite, clearFavorites } = useFavorites();
 
-  const handleWalletSave = (e: React.FormEvent) => {
+  const handleWalletSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setWalletFeedback("Carteira salva com sucesso!");
-    setTimeout(() => setWalletFeedback(null), 3000);
+    try {
+      await addWallet({
+        address: walletAddress,
+        network: (walletNetwork || "ethereum") as CreateWalletInput["network"],
+        label: walletAlias,
+      });
+      setWalletFeedback("Carteira salva com sucesso!");
+      setTimeout(() => setWalletFeedback(null), 3000);
+    } catch {
+      // erro já exposto via walletAddError
+    }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleAddSecondaryWallet = async () => {
+    if (!walletSecondaryAddress) return;
+    try {
+      await addWallet({ address: walletSecondaryAddress, role: "secondary" });
+      setWalletFeedback("Carteira secundária adicionada com sucesso!");
+      setTimeout(() => setWalletFeedback(null), 3000);
+    } catch {
+      // erro já exposto via walletAddError
+    }
+  };
+
+  const handleRemoveWallet = (id: string) => {
+    void removeWallet(id);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUser({
-      name: displayName,
-      email: email,
-      avatarUrl: avatarUrl,
-    });
-    setFeedbackMessage("Perfil atualizado com sucesso!");
-    setTimeout(() => setFeedbackMessage(null), 3000);
+    try {
+      await updateProfile({ name: displayName, email });
+      if (avatarUrl !== (user?.avatarUrl ?? "")) {
+        await updateAvatar(avatarUrl);
+      }
+      if (newPassword) {
+        await changePassword({
+          currentPassword,
+          newPassword,
+          confirmPassword: confirmNewPassword,
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+      }
+      setFeedbackMessage("Perfil atualizado com sucesso!");
+      setTimeout(() => setFeedbackMessage(null), 3000);
+    } catch {
+      // erro já exposto via updateError / passwordError
+    }
   };
 
   const handleLogout = () => {
@@ -235,6 +292,12 @@ export function ProfilePage() {
               {feedbackMessage && (
                 <div className="mb-6 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm">
                   {feedbackMessage}
+                </div>
+              )}
+
+              {(updateError || passwordError) && (
+                <div className="mb-6 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm">
+                  {updateError || passwordError}
                 </div>
               )}
 
@@ -499,9 +562,12 @@ export function ProfilePage() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-xs sm:text-sm px-8 py-2.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
+                    disabled={isUpdating || isUpdatingAvatar || isChangingPassword}
+                    className="bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-xs sm:text-sm px-8 py-2.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Salvar
+                    {isUpdating || isUpdatingAvatar || isChangingPassword
+                      ? "Salvando..."
+                      : "Salvar"}
                   </button>
                 </div>
               </form>
@@ -535,6 +601,42 @@ export function ProfilePage() {
                 <div className="my-4 p-3 rounded-lg bg-[#D28A4C]/15 border border-[#D28A4C]/40 text-[#F5F1EB] text-xs sm:text-sm">
                   {walletFeedback}
                 </div>
+              )}
+
+              {walletAddError && (
+                <div className="my-4 p-3 rounded-lg bg-[#e05252]/15 border border-[#e05252]/40 text-[#e05252] text-xs sm:text-sm">
+                  {walletAddError}
+                </div>
+              )}
+
+              {/* Lista de carteiras vinculadas via API */}
+              {!isLoadingWallets && wallets.length > 0 && (
+                <ul className="space-y-2 mb-6">
+                  {wallets.map((wallet) => (
+                    <li
+                      key={wallet.id}
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg bg-[#140D0A] border border-[#2B1B14]"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-[#F5F1EB] font-mono truncate">
+                          {wallet.address}
+                        </p>
+                        <p className="text-[11px] text-[#A69788]">
+                          {wallet.role === "primary" ? "Principal" : "Secundária"} ·{" "}
+                          {wallet.network}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveWallet(wallet.id)}
+                        disabled={isRemovingWallet}
+                        className="text-xs text-[#CFB28C]/70 hover:text-[#D28A4C] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        Remover
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
 
               {/* Formulário Carteira Principal */}
@@ -794,9 +896,10 @@ export function ProfilePage() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-xs sm:text-sm px-6 py-2.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
+                    disabled={isAddingWallet}
+                    className="bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-xs sm:text-sm px-6 py-2.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Salvar carteira
+                    {isAddingWallet ? "Salvando..." : "Salvar carteira"}
                   </button>
                 </div>
               </form>
@@ -837,8 +940,9 @@ export function ProfilePage() {
 
                     <button
                       type="button"
-                      onClick={() => alert("Adicionar carteira secundária")}
-                      className="text-[#D28A4C] hover:underline font-medium cursor-pointer"
+                      onClick={handleAddSecondaryWallet}
+                      disabled={isAddingWallet}
+                      className="text-[#D28A4C] hover:underline font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Adicionar
                     </button>
