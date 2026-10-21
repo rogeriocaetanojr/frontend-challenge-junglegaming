@@ -9,10 +9,12 @@ export async function addNftToCart(page: Page, nftId = "1") {
 
 /** Autentica o usuário demo pelo AuthModal do cabeçalho. */
 export async function loginViaModal(page: Page) {
-  await page
-    .getByRole("banner")
-    .getByRole("button", { name: /^entrar$/i })
-    .click();
+  // Abaixo de 768px o cabeçalho é substituído pela navegação inferior (layout do Figma)
+  const isMobile = (page.viewportSize()?.width ?? 1280) < 768;
+  const trigger = isMobile
+    ? page.getByRole("button", { name: "Minha conta" })
+    : page.getByRole("banner").getByRole("button", { name: /^entrar$/i });
+  await trigger.click();
   const modal = page.getByRole("dialog");
   await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
   await modal.getByLabel(/senha/i).fill("Password123!");

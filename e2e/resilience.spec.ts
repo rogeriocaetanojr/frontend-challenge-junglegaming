@@ -38,7 +38,7 @@ test.describe("Skeletons e resiliência (E2E)", () => {
     await expect(catalogSkeleton).toHaveCount(0);
 
     await page.goto("/nfts/1");
-    await expect(page.locator(".animate-pulse").first()).toBeVisible();
+    await expect(page.locator(".animate-shimmer").first()).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 1, name: "Emerald Ape #042" }),
     ).toBeVisible({
