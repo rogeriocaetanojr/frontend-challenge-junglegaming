@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
@@ -96,10 +97,10 @@ export function CollectorsAlsoSaw({ className }: CollectorsAlsoSawProps) {
       <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 items-start">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex flex-col space-y-2.5 animate-pulse">
-                <div className="aspect-square w-full rounded-[20px] bg-[#1E1410] border border-[#2E1A13] p-2.5" />
-                <div className="h-3.5 bg-[#2E1A13] rounded w-3/4" />
-                <div className="h-3 bg-[#2E1A13] rounded w-1/2" />
+              <div key={i} className="flex flex-col space-y-2.5">
+                <Skeleton className="aspect-square w-full rounded-[20px] bg-[#1E1410] border border-[#2E1A13] p-2.5" />
+                <Skeleton className="h-3.5 w-3/4 rounded bg-[#2E1A13]" />
+                <Skeleton className="h-3 w-1/2 rounded bg-[#2E1A13]" />
               </div>
             ))
           : items.map((item) => (

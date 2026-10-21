@@ -7,6 +7,7 @@
  * - Botão de lupa no canto superior direito para acionar visualização em tela cheia/zoom.
  * - Modal fullscreen com role="dialog", aria-modal="true" e fechamento via tecla Escape, clique no backdrop ou botão de fechar.
  */
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import { Search, X, ZoomIn } from "lucide-react";
 
@@ -105,9 +106,9 @@ export function NftImageGallery({ images, title, className }: NftImageGalleryPro
       <div className="relative shrink-0 w-full sm:w-[480px] md:w-[500px] lg:w-[512px] max-md:w-full! max-md:p-0! max-md:border-0! max-md:rounded-[28px]! self-stretch rounded-[24px] sm:rounded-[28px] bg-[#140D0A] border border-[#2E1A13]/85 p-3.5 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden">
         {/* Placeholder / Skeleton de Carregamento */}
         {!imgLoaded && !imgFailed && (
-          <div
+          <Skeleton
             data-testid="gallery-skeleton"
-            className="absolute inset-3.5 sm:inset-4 rounded-[18px] sm:rounded-[22px] animate-pulse bg-[#1E1410]"
+            className="absolute inset-3.5 sm:inset-4 rounded-[18px] sm:rounded-[22px] bg-[#1E1410]"
           />
         )}
 

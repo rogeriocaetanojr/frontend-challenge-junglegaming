@@ -25,10 +25,7 @@ export function NftCardSkeleton({ className }: NftCardSkeletonProps) {
     >
       <div className="flex flex-col space-y-3">
         {/* Imagem Placeholder */}
-        <div
-          aria-hidden="true"
-          className="aspect-square w-full rounded-button bg-surface-raised animate-pulse"
-        />
+        <Skeleton aria-hidden="true" className="aspect-square w-full" />
 
         {/* Linha de Coleção e Badge */}
         <div

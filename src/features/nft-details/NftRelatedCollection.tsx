@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Nft, NftListResponse } from "@/contracts/catalog";
@@ -143,10 +144,10 @@ export function NftRelatedCollection({
       <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5 items-start">
         {isLoading && !initialItems
           ? Array.from({ length: maxItems }).map((_, i) => (
-              <div key={i} className="flex flex-col space-y-2.5 animate-pulse">
-                <div className="aspect-square w-full rounded-[20px] bg-[#1E1410] border border-[#2E1A13]/85 p-3" />
-                <div className="h-3.5 bg-[#2E1A13] rounded w-3/4" />
-                <div className="h-3 bg-[#2E1A13] rounded w-1/2" />
+              <div key={i} className="flex flex-col space-y-2.5">
+                <Skeleton className="aspect-square w-full rounded-[20px] bg-[#1E1410] border border-[#2E1A13]/85 p-3" />
+                <Skeleton className="h-3.5 w-3/4 rounded bg-[#2E1A13]" />
+                <Skeleton className="h-3 w-1/2 rounded bg-[#2E1A13]" />
               </div>
             ))
           : displayedItems.map((item) => (
