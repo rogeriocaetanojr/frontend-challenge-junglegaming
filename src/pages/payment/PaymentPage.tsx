@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Tag, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
 import { TransactionSuccessModal } from "@/features/cart/TransactionSuccessModal";
+import { useCheckout } from "@/features/checkout/useCheckout";
+import { http } from "@/lib/http";
+
+interface PaymentQuote {
+  quoteId: string;
+  subtotal: number;
+  discount: number;
+  networkFee: number;
+  total: number;
+}
 
 export function PaymentPage() {
   const navigate = useNavigate();
@@ -46,8 +56,18 @@ export function PaymentPage() {
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [promoInputValue, setPromoInputValue] = useState("");
 
-  // Modal de Confirmação de Pedido (TransactionSuccessModal)
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  // Checkout real: cotação -> pedido idempotente -> confirmação (polling)
+  const { status, order, error, submitOrder } = useCheckout();
+  const [isQuoting, setIsQuoting] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [isReceiptDismissed, setIsReceiptDismissed] = useState(false);
+  const [quote, setQuote] = useState<PaymentQuote | null>(null);
+  const isSubmittingRef = useRef(false);
+
+  const isProcessing = isQuoting || status === "submitting" || status === "polling";
+  // O recibo só abre quando o pedido retornado pela API está CONFIRMED
+  const isSuccessModalOpen = status === "success" && !isReceiptDismissed;
+  const checkoutError = quoteError ?? (status === "error" ? error?.message : null);
 
   // Cálculos de subtotal e total
   const rawSubtotal = items.reduce(
@@ -73,12 +93,51 @@ export function PaymentPage() {
     }
   };
 
-  const handleConfirmPurchase = () => {
-    setIsSuccessModalOpen(true);
+  const handleConfirmPurchase = async () => {
+    if (isSubmittingRef.current || items.length === 0) return;
+    isSubmittingRef.current = true;
+    setIsQuoting(true);
+    setQuoteError(null);
+
+    try {
+      // 1. Cotação de referência (validação de cupom, taxas e total)
+      const freshQuote = await http.post<PaymentQuote>("/api/quote", {
+        items: items.map((item) => ({
+          id: item.id,
+          price: Number(item.priceEth) || item.price,
+          quantity: item.quantity,
+        })),
+        couponCode: couponCode || undefined,
+      });
+      setQuote(freshQuote);
+
+      // 2. Criação idempotente do pedido (o hook envia o header Idempotency-Key)
+      await submitOrder({
+        buyer: { name: displayName, email, walletAddress },
+        paymentMethod: "crypto",
+        items: items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        totalEth: freshQuote.total,
+        quoteId: freshQuote.quoteId,
+      });
+    } catch (err) {
+      setQuoteError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível obter a cotação do pedido.",
+      );
+    } finally {
+      setIsQuoting(false);
+      isSubmittingRef.current = false;
+    }
   };
 
   const handleCloseModal = () => {
-    setIsSuccessModalOpen(false);
+    setIsReceiptDismissed(true);
     clearCart();
     navigate({ to: "/" });
   };
@@ -633,12 +692,19 @@ export function PaymentPage() {
 
             {/* Botão Oficial: Confirmar compra */}
             <div className="pt-2">
+              {checkoutError && (
+                <p role="alert" className="mb-3 text-xs text-red-300">
+                  {checkoutError}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={handleConfirmPurchase}
-                className="w-full bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-sm sm:text-base py-3 sm:py-3.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
+                disabled={isProcessing}
+                aria-busy={isProcessing}
+                className="disabled:opacity-60 disabled:cursor-not-allowed w-full bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-sm sm:text-base py-3 sm:py-3.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
               >
-                Confirmar compra
+                {isProcessing ? "Processando..." : "Confirmar compra"}
               </button>
             </div>
           </div>
@@ -650,11 +716,19 @@ export function PaymentPage() {
         isOpen={isSuccessModalOpen}
         onClose={handleCloseModal}
         items={items}
-        subtotal={displaySubtotal}
-        networkFee={`${networkFeeNum} ETH`}
-        total={displayTotal}
-        transactionHash="0xA91F...E82C"
-        date="29 Jul, 2026"
+        subtotal={(quote?.subtotal ?? subtotalNum).toFixed(2)}
+        networkFee={`${quote?.networkFee ?? networkFeeNum} ETH`}
+        total={(quote?.total ?? totalNum).toFixed(3)}
+        transactionHash={order?.transactionHash}
+        date={
+          order?.createdAt
+            ? new Date(order.createdAt).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : undefined
+        }
         walletName={
           selectedWalletOption === "coinbase"
             ? "Coinbase Wallet"

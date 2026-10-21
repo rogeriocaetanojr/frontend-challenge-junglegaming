@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { http } from "@/lib/http";
+import { ApiError, http } from "@/lib/http";
 import type { CheckoutOrderResponse, CheckoutStatus, CreateOrderPayload } from "./types";
 
 export interface UseCheckoutOptions {
@@ -39,6 +39,14 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
 
   const activePollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef<boolean>(true);
+  // Trava síncrona contra reenvio enquanto houver pedido sendo criado ou confirmado
+  const inFlightRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (status !== "submitting" && status !== "polling") {
+      inFlightRef.current = false;
+    }
+  }, [status]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -95,6 +103,7 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
 
           if (currentOrder.status === "FAILED") {
             const failErr = new Error("A transação falhou ao ser processada na rede.");
+            setIdempotencyKey(generateKey());
             setError(failErr);
             setStatus("error");
             onError?.(failErr);
@@ -124,6 +133,9 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
 
   const submitOrder = useCallback(
     async (payload: CreateOrderPayload): Promise<CheckoutOrderResponse | null> => {
+      if (inFlightRef.current) return null;
+      inFlightRef.current = true;
+
       setStatus("submitting");
       setError(null);
 
@@ -154,6 +166,14 @@ export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutReturn
         return initialOrder;
       } catch (submitErr: unknown) {
         if (!isMountedRef.current) return null;
+        if (
+          submitErr instanceof ApiError &&
+          submitErr.statusCode >= 400 &&
+          submitErr.statusCode < 500 &&
+          submitErr.statusCode !== 408
+        ) {
+          setIdempotencyKey(generateKey());
+        }
         const err =
           submitErr instanceof Error
             ? submitErr
