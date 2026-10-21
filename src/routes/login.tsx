@@ -46,7 +46,7 @@ export function LoginPage() {
 
   return (
     <main
-      className="flex w-full flex-col max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-[100dvh] max-md:overflow-hidden max-md:bg-[#140D0A] max-md:px-6 max-md:pt-6 max-md:pb-3 max-md:font-mono max-md:text-[#F5F1EB] md:min-h-[calc(100vh-140px)] md:items-center md:justify-center md:px-4 md:py-12 md:sm:px-6 md:lg:px-8"
+      className="flex min-h-[calc(100vh-140px)] w-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8 max-md:fixed max-md:inset-0 max-md:z-50 max-md:min-h-0 max-md:h-[100dvh] max-md:flex-col max-md:items-stretch max-md:justify-start max-md:overflow-hidden max-md:bg-[#140D0A] max-md:px-6 max-md:pt-6 max-md:pb-3 max-md:font-mono max-md:text-[#F5F1EB]"
       aria-labelledby="login-heading"
     >
       <h1 id="login-heading" className="sr-only">
@@ -67,7 +67,7 @@ export function LoginPage() {
         Entrar
       </h2>
 
-      <div className="w-full max-md:flex-1 max-md:min-h-0 md:max-w-md">
+      <div className="w-full max-w-md max-md:max-w-none max-md:flex-1 max-md:min-h-0">
         <LoginForm
           redirectPath={search.redirect}
           className="max-md:flex-1 max-md:min-h-0 max-md:max-w-none max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:shadow-none max-md:[&_h2]:hidden"
