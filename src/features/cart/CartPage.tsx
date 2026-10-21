@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 
+import { AuthModal } from "@/features/auth/AuthModal";
+import { useAuthStore } from "@/store/auth-store";
 import { useCart } from "./api";
 import { useCouponStore } from "./couponStore";
 import { CartItemList } from "./CartItemList";
@@ -12,7 +15,22 @@ export function CartPage() {
   const { items, isLoading, error, setQuantity, removeItem } = useCart();
   const couponCode = useCouponStore((state) => state.couponCode);
 
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Desktop deslogado: abre o mesmo AuthModal da Navbar sem sair do carrinho
   const handleGoToPayment = () => {
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+    if (!isAuthenticated && isDesktop) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    navigate({ to: "/payment" });
+  };
+
+  // Ao autenticar pelo modal, fecha e segue para o checkout
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
     navigate({ to: "/payment" });
   };
 
@@ -73,6 +91,12 @@ export function CartPage() {
 
       {/* Seção 'Colecionadores também viram' logo abaixo (acessível via scroll) */}
       <CollectorsAlsoSaw />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

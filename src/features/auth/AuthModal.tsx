@@ -8,6 +8,8 @@ import { RegisterForm } from "./RegisterForm";
 export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Chamado após login/cadastro; por padrão apenas fecha o modal. */
+  onSuccess?: () => void;
   defaultTab?: "login" | "register";
 }
 
@@ -22,7 +24,12 @@ const TAB_IDLE = "text-[#F5F1EB]/85 hover:text-[#F5F1EB]";
  * Modal de autenticação: reutiliza os formulários reais (validação Zod e mutações
  * contra a API), que mantêm o usuário na página atual ao concluir.
  */
-export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalProps) {
+export function AuthModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  defaultTab = "login",
+}: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<"login" | "register">(defaultTab);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, isOpen, onClose);
@@ -88,14 +95,14 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           {activeTab === "login" ? (
             <LoginForm
               redirectPath={null}
-              onSuccess={onClose}
+              onSuccess={onSuccess ?? onClose}
               onSwitchForm={() => setActiveTab("register")}
               className={FORM_CLASS}
             />
           ) : (
             <RegisterForm
               redirectPath={null}
-              onSuccess={onClose}
+              onSuccess={onSuccess ?? onClose}
               onSwitchForm={() => setActiveTab("login")}
               className={FORM_CLASS}
             />
