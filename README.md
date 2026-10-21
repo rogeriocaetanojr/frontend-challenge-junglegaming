@@ -7,7 +7,8 @@ Aplicação completa desenvolvida para o desafio técnico de frontend da Jungle 
 ## 1. Visão Geral e Links
 
 - **Repositório GitHub**: [https://github.com/rogeriocaetanojr/frontend-challenge-junglegaming](https://github.com/rogeriocaetanojr/frontend-challenge-junglegaming)
-- **URL de Produção (Vercel)**: `https://rogerio-challenge-junglegaming.vercel.app/` _(ou URL configurada no deploy)_
+- **URL de Produção (Vercel):** [https://rogerio-challenge-junglegaming.vercel.app](https://rogerio-challenge-junglegaming.vercel.app)
+- **Protótipo / Design (Figma):** [Link do Figma](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1&p=f&t=MlMOFOydsmpZ3DUt-0)
 
 ---
 
