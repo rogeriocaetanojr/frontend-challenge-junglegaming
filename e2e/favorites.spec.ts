@@ -36,15 +36,7 @@ test.describe("Favoritos com mutação otimista (E2E)", () => {
     await page.goto("/nfts/1");
     await page.getByRole("button", { name: "Favoritar NFT" }).click();
 
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
-    const modal = page.getByRole("dialog");
-    await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
-    await modal.getByLabel(/senha/i).fill("Password123!");
-    await modal.locator('button[type="submit"]').click();
-    await expect(modal).not.toBeVisible();
+    await loginViaModal(page);
 
     await page.goto("/profile");
     await expect(page.getByRole("button", { name: /remover/i }).first()).toBeVisible();

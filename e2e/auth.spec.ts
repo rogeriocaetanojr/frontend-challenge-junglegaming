@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+import {
+  expectLoggedIn,
+  expectLoggedOut,
+  isMobileViewport,
+  openLoginModal,
+  openProfileFromNav,
+} from "./helpers";
+
 const DEMO_EMAIL = "demo@jungle.com";
 const DEMO_PASSWORD = "Password123!";
 
@@ -18,10 +26,7 @@ test.describe("Autenticação via Modal (E2E)", () => {
   });
 
   const openModal = async (page: import("@playwright/test").Page) => {
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
+    await openLoginModal(page);
     const modal = page.getByRole("dialog");
     await expect(modal).toBeVisible();
     return modal;
@@ -36,11 +41,11 @@ test.describe("Autenticação via Modal (E2E)", () => {
     await modal.locator('button[type="submit"]').click();
 
     await expect(modal).not.toBeVisible();
-    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
+    await expectLoggedIn(page);
 
     // A sessão sobrevive ao refresh
     await page.reload();
-    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
+    await expectLoggedIn(page);
   });
 
   test("deve rejeitar credenciais inválidas sem autenticar", async ({ page }) => {
@@ -51,9 +56,11 @@ test.describe("Autenticação via Modal (E2E)", () => {
 
     await expect(modal.getByRole("alert").first()).toBeVisible();
     await expect(modal).toBeVisible();
-    await expect(
-      page.getByRole("banner").getByRole("button", { name: /^entrar$/i }),
-    ).toBeVisible();
+    if (!isMobileViewport(page)) {
+      await expect(
+        page.getByRole("banner").getByRole("button", { name: /^entrar$/i }),
+      ).toBeVisible();
+    }
   });
 
   test("deve validar campos obrigatórios do login", async ({ page }) => {
@@ -86,7 +93,7 @@ test.describe("Autenticação via Modal (E2E)", () => {
     await modal.locator('button[type="submit"]').click();
 
     await expect(modal).not.toBeVisible();
-    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
+    await expectLoggedIn(page);
   });
 
   test("deve encerrar a sessão ao sair e voltar a exigir login em rota privada", async ({
@@ -98,16 +105,14 @@ test.describe("Autenticação via Modal (E2E)", () => {
     await modal.locator('button[type="submit"]').click();
     await expect(modal).not.toBeVisible();
 
-    await page.getByRole("banner").getByTitle("Ver meu perfil").click();
+    await openProfileFromNav(page);
     await expect(page).toHaveURL(/\/profile$/);
     await page
       .getByRole("button", { name: /sair|logout/i })
       .first()
       .click();
 
-    await expect(
-      page.getByRole("banner").getByRole("button", { name: /^entrar$/i }),
-    ).toBeVisible();
+    await expectLoggedOut(page);
     await page.goto("/profile");
     await expect(page).toHaveURL(/\/login\?redirect=%2Fprofile/);
   });

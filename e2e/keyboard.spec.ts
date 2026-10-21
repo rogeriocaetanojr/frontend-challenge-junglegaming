@@ -1,13 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-import { resetScenarioState } from "./helpers";
+import { isMobileViewport, openLoginModal, resetScenarioState } from "./helpers";
 
 test.describe("Navegação por teclado e acessibilidade (E2E)", () => {
   test.beforeEach(async ({ page }) => {
     await resetScenarioState(page);
   });
 
-  test("primeiro Tab foca o skip link com foco visível", async ({ page }) => {
+  test("primeiro Tab foca o skip link com foco visível", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Skip-link exclusivo da navegação desktop com header");
     await page.goto("/");
     const skipLink = page.getByRole("link", { name: "Pular para o conteúdo principal" });
     await expect(page.getByRole("banner")).toBeVisible();
@@ -24,7 +25,9 @@ test.describe("Navegação por teclado e acessibilidade (E2E)", () => {
     page,
   }) => {
     await page.goto("/");
-    const trigger = page.getByRole("banner").getByRole("button", { name: /^entrar$/i });
+    const trigger = isMobileViewport(page)
+      ? page.getByRole("button", { name: "Minha conta" })
+      : page.getByRole("banner").getByRole("button", { name: /^entrar$/i });
     await trigger.focus();
     await page.keyboard.press("Enter");
 
@@ -55,10 +58,7 @@ test.describe("Navegação por teclado e acessibilidade (E2E)", () => {
     page,
   }) => {
     await page.goto("/");
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
+    await openLoginModal(page);
     const dialog = page.getByRole("dialog");
 
     await dialog.getByLabel(/e-mail/i).press("Enter");

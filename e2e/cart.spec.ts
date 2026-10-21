@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { addNftToCart, resetScenarioState } from "./helpers";
+import {
+  addNftToCart,
+  getCartLink,
+  isMobileViewport,
+  loginViaModal,
+  resetScenarioState,
+} from "./helpers";
 
 test.describe("Carrinho integrado à API simulada (E2E)", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,7 +24,12 @@ test.describe("Carrinho integrado à API simulada (E2E)", () => {
 
     await page.reload();
     await expect(page.getByRole("list", { name: "Itens do carrinho" })).toBeVisible();
-    await expect(page.getByLabel(/Carrinho de compras com 1 itens/)).toBeVisible();
+    await expect(getCartLink(page)).toBeVisible();
+    if (!isMobileViewport(page)) {
+      await expect(getCartLink(page)).toHaveAccessibleName(
+        /Carrinho de compras com 1 itens/,
+      );
+    }
   });
 
   test("deve alterar quantidade e remover item pela API", async ({ page }) => {
@@ -47,15 +58,7 @@ test.describe("Carrinho integrado à API simulada (E2E)", () => {
   test("deve mesclar o carrinho do visitante ao autenticar", async ({ page }) => {
     await addNftToCart(page);
 
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
-    const modal = page.getByRole("dialog");
-    await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
-    await modal.getByLabel(/senha/i).fill("Password123!");
-    await modal.locator('button[type="submit"]').click();
-    await expect(modal).not.toBeVisible();
+    await loginViaModal(page);
 
     await expect(page.getByRole("list", { name: "Itens do carrinho" })).toBeVisible();
     await page.reload();

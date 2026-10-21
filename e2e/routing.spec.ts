@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
  * Roteamento (TanStack Router): estado do catálogo na URL, proteção de rotas privadas,
  * aliases legados e tratamento de rotas inexistentes.
  */
-import { resetScenarioState } from "./helpers";
+import { isMobileViewport, resetScenarioState } from "./helpers";
 
 test.describe("Roteamento e estado na URL (E2E)", () => {
   test.beforeEach(async ({ page }) => {
@@ -51,8 +51,13 @@ test.describe("Roteamento e estado na URL (E2E)", () => {
 
   test("deve sincronizar a busca do cabeçalho com o parâmetro q", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Buscar no catálogo" }).click();
-    await page.getByRole("searchbox").fill("ape");
+    if (isMobileViewport(page)) {
+      // No mobile a busca é o campo "Explorar coleções" da própria Home
+      await page.getByRole("textbox", { name: "Explorar coleções" }).fill("ape");
+    } else {
+      await page.getByRole("button", { name: "Buscar no catálogo" }).click();
+      await page.getByRole("searchbox").fill("ape");
+    }
 
     await expect(page).toHaveURL(/q=ape/);
   });

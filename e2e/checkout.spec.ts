@@ -1,20 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { addNftToCart, resetScenarioState } from "./helpers";
+import { addNftToCart, loginViaModal, resetScenarioState } from "./helpers";
 
 test.describe("Checkout integrado à API simulada (E2E)", () => {
   test.beforeEach(async ({ page }) => {
     await resetScenarioState(page);
     await addNftToCart(page);
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
-    const modal = page.getByRole("dialog");
-    await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
-    await modal.getByLabel(/senha/i).fill("Password123!");
-    await modal.locator('button[type="submit"]').click();
-    await expect(modal).not.toBeVisible();
+    await loginViaModal(page);
   });
 
   test("deve criar um único pedido em cliques repetidos e abrir o recibo só após CONFIRMED", async ({

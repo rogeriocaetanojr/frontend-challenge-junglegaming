@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { addNftToCart } from "./helpers";
+import { addNftToCart, loginViaModal } from "./helpers";
 
 /**
  * Suíte de Regressão Visual E2E (Playwright) — Seção 9 do Edital.
@@ -95,15 +95,7 @@ test.describe("Regressão Visual (E2E)", () => {
     await addNftToCart(page);
 
     // Autentica pela API simulada (a rota de pagamento é privada); o carrinho do visitante é mesclado
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i })
-      .click();
-    const modal = page.getByRole("dialog");
-    await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
-    await modal.getByLabel(/senha/i).fill("Password123!");
-    await modal.locator('button[type="submit"]').click();
-    await expect(modal).not.toBeVisible();
+    await loginViaModal(page);
 
     await page.goto("/checkout");
     await page.waitForLoadState("networkidle");
