@@ -69,6 +69,7 @@ export default tseslint.config(
       "node_modules",
       ".pnpm-store",
       "public",
+      "src/routeTree.gen.ts",
     ],
   },
   js.configs.recommended,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Mail, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
       quantity,
     );
 
-    navigate("/cart");
+    navigate({ to: "/cart" });
   };
 
   if (isLoading && !currentNft) {

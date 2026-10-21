@@ -1,60 +1,23 @@
 /**
- * Rota Inicial do Catálogo de NFTs (/ com TanStack Router).
+ * Rota inicial (/): catálogo de NFTs dirigido pelos search params da URL.
  *
- * Configura:
- * - validateSearch: parsing e sanitização estrita via catalogSearchSchema / parseCatalogSearch.
- * - loader: pré-carregamento concorrente via queryClient.ensureQueryData(catalogListQueryOptions).
- * - component: CatalogPage.
+ * - validateSearch: schema Zod (q, category, network, minPrice, maxPrice, tab, sort, page).
+ * - loader: aquece o cache do TanStack Query sem bloquear a navegação, mantendo os
+ *   skeletons da página como feedback de carregamento.
  */
-import { type AnyRoute, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { CatalogPage } from "@/features/catalog/CatalogPage";
-import { catalogListQueryOptions } from "@/features/catalog/queries";
-import { parseCatalogSearch } from "@/features/catalog/schemas";
-import type { CatalogFilters } from "@/features/catalog/types";
-import { queryClient as defaultQueryClient } from "@/lib/query-client";
-import type { RouterContext } from "@/router";
-
-declare module "@tanstack/react-router" {
-  interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof Route;
-      parentRoute: AnyRoute;
-    };
-  }
-}
-
-function CatalogRouteComponent() {
-  const search = Route.useSearch();
-  return <CatalogPage searchParams={search} />;
-}
+import { nftsQueryOptions } from "@/hooks/use-nfts";
+import { HomePage } from "@/pages/home";
+import { HOME_PAGE_SIZE, homeSearchSchema, toNftFilters } from "@/pages/home/search";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search) => parseCatalogSearch(search),
+  validateSearch: homeSearchSchema,
   loaderDeps: ({ search }) => search,
-  loader: async ({ context, deps }) => {
-    const routerContext = context as unknown as Partial<RouterContext>;
-    const queryClient = routerContext?.queryClient ?? defaultQueryClient;
-
-    const searchTerm = deps.q ?? deps.search;
-    const filters: CatalogFilters = {
-      page: deps.page,
-      limit: deps.limit,
-      q: searchTerm,
-      search: searchTerm,
-      category: deps.category,
-      priceMin: deps.minPrice !== undefined ? String(deps.minPrice) : undefined,
-      priceMax: deps.maxPrice !== undefined ? String(deps.maxPrice) : undefined,
-      sortBy: deps.sortBy,
-      sortDirection: deps.sortDirection,
-    };
-
-    await queryClient.ensureQueryData(catalogListQueryOptions(filters));
+  loader: ({ context, deps }) => {
+    void context.queryClient.prefetchQuery(
+      nftsQueryOptions(toNftFilters(deps), deps.page ?? 1, HOME_PAGE_SIZE),
+    );
   },
-  component: CatalogRouteComponent,
+  component: HomePage,
 });
-
-export { router } from "@/router";

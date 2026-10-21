@@ -9,7 +9,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   afterAll,
@@ -90,12 +90,13 @@ describe("NftDetailPage Integration & Accessibility (C75)", () => {
     return act(async () => {
       root?.render(
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={[`/nfts/${nftId}`]}>
-            <Routes>
-              <Route path="/nfts/:id" element={<NftDetailPage nftId={nftId} />} />
-              <Route path="/" element={<div>Mercado Home</div>} />
-            </Routes>
-          </MemoryRouter>
+          <TestRouter
+            initialEntries={[`/nfts/${nftId}`]}
+            routes={[
+              { path: "/nfts/$id", element: <NftDetailPage nftId={nftId} /> },
+              { path: "/", element: <div>Mercado Home</div> },
+            ]}
+          />
         </QueryClientProvider>,
       );
     });

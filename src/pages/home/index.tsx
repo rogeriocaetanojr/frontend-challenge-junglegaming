@@ -1,10 +1,11 @@
-import { ChevronRight, PackageSearch, RotateCcw } from "lucide-react";
+import { PackageSearch, RotateCcw } from "lucide-react";
 import * as React from "react";
-import { useSearchParams } from "react-router-dom";
+import { getRouteApi } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { useNfts } from "@/hooks/use-nfts";
-import type { NftCategory, NftFilters, NftNetwork } from "@/types/nft";
+import type { NftCategory, NftNetwork } from "@/types/nft";
+import { CatalogPagination } from "./components/catalog-pagination";
 import { CatalogSidebar } from "./components/catalog-sidebar";
 import { CatalogTabsBar, type CatalogTab } from "./components/catalog-tabs-bar";
 import { FeaturedBanners } from "./components/featured-banners";
@@ -12,110 +13,86 @@ import { HeroSection } from "./components/hero-section";
 import { MintingJournalSection } from "./components/minting-journal-section";
 import { NftCard } from "./components/nft-card";
 import { NftGridSkeleton } from "./components/nft-grid-skeleton";
+import {
+  compactHomeSearch,
+  DEFAULT_SORT,
+  HOME_PAGE_SIZE,
+  type HomeSearch,
+  type HomeSort,
+  toNftFilters,
+} from "./search";
 
-const PAGE_SIZE = 9;
+const route = getRouteApi("/");
 
+/**
+ * Página inicial: o estado do catálogo (busca, filtros, aba, ordenação e página)
+ * vive exclusivamente nos search params da URL, sobrevivendo a refresh e ao histórico.
+ */
 export function HomePage() {
-  const [searchParams] = useSearchParams();
-  const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
+  const search = route.useSearch();
+  const navigate = route.useNavigate();
 
-  const [filters, setFilters] = React.useState<NftFilters>({
-    sortBy: "recent",
-  });
-  const [activeTab, setActiveTab] = React.useState<CatalogTab>("all");
-  const [prevUrlSearch, setPrevUrlSearch] = React.useState(urlSearch);
-  const [page, setPage] = React.useState(1);
+  const page = search.page ?? 1;
+  const sortBy = search.sort ?? DEFAULT_SORT;
+  const activeTab: CatalogTab = search.tab ?? "all";
 
-  // Sincroniza e reseta página durante a renderização se a busca mudar
-  if (urlSearch !== prevUrlSearch) {
-    setPrevUrlSearch(urlSearch);
-    setPage(1);
-  }
+  const filters = React.useMemo(() => toNftFilters(search), [search]);
+  const { data, isLoading, isError } = useNfts(filters, page, HOME_PAGE_SIZE);
 
-  const activeFilters = React.useMemo<NftFilters>(
-    () => ({
-      ...filters,
-      search: urlSearch.trim().length > 0 ? urlSearch.trim() : undefined,
-    }),
-    [filters, urlSearch],
+  /** Aplica um patch aos search params; qualquer mudança de filtro reinicia a paginação. */
+  const updateSearch = React.useCallback(
+    (patch: Partial<HomeSearch>, options?: { replace?: boolean }) => {
+      void navigate({
+        search: (prev) => compactHomeSearch({ ...prev, page: 1, ...patch }),
+        replace: options?.replace,
+      });
+    },
+    [navigate],
   );
 
-  const { data, isLoading, isError } = useNfts(activeFilters, page, PAGE_SIZE);
+  const totalPages = data?.totalPages ?? 1;
+
+  // Página fora do intervalo (ex.: URL editada): volta para a última página existente
+  React.useEffect(() => {
+    if (data && data.totalPages > 0 && page > data.totalPages) {
+      updateSearch({ page: data.totalPages }, { replace: true });
+    }
+  }, [data, page, updateSearch]);
 
   // Featured NFT: primeiro item retornado ou fallback
   const featuredNft = data?.items[0];
 
-  const handleSelectCategory = (category?: NftCategory) => {
-    setFilters((prev) => ({
-      ...prev,
-      category,
-    }));
-    setPage(1);
-  };
+  const handleSelectCategory = (category?: NftCategory) => updateSearch({ category });
 
-  const handleSelectNetwork = (network?: NftNetwork) => {
-    setFilters((prev) => ({
-      ...prev,
-      network,
-    }));
-    setPage(1);
-  };
+  const handleSelectNetwork = (network?: NftNetwork) => updateSearch({ network });
 
-  const handleApplyPriceRange = (minPrice: number, maxPrice: number) => {
-    setFilters((prev) => ({
-      ...prev,
-      minPrice,
-      maxPrice,
-    }));
-    setPage(1);
-  };
+  const handleApplyPriceRange = (minPrice: number, maxPrice: number) =>
+    updateSearch({ minPrice, maxPrice });
 
   const handleTabChange = (tab: CatalogTab) => {
-    setActiveTab(tab);
-    setPage(1);
-
     if (tab === "all") {
-      setFilters((prev) => ({
-        ...prev,
-        category: undefined,
-        sortBy: "recent",
-      }));
+      updateSearch({ tab: undefined, category: undefined, sort: undefined });
     } else if (tab === "recent") {
-      setFilters((prev) => ({
-        ...prev,
-        sortBy: "recent",
-      }));
-    } else if (tab === "popular") {
-      setFilters((prev) => ({
-        ...prev,
-        sortBy: "popular",
-      }));
+      updateSearch({ tab, sort: undefined });
+    } else {
+      updateSearch({ tab, sort: "popular" });
     }
   };
 
-  const handleSortChange = (sortBy: NonNullable<NftFilters["sortBy"]>) => {
-    setFilters((prev) => ({
-      ...prev,
-      sortBy,
-    }));
-    setPage(1);
-  };
+  const handleSortChange = (nextSort: HomeSort) => updateSearch({ sort: nextSort });
 
+  /** Limpa filtros, aba, ordenação e página, preservando apenas o termo de busca. */
   const handleResetFilters = () => {
-    setFilters({ sortBy: "recent" });
-    setActiveTab("all");
-    setPage(1);
+    void navigate({ search: (prev) => ({ q: prev.q }) });
   };
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+    updateSearch({ page: newPage });
     const catalogElement = document.getElementById("catalog-section");
     if (catalogElement) {
       catalogElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-
-  const totalPagesCount = Math.max(4, data?.totalPages || 4);
 
   return (
     <div className="space-y-16 pb-12">
@@ -128,11 +105,14 @@ export function HomePage() {
           {/* Barra Lateral Esquerda (col-span-3) */}
           <div className="lg:col-span-3">
             <CatalogSidebar
-              selectedCategory={filters.category as NftCategory | undefined}
+              key={`${search.minPrice ?? ""}-${search.maxPrice ?? ""}`}
+              selectedCategory={search.category}
               onSelectCategory={handleSelectCategory}
-              selectedNetwork={filters.network}
+              selectedNetwork={search.network}
               onSelectNetwork={handleSelectNetwork}
               onApplyPriceRange={handleApplyPriceRange}
+              appliedMinPrice={search.minPrice}
+              appliedMaxPrice={search.maxPrice}
             />
           </div>
 
@@ -142,13 +122,13 @@ export function HomePage() {
             <CatalogTabsBar
               activeTab={activeTab}
               onTabChange={handleTabChange}
-              sortBy={filters.sortBy || "recent"}
+              sortBy={sortBy}
               onSortChange={handleSortChange}
             />
 
             {/* Estados de Renderização da Malha de NFTs */}
             {isLoading ? (
-              <NftGridSkeleton count={PAGE_SIZE} />
+              <NftGridSkeleton count={HOME_PAGE_SIZE} />
             ) : isError ? (
               <div className="max-w-md mx-auto text-center py-16 space-y-4">
                 <div className="size-16 mx-auto rounded-full bg-[#140D0A] border border-[#2A2421] flex items-center justify-center text-red-400">
@@ -203,37 +183,12 @@ export function HomePage() {
               </div>
             )}
 
-            {/* Paginação Numerada fiel ao design: (1, 2, 3, 4, >) */}
-            <div className="flex items-center justify-end gap-2 pt-6">
-              {[1, 2, 3, 4].map((pageNum) => {
-                const isCurrent = pageNum === page;
-                return (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`size-8 rounded-md text-xs font-mono font-bold transition-colors cursor-pointer ${
-                      isCurrent
-                        ? "bg-[#D28A4C] text-[#0E0907]"
-                        : "text-neutral-400 hover:text-white hover:bg-[#1C110C]"
-                    }`}
-                    aria-current={isCurrent ? "page" : undefined}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              <button
-                type="button"
-                onClick={() => handlePageChange(Math.min(totalPagesCount, page + 1))}
-                disabled={page >= totalPagesCount}
-                className="size-8 rounded-md text-neutral-400 hover:text-white hover:bg-[#1C110C] flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                aria-label="Próxima página"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
+            {/* Paginação numerada derivada do total de páginas retornado pela API */}
+            <CatalogPagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </section>

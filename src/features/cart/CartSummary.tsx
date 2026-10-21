@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Tag, X } from "lucide-react";
 
@@ -209,7 +209,7 @@ export function CartSummary({
             disabled={items.length === 0}
             className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
           >
-            <Link to="/checkout" className="flex items-center justify-center gap-2">
+            <Link to="/payment" className="flex items-center justify-center gap-2">
               <span>Conectar e finalizar</span>
             </Link>
           </Button>

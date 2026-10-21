@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   User as UserIcon,
   Wallet,
@@ -92,7 +92,7 @@ export function ProfilePage() {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate({ to: "/" });
   };
 
   const handleAvatarChange = () => {
@@ -917,7 +917,8 @@ export function ProfilePage() {
                       <div className="relative bg-[#241612] border border-[#3F2319]/80 rounded-[22px] p-2.5 shadow-lg shadow-black/40 transition-all duration-300 group-hover:border-[#D28A4C]/40 group-hover:shadow-xl">
                         <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#140D0A]">
                           <Link
-                            to={`/nft/${fav.id}`}
+                            to="/nfts/$id"
+                            params={{ id: String(fav.id) }}
                             className="block size-full"
                             aria-label={`Ver detalhes de ${fav.name}`}
                           >
@@ -948,7 +949,9 @@ export function ProfilePage() {
                           {fav.collectionName || "Coleção Exclusiva"}
                         </p>
                         <h4 className="text-sm sm:text-base font-normal text-white tracking-tight truncate group-hover:text-[#D28A4C] transition-colors">
-                          <Link to={`/nft/${fav.id}`}>{fav.name}</Link>
+                          <Link to="/nfts/$id" params={{ id: String(fav.id) }}>
+                            {fav.name}
+                          </Link>
                         </h4>
                         <div className="flex items-center justify-between pt-0.5">
                           <span className="text-xs text-[#A69788]">Preço</span>

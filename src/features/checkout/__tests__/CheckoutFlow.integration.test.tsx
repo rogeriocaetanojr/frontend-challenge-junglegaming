@@ -9,7 +9,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import {
   afterAll,
   afterEach,
@@ -81,19 +81,20 @@ describe("CheckoutFlow Integration Tests (C85 a C88)", () => {
   async function renderCheckoutApp(initialEntry = "/checkout") {
     await act(async () => {
       root?.render(
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <Routes>
-            <Route path="/checkout" element={<CheckoutPage pollingInterval={50} />} />
-            <Route
-              path="/cart"
-              element={<div data-testid="cart-fallback">Página do Carrinho</div>}
-            />
-            <Route
-              path="/"
-              element={<div data-testid="home-fallback">Página Inicial</div>}
-            />
-          </Routes>
-        </MemoryRouter>,
+        <TestRouter
+          initialEntries={[initialEntry]}
+          routes={[
+            { path: "/checkout", element: <CheckoutPage pollingInterval={50} /> },
+            {
+              path: "/cart",
+              element: <div data-testid="cart-fallback">Página do Carrinho</div>,
+            },
+            {
+              path: "/",
+              element: <div data-testid="home-fallback">Página Inicial</div>,
+            },
+          ]}
+        />,
       );
     });
   }

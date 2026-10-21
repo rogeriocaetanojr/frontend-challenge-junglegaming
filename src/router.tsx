@@ -1,23 +1,21 @@
 /**
- * Configuração e Árvore de Rotas da Aplicação com RouterContext.
+ * Configuração do Roteador (TanStack Router) com RouterContext.
  *
  * Fornece tipagem estrita para o contexto do roteador contendo { queryClient, auth }
- * e inicializa a árvore de rotas com injeção desse contexto.
+ * e instancia o roteador a partir da árvore de rotas gerada (routeTree.gen.ts).
  */
 import type { QueryClient } from "@tanstack/react-query";
-import { createBrowserRouter } from "react-router-dom";
-
-import { RouteErrorComponent, type RouteErrorProps } from "@/components/route-error";
 import {
-  RoutePendingComponent,
-  type RoutePendingProps,
-} from "@/components/route-pending";
+  createRouter as createTanStackRouter,
+  type ErrorRouteComponent,
+  type RouteComponent,
+} from "@tanstack/react-router";
+
+import { RouteErrorComponent } from "@/components/route-error";
+import { RoutePendingComponent } from "@/components/route-pending";
 import type { Session, User } from "@/contracts/identity";
-import { RootLayout } from "@/layouts/root-layout";
 import { queryClient as defaultQueryClient } from "@/lib/query-client";
-import { HomePage } from "@/pages/home";
-import { NftDetailPage } from "@/pages/nft-detail";
-import { NotFoundPage } from "@/pages/not-found";
+import { routeTree } from "./routeTree.gen";
 
 /**
  * Estado de autenticação provido no contexto de rotas.
@@ -48,11 +46,11 @@ export const defaultRouterContext: RouterContext = {
 };
 
 /**
- * Opções de feedback visual e de transição de rota (TanStack Router & react-router).
+ * Opções de feedback visual e de transição de rota.
  */
 export interface RouterOptions {
-  defaultPendingComponent?: React.ComponentType<RoutePendingProps>;
-  defaultErrorComponent?: React.ComponentType<RouteErrorProps>;
+  defaultPendingComponent?: RouteComponent;
+  defaultErrorComponent?: ErrorRouteComponent;
 }
 
 export const defaultRouterOptions: RouterOptions = {
@@ -61,70 +59,26 @@ export const defaultRouterOptions: RouterOptions = {
 };
 
 /**
- * Criação da árvore de rotas injetando o RouterContext fornecido.
+ * Criação do roteador injetando o RouterContext fornecido.
+ * O contexto fica disponível para guardas de rota (beforeLoad) e loaders.
  */
 export function createRouter(
   context: RouterContext = defaultRouterContext,
   options: RouterOptions = defaultRouterOptions,
 ) {
-  // O contexto injetado fica disponível para guardas de rota e loaders
-  void context;
-  void options;
-
-  return createBrowserRouter([
-    {
-      path: "/",
-      element: <RootLayout />,
-      errorElement: <RouteErrorComponent />,
-      children: [
-        {
-          index: true,
-          element: <HomePage />,
-        },
-        {
-          path: "nft/:id",
-          element: <NftDetailPage />,
-        },
-        {
-          path: "nfts/:id",
-          element: <NftDetailPage />,
-        },
-        {
-          path: "cart",
-          lazy: async () => {
-            const { CartPage } = await import("@/features/cart/CartPage");
-            return { Component: CartPage };
-          },
-        },
-        {
-          path: "checkout",
-          lazy: async () => {
-            const { PaymentPage } = await import("@/pages/payment");
-            return { Component: PaymentPage };
-          },
-        },
-        {
-          path: "payment",
-          lazy: async () => {
-            const { PaymentPage } = await import("@/pages/payment");
-            return { Component: PaymentPage };
-          },
-        },
-        {
-          path: "profile",
-          lazy: async () => {
-            const { ProfilePage } = await import("@/pages/profile");
-            return { Component: ProfilePage };
-          },
-        },
-        {
-          path: "*",
-          element: <NotFoundPage />,
-        },
-      ],
-    },
-  ]);
+  return createTanStackRouter({
+    routeTree,
+    context,
+    defaultPreload: "intent",
+    ...options,
+  });
 }
 
-/** Instância singleton da árvore de rotas da aplicação. */
+/** Instância singleton do roteador da aplicação. */
 export const router = createRouter(defaultRouterContext, defaultRouterOptions);
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}

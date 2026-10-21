@@ -26,7 +26,7 @@ src/
 │   ├── realtime/    # Barramento de eventos Socket.IO tipado (emitter e socket-server)
 │   └── ui/          # Alternador de cenários de teste (ScenarioSwitcher)
 ├── pages/           # Páginas e views de rotas (home, nft-detail, cart, payment, profile, not-found)
-├── routes/          # Configuração declarativa de rotas SPA com React Router DOM
+├── routes/          # Rotas file-based do TanStack Router (routeTree.gen.ts é gerado pelo plugin do Vite)
 ├── store/           # Stores de estado global de cliente (Zustand com persist)
 ├── styles/          # Tokens CSS, Tailwind v4 e estilos globais
 └── types/           # Declarações e contratos globais de tipos TypeScript

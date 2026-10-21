@@ -1,8 +1,8 @@
-import { RouterProvider } from "react-router-dom";
+import { RouterProvider } from "@tanstack/react-router";
 
-import { router } from "@/routes";
 import { ScenarioSwitcher } from "@/mocks/ui";
 import { SessionExpiredModal } from "@/features/auth/SessionExpiredModal";
+import { router } from "@/router";
 
 export function App() {
   return (

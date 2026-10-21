@@ -9,7 +9,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -55,9 +55,9 @@ describe("CartPage (src/features/cart/CartPage.tsx)", () => {
     await act(async () => {
       root?.render(
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+          <TestRouter>
             <CartPage />
-          </MemoryRouter>
+          </TestRouter>
         </QueryClientProvider>,
       );
     });

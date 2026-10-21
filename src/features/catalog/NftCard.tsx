@@ -17,19 +17,6 @@ import type { Nft, NftRarity } from "@/contracts/catalog";
 import { formatEth } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
-// Registra rota /nfts/$id para tipagem estrita do TanStack Router
-declare module "@tanstack/react-router" {
-  interface FileRoutesByPath {
-    "/nfts/$id": {
-      id: "/nfts/$id";
-      path: "/nfts/$id";
-      fullPath: "/nfts/$id";
-      preLoaderRoute: unknown;
-      parentRoute: unknown;
-    };
-  }
-}
-
 export const FALLBACK_NFT_IMAGE = "/images/nfts/emerald-ape.png";
 
 export interface NftCardProps {

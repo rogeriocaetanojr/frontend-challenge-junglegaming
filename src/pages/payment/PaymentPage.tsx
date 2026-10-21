@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronDown, Tag, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
@@ -80,7 +80,7 @@ export function PaymentPage() {
   const handleCloseModal = () => {
     setIsSuccessModalOpen(false);
     clearCart();
-    navigate("/");
+    navigate({ to: "/" });
   };
 
   return (

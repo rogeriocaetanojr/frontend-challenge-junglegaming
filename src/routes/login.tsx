@@ -5,24 +5,13 @@
  * e redireciona usuários já autenticados de volta para sua rota de destino
  * ou para a página inicial (/).
  */
-import { type AnyRoute, createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { LoginForm } from "@/features/auth/LoginForm";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { hasValidSession } from "@/lib/auth/session-store";
 import type { RouterContext } from "@/router";
-
-declare module "@tanstack/react-router" {
-  interface FileRoutesByPath {
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof Route;
-      parentRoute: AnyRoute;
-    };
-  }
-}
+import { useAuthStore } from "@/store/auth-store";
 
 export interface LoginSearchParams {
   redirect?: string;
@@ -39,13 +28,16 @@ export const Route = createFileRoute("/login")({
   beforeLoad: ({ context, search }) => {
     const routerContext = context as unknown as Partial<RouterContext>;
     const isAuthenticated = Boolean(
-      routerContext?.auth?.isAuthenticated || hasValidSession(),
+      routerContext?.auth?.isAuthenticated ||
+      hasValidSession() ||
+      useAuthStore.getState().isAuthenticated,
     );
 
     if (isAuthenticated) {
       const safePath = sanitizeReturnTo(search?.redirect, "/");
       throw redirect({
-        to: safePath,
+        // Caminho já sanitizado por sanitizeReturnTo (somente caminhos locais)
+        to: safePath as never,
       });
     }
   },

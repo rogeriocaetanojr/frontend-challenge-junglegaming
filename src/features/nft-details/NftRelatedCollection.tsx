@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Nft, NftListResponse } from "@/contracts/catalog";
@@ -152,7 +152,8 @@ export function NftRelatedCollection({
           : displayedItems.map((item) => (
               <Link
                 key={item.id}
-                to={`/nfts/${item.id}`}
+                to="/nfts/$id"
+                params={{ id: String(item.id) }}
                 className="group flex flex-col space-y-2.5 cursor-pointer select-none transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D28A4C] rounded-xl"
               >
                 {/* Moldura escura com imagem arredondada */}

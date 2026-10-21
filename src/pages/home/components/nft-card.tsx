@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 import { formatEth } from "@/lib/formatters";
 import type { NftItem } from "@/types/nft";
@@ -29,7 +29,8 @@ export function NftCard({ nft }: NftCardProps) {
       <div className="relative bg-[#241612] border border-[#3F2319]/80 rounded-[22px] p-2 sm:p-2.5 shadow-lg shadow-black/40 transition-all duration-300 group-hover:border-[#D28A4C]/40 group-hover:shadow-xl">
         <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[#140D0A]">
           <Link
-            to={`/nft/${nft.id}`}
+            to="/nfts/$id"
+            params={{ id: String(nft.id) }}
             className="block size-full"
             aria-label={`Ver detalhes de ${title}`}
           >
@@ -46,7 +47,9 @@ export function NftCard({ nft }: NftCardProps) {
       {/* Informações: Título e Preço */}
       <div className="space-y-1 px-1">
         <h4 className="text-sm sm:text-base font-normal text-white tracking-tight truncate group-hover:text-[#D28A4C] transition-colors">
-          <Link to={`/nft/${nft.id}`}>{title}</Link>
+          <Link to="/nfts/$id" params={{ id: String(nft.id) }}>
+            {title}
+          </Link>
         </h4>
 
         <div className="flex items-center gap-2 font-mono text-sm">

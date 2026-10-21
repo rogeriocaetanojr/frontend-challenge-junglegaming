@@ -5,7 +5,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NftDetailHeader } from "../NftDetailHeader";
@@ -37,13 +37,13 @@ describe("NftDetailHeader (src/features/nft-details/NftDetailHeader.tsx)", () =>
   it("deve renderizar o título da obra", async () => {
     await act(async () => {
       root?.render(
-        <MemoryRouter>
+        <TestRouter>
           <NftDetailHeader
             nft={{
               title: "Emerald Ape #042",
             }}
           />
-        </MemoryRouter>,
+        </TestRouter>,
       );
     });
 
@@ -60,14 +60,14 @@ describe("NftDetailHeader (src/features/nft-details/NftDetailHeader.tsx)", () =>
 
     await act(async () => {
       root?.render(
-        <MemoryRouter>
+        <TestRouter>
           <NftDetailHeader
             nft={{
               title: "Ape Auction #999",
               endsAt,
             }}
           />
-        </MemoryRouter>,
+        </TestRouter>,
       );
     });
 
@@ -91,14 +91,14 @@ describe("NftDetailHeader (src/features/nft-details/NftDetailHeader.tsx)", () =>
 
     await act(async () => {
       root?.render(
-        <MemoryRouter>
+        <TestRouter>
           <NftDetailHeader
             nft={{
               title: "Ape Expired #001",
               endsAt: pastDate,
             }}
           />
-        </MemoryRouter>,
+        </TestRouter>,
       );
     });
 

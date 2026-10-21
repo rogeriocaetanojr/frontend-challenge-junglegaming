@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -243,9 +242,9 @@ export function TransactionSuccessModal({
               asChild
               className="bg-[#D28A4C] hover:bg-[#e0985b] text-[#0E0907] font-bold text-xs sm:text-sm px-6 py-2.5 h-auto rounded-md shadow-md cursor-pointer transition-colors"
             >
-              <Link to="https://etherscan.io" target="_blank" rel="noopener noreferrer">
+              <a href="https://etherscan.io" target="_blank" rel="noopener noreferrer">
                 Ver no Etherscan
-              </Link>
+              </a>
             </Button>
           </div>
         </div>

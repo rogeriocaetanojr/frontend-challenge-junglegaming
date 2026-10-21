@@ -9,7 +9,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   afterAll,
@@ -92,9 +92,9 @@ describe("CartPage Integration Tests (C82)", () => {
     await act(async () => {
       root?.render(
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+          <TestRouter>
             <CartPage />
-          </MemoryRouter>
+          </TestRouter>
         </QueryClientProvider>,
       );
     });

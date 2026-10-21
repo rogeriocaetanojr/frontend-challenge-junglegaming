@@ -8,6 +8,9 @@ interface CatalogSidebarProps {
   selectedNetwork?: NftNetwork;
   onSelectNetwork: (network?: NftNetwork) => void;
   onApplyPriceRange: (min: number, max: number) => void;
+  /** Faixa de preço aplicada (vinda da URL) usada como valor inicial do slider. */
+  appliedMinPrice?: number;
+  appliedMaxPrice?: number;
 }
 
 interface CollectionItem {
@@ -46,9 +49,11 @@ export function CatalogSidebar({
   selectedNetwork,
   onSelectNetwork,
   onApplyPriceRange,
+  appliedMinPrice,
+  appliedMaxPrice,
 }: CatalogSidebarProps) {
-  const [minPrice, setMinPrice] = React.useState<number>(0.02);
-  const [maxPrice, setMaxPrice] = React.useState<number>(13.38);
+  const [minPrice, setMinPrice] = React.useState<number>(appliedMinPrice ?? 0.02);
+  const [maxPrice, setMaxPrice] = React.useState<number>(appliedMaxPrice ?? 13.38);
 
   const handleApplyPrice = () => {
     onApplyPriceRange(minPrice, maxPrice);

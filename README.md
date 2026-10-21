@@ -13,18 +13,18 @@ Aplicação completa desenvolvida para o desafio técnico de frontend da Jungle 
 
 ## 2. Stack Tecnológica Obrigatória
 
-| Camada            | Tecnologia                                     | Descrição                                                                                    |
-| :---------------- | :--------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| **Interface**     | React 19 + TypeScript                          | Componentização declarativa, estrita e imutável.                                             |
-| **Roteamento**    | React Router DOM v7 / TanStack Router Patterns | Árvore de rotas SPA, loaders e proteção de rotas privadas.                                   |
-| **Estado Remoto** | TanStack Query v5                              | Gerenciamento de cache, mutações e sincronização em segundo plano.                           |
-| **Cliente HTTP**  | Axios                                          | Instância isolada com interceptors de autenticação, timeout e auto-logout (401).             |
-| **Tempo Real**    | Socket.IO (Mock Binding)                       | Barramento de eventos resiliente com envelopes versionados (`nft.updated`, `order.updated`). |
-| **Estilização**   | Tailwind CSS v4 + Design Tokens                | Engine Oxide de alta performance baseada nos tokens extraídos do Figma.                      |
-| **Componentes**   | shadcn/ui + Radix UI Primitives                | Primitivos acessíveis em conformidade com WCAG 2.1 AA (WAI-ARIA).                            |
-| **Mocking**       | Mock Service Worker (MSW v3)                   | Interceptação em nível de rede para REST e WebSocket com banco em memória.                   |
-| **Testes**        | Vitest + Playwright                            | 394 testes automatizados de integração/contratos e suíte E2E em Chromium.                    |
-| **Auditoria**     | Lighthouse CI (`@lhci/cli`)                    | Metas de qualidade rigorosas versionadas em `lighthouserc.json`.                             |
+| Camada            | Tecnologia                      | Descrição                                                                                    |
+| :---------------- | :------------------------------ | :------------------------------------------------------------------------------------------- |
+| **Interface**     | React 19 + TypeScript           | Componentização declarativa, estrita e imutável.                                             |
+| **Roteamento**    | TanStack Router (file-based)    | Rotas em src/routes, search params validados com Zod, loaders e guarda de rotas privadas.    |
+| **Estado Remoto** | TanStack Query v5               | Gerenciamento de cache, mutações e sincronização em segundo plano.                           |
+| **Cliente HTTP**  | Axios                           | Instância isolada com interceptors de autenticação, timeout e auto-logout (401).             |
+| **Tempo Real**    | Socket.IO (Mock Binding)        | Barramento de eventos resiliente com envelopes versionados (`nft.updated`, `order.updated`). |
+| **Estilização**   | Tailwind CSS v4 + Design Tokens | Engine Oxide de alta performance baseada nos tokens extraídos do Figma.                      |
+| **Componentes**   | shadcn/ui + Radix UI Primitives | Primitivos acessíveis em conformidade com WCAG 2.1 AA (WAI-ARIA).                            |
+| **Mocking**       | Mock Service Worker (MSW v3)    | Interceptação em nível de rede para REST e WebSocket com banco em memória.                   |
+| **Testes**        | Vitest + Playwright             | 394 testes automatizados de integração/contratos e suíte E2E em Chromium.                    |
+| **Auditoria**     | Lighthouse CI (`@lhci/cli`)     | Metas de qualidade rigorosas versionadas em `lighthouserc.json`.                             |
 
 ---
 

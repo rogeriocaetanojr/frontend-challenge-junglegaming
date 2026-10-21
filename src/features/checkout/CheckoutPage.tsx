@@ -1,4 +1,4 @@
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { useCartStore } from "@/store/cart-store";

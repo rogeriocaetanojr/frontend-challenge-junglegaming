@@ -4,8 +4,8 @@ import {
   Outlet,
   useLocation,
   useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+  useSearch,
+} from "@tanstack/react-router";
 import { LogOut, Search, ShoppingCart, User as UserIcon, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
@@ -17,7 +17,7 @@ import { Footer } from "./components/footer";
  * Restaura a posição de rolagem no topo da página a cada transição de rota.
  */
 export function ScrollToTop() {
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -32,14 +32,15 @@ export function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const { q: rawQuery } = useSearch({ strict: false });
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const searchValue = searchParams.get("search") || searchParams.get("q") || "";
+  // O parser de URL pode devolver número para termos como "123"; normaliza para string
+  const searchValue = rawQuery === undefined ? "" : String(rawQuery);
 
   // Fecha o popover de busca ao clicar fora ou ao pressionar Escape
   useEffect(() => {
@@ -75,7 +76,7 @@ export function RootLayout() {
 
   const scrollToHero = () => {
     if (pathname !== "/") {
-      navigate("/");
+      navigate({ to: "/" });
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }, 100);
@@ -86,7 +87,7 @@ export function RootLayout() {
 
   const scrollToCatalog = () => {
     if (pathname !== "/") {
-      navigate("/");
+      navigate({ to: "/" });
       setTimeout(() => {
         const catalog = document.getElementById("catalog-section");
         if (catalog) {
@@ -107,7 +108,7 @@ export function RootLayout() {
       const next = !prev;
       if (next) {
         if (pathname !== "/") {
-          navigate("/");
+          navigate({ to: "/" });
         }
         setTimeout(() => {
           const catalog = document.getElementById("catalog-section");
@@ -120,21 +121,19 @@ export function RootLayout() {
     });
   };
 
+  /** Atualiza o termo (q) na URL; fora da home, leva o usuário ao catálogo. */
+  const applySearchTerm = (term: string | undefined) => {
+    void navigate({
+      to: "/",
+      search: (prev) =>
+        pathname === "/" ? { ...prev, q: term, page: undefined } : { q: term },
+      replace: true,
+    });
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    const newParams = new URLSearchParams(searchParams);
-    if (val.trim()) {
-      newParams.set("search", val);
-    } else {
-      newParams.delete("search");
-      newParams.delete("q");
-    }
-
-    if (pathname !== "/") {
-      navigate(`/?${newParams.toString()}`);
-    } else {
-      setSearchParams(newParams, { replace: true });
-    }
+    applySearchTerm(val.trim() ? val : undefined);
 
     const catalog = document.getElementById("catalog-section");
     if (catalog) {
@@ -143,14 +142,7 @@ export function RootLayout() {
   };
 
   const handleClearSearch = () => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.delete("search");
-    newParams.delete("q");
-    if (pathname !== "/") {
-      navigate(`/?${newParams.toString()}`);
-    } else {
-      setSearchParams(newParams, { replace: true });
-    }
+    applySearchTerm(undefined);
     searchInputRef.current?.focus();
   };
 
@@ -302,7 +294,7 @@ export function RootLayout() {
               {isAuthenticated && user ? (
                 <button
                   type="button"
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate({ to: "/profile" })}
                   title="Ver meu perfil"
                   className="group flex items-center gap-2.5 px-2 sm:px-2.5 py-1.5 rounded-lg font-mono text-[13.5px] sm:text-[14px] text-[#F5F1EB] hover:text-[#D28A4C] transition-all cursor-pointer select-none"
                 >

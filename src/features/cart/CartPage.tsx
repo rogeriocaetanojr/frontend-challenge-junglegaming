@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { useCartStore } from "@/store/cart-store";
 import { CartItemList } from "./CartItemList";
@@ -11,7 +11,7 @@ export function CartPage() {
   const couponCode = useCartStore((state) => state.couponCode);
 
   const handleGoToPayment = () => {
-    navigate("/payment");
+    navigate({ to: "/payment" });
   };
 
   return (

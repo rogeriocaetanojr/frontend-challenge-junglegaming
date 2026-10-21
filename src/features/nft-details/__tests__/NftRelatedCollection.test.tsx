@@ -8,7 +8,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { TestRouter } from "@/test/test-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -82,13 +82,13 @@ describe("NftRelatedCollection (src/features/nft-details/NftRelatedCollection.ts
     await act(async () => {
       root?.render(
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+          <TestRouter>
             <NftRelatedCollection
               currentNftId="nft-999"
               collectionId="genesis-apes"
               initialItems={mockItems}
             />
-          </MemoryRouter>
+          </TestRouter>
         </QueryClientProvider>,
       );
     });
@@ -135,13 +135,13 @@ describe("NftRelatedCollection (src/features/nft-details/NftRelatedCollection.ts
     await act(async () => {
       root?.render(
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+          <TestRouter>
             <NftRelatedCollection
               currentNftId="nft-1"
               collectionId="genesis-apes"
               initialItems={mockItems}
             />
-          </MemoryRouter>
+          </TestRouter>
         </QueryClientProvider>,
       );
     });

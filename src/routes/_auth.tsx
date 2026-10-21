@@ -6,31 +6,14 @@
  * Caso contrário, captura a rota atual, sanitiza para prevenir Open Redirects
  * e redireciona para a página de login com o parâmetro de retorno seguro.
  */
-import {
-  type AnyRoute,
-  createFileRoute,
-  isRedirect,
-  Outlet,
-  redirect,
-} from "@tanstack/react-router";
+import { createFileRoute, isRedirect, Outlet, redirect } from "@tanstack/react-router";
 
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { clearSession, hasValidSession } from "@/lib/auth/session-store";
 import { queryClient as defaultQueryClient } from "@/lib/query-client";
 import type { RouterContext } from "@/router";
-
-declare module "@tanstack/react-router" {
-  interface FileRoutesByPath {
-    "/_auth": {
-      id: "/_auth";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof Route;
-      parentRoute: AnyRoute;
-    };
-  }
-}
+import { useAuthStore } from "@/store/auth-store";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async ({ context, location }) => {
@@ -51,6 +34,11 @@ export const Route = createFileRoute("/_auth")({
         search: { redirect: safePath },
       });
     };
+
+    // 0. Sessão de carteira/modal mantida pelo auth-store (transitória até a unificação com a API)
+    if (useAuthStore.getState().isAuthenticated) {
+      return;
+    }
 
     // 1. Se já autenticado no contexto em memória com dados do usuário, permite acesso imediato
     if (routerContext?.auth?.isAuthenticated && routerContext.auth.user) {

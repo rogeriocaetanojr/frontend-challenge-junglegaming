@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 import type { NftListResponse } from "@/contracts/catalog";
@@ -105,7 +105,8 @@ export function CollectorsAlsoSaw({ className }: CollectorsAlsoSawProps) {
           : items.map((item) => (
               <Link
                 key={item.id}
-                to={`/nfts/${item.id}`}
+                to="/nfts/$id"
+                params={{ id: String(item.id) }}
                 className="group flex flex-col space-y-2 cursor-pointer select-none transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D28A4C] rounded-xl"
               >
                 {/* Moldura de fundo escuro com imagem quadrada arredondada */}
