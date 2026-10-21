@@ -1,6 +1,8 @@
 /**
  * Sincronização do carrinho com o ciclo de autenticação:
  * - login/cadastro: mescla o carrinho do visitante (guest_id) no carrinho do usuário;
+ * - inicialização com sessão: repete a mesclagem (idempotente no servidor), recuperando
+ *   itens de um merge interrompido por refresh/navegação logo após o login;
  * - logout: descarta o cupom aplicado (o cache privado é limpo pela store de auth).
  */
 import { getGuestId } from "@/lib/auth/guest-id";
@@ -27,11 +29,21 @@ export function waitForCartMerge(): Promise<void> {
   return pendingMerge ?? Promise.resolve();
 }
 
-authEventBus.on("auth:login", () => {
+function startMerge(): void {
   pendingMerge = mergeGuestCart().finally(() => {
     pendingMerge = null;
   });
-});
+}
+
+/**
+ * Chamado na inicialização quando há sessão válida. O servidor esvazia o carrinho do
+ * visitante ao mesclar, então repetir a chamada nunca duplica itens.
+ */
+export function resumeGuestCartMerge(): void {
+  startMerge();
+}
+
+authEventBus.on("auth:login", startMerge);
 
 authEventBus.on("auth:logout", () => {
   useCouponStore.getState().clearCoupon();

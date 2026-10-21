@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import "@/features/cart/sync";
+import { resumeGuestCartMerge } from "@/features/cart/sync";
 import { hasValidSession } from "@/lib/auth/session-store";
 import { queryClient } from "@/lib/query-client";
 import { hydrateAuthSession } from "@/store/auth-store";
@@ -32,7 +32,10 @@ prepareApp()
   .then(() => import("@/lib/realtime"))
   .then(({ connectRealtime, setupRealtimeLifecycle }) => {
     setupRealtimeLifecycle(queryClient);
-    if (hasValidSession()) connectRealtime(queryClient);
+    if (hasValidSession()) {
+      connectRealtime(queryClient);
+      resumeGuestCartMerge();
+    }
 
     createRoot(document.getElementById("root")!).render(
       <StrictMode>
