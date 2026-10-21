@@ -15,6 +15,8 @@ import {
   X,
 } from "lucide-react";
 
+import { clearGuestId } from "@/lib/auth/guest-id";
+import { clearSession } from "@/lib/auth/session-store";
 import { resetDb } from "@/mocks/db";
 import { SCENARIO_REGISTRY, scenarioEngine, type ScenarioName } from "@/mocks/scenarios";
 
@@ -64,15 +66,17 @@ export function ScenarioSwitcher() {
   const handleReset = () => {
     resetDb();
     scenarioEngine.reset();
+    clearSession();
+    clearGuestId();
     const updated = scenarioEngine.getScenario();
     setActiveScenario(updated);
     setLatencyMs(updated.latencyMs);
     setFaultRate(updated.faultRate);
-    setStatusMessage("Banco e cenários resetados com sucesso!");
+    setStatusMessage("Banco, cenários e dados locais resetados. Recarregando...");
 
     setTimeout(() => {
-      setStatusMessage("");
-    }, 3000);
+      window.location.reload();
+    }, 800);
   };
 
   const scenarioKeys = Object.keys(SCENARIO_REGISTRY) as ScenarioName[];
