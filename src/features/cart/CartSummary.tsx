@@ -55,7 +55,7 @@ export function CartSummary({
 
   return (
     <div
-      className="max-w-[360px] max-md:max-w-none max-md:-mx-6 max-md:rounded-t-[28px] max-md:bg-[#1E1410] max-md:border-t max-md:border-[#2E1A13] max-md:px-6 max-md:py-6 ml-auto space-y-4.5 font-mono select-none"
+      className="max-w-[360px] max-md:max-w-none max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:w-full max-md:z-20 max-md:bg-[#1E1410] max-md:rounded-t-[28px] max-md:rounded-b-none max-md:border-t max-md:border-[#2E1A13] max-md:p-5 max-md:shadow-2xl ml-auto space-y-4.5 font-mono select-none"
       data-testid="cart-summary"
     >
       {priceNotice && (
@@ -63,7 +63,7 @@ export function CartSummary({
           {priceNotice}
         </p>
       )}
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 max-md:hidden">
         <h2 className="text-sm sm:text-base font-bold text-[#F5F1EB] tracking-wide">
           Resumo da carteira
         </h2>
@@ -74,7 +74,7 @@ export function CartSummary({
       <div className="space-y-1.5">
         <label
           htmlFor="coupon-input"
-          className="text-xs font-semibold text-[#F5F1EB] block"
+          className="text-xs font-semibold text-[#F5F1EB] block max-md:text-sm max-md:font-medium"
         >
           Código promocional
         </label>
@@ -103,12 +103,12 @@ export function CartSummary({
               value={inputCoupon}
               onChange={(e) => setInputCoupon(e.target.value)}
               placeholder="Digite o código promocional..."
-              className="flex-1 bg-[#140D0A] border border-r-0 border-[#D28A4C]/80 rounded-l-lg px-2.5 py-1.5 text-xs text-[#F5F1EB] placeholder:text-[#8C6D58] focus:border-[#D28A4C] focus:outline-none"
+              className="flex-1 bg-[#140D0A] border border-r-0 border-[#D28A4C]/80 rounded-l-lg px-2.5 py-1.5 text-xs text-[#F5F1EB] placeholder:text-[#8C6D58] focus:border-[#D28A4C] focus:outline-none max-md:rounded-l-2xl max-md:px-4 max-md:py-3 max-md:text-sm max-md:placeholder:text-sm"
             />
             <Button
               type="submit"
               disabled={!inputCoupon.trim()}
-              className="rounded-l-none rounded-r-lg bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-50 text-[#0E0907] text-xs font-bold px-3.5 py-1.5 h-auto cursor-pointer transition-colors"
+              className="rounded-l-none rounded-r-lg bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-50 text-[#0E0907] text-xs font-bold px-3.5 py-1.5 h-auto cursor-pointer transition-colors max-md:rounded-r-2xl max-md:px-5 max-md:py-3 max-md:text-sm"
             >
               Aplicar
             </Button>
@@ -122,7 +122,7 @@ export function CartSummary({
       </div>
 
       {/* Detalhamento financeiro */}
-      <div className="space-y-2.5 text-xs sm:text-[13px] text-[#F5F1EB]">
+      <div className="space-y-2.5 text-xs sm:text-[13px] text-[#F5F1EB] max-md:text-sm max-md:leading-relaxed">
         <div className="flex justify-between items-center">
           <span className="text-[#F5F1EB]/90">Subtotal</span>
           {isSummaryLoading ? (
@@ -155,12 +155,12 @@ export function CartSummary({
           </div>
         </div>
 
-        <div className="flex justify-between items-baseline pt-3 text-sm sm:text-base">
-          <span className="font-bold text-[#F5F1EB]">Total</span>
+        <div className="flex justify-between items-baseline pt-3 text-sm sm:text-base max-md:text-lg">
+          <span className="font-bold text-[#F5F1EB] max-md:text-lg">Total</span>
           {isSummaryLoading ? (
             <Skeleton className="h-5 w-24" />
           ) : (
-            <span className="text-base sm:text-lg font-bold text-[#D28A4C]">
+            <span className="text-base sm:text-lg font-bold text-[#D28A4C] max-md:text-xl">
               {displayTotal} ETH
             </span>
           )}
@@ -180,7 +180,7 @@ export function CartSummary({
                 total: displayTotal,
               })
             }
-            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
+            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors max-md:text-base max-md:font-semibold max-md:py-3.5"
           >
             <span>Conectar e finalizar</span>
           </Button>
@@ -188,7 +188,7 @@ export function CartSummary({
           <Button
             asChild
             disabled={items.length === 0}
-            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors"
+            className="w-full bg-[#D28A4C] hover:bg-[#e0985b] disabled:opacity-40 disabled:cursor-not-allowed text-[#0E0907] font-mono font-bold text-xs sm:text-sm py-2.5 sm:py-3 h-auto rounded-lg shadow-md cursor-pointer transition-colors max-md:text-base max-md:font-semibold max-md:py-3.5"
           >
             <Link to="/payment" className="flex items-center justify-center gap-2">
               <span>Conectar e finalizar</span>
@@ -196,7 +196,7 @@ export function CartSummary({
           </Button>
         )}
 
-        <div className="text-center">
+        <div className="text-center max-md:hidden">
           <Link
             to="/"
             className="text-xs text-[#D28A4C] hover:text-[#e0985b] transition-colors"

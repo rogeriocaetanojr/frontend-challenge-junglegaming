@@ -19,7 +19,7 @@ export function CartPage() {
   return (
     <div className="w-full py-6 sm:py-8 font-mono text-[#F5F1EB]" data-testid="cart-page">
       {/* Container principal do Carrinho */}
-      <div className="min-h-[calc(100vh-140px)] flex flex-col justify-start space-y-6">
+      <div className="min-h-[calc(100vh-140px)] flex flex-col justify-start space-y-6 max-md:min-h-screen">
         {/* Breadcrumb limpo conforme imagem de referência: Início  /  Mercado  /  Carrinho */}
         <MobilePageHeader backTo="/" title="Carrinho de NFTs" />
         <nav aria-label="Navegação estrutural" className="pt-2 max-md:hidden">
@@ -47,8 +47,8 @@ export function CartPage() {
         </nav>
 
         {/* Grid Principal: Lista à Esquerda (8 cols) | Resumo à Direita (4 cols) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-2">
-          <div className="lg:col-span-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-2 max-md:flex max-md:flex-col max-md:flex-1">
+          <div className="lg:col-span-8 max-md:flex-1 max-md:pb-[340px]">
             <CartItemList
               items={items}
               isLoading={isLoading}
@@ -60,7 +60,7 @@ export function CartPage() {
             />
           </div>
 
-          <div className="lg:col-span-4 sticky top-24">
+          <div className="lg:col-span-4 sticky top-24 max-md:static max-md:mt-auto">
             <CartSummary
               items={items}
               isLoading={isLoading}
