@@ -1,6 +1,14 @@
 import { http } from "@/lib/http";
 import type { NftFilters, NftItem, PaginatedResponse } from "@/types/nft";
 
+/** Contrato da API: a URL da Home usa hífen ("price-asc"), a API espera `sort` com underscore. */
+const API_SORT: Record<NonNullable<NftFilters["sortBy"]>, string> = {
+  recent: "recent",
+  popular: "popular",
+  "price-asc": "price_asc",
+  "price-desc": "price_desc",
+};
+
 /**
  * Camada de serviço de domínio para NFTs, consumindo estritamente o cliente HTTP centralizado.
  */
@@ -17,7 +25,7 @@ export async function getNfts(
     ...(filters?.network && { network: filters.network }),
     ...(filters?.minPrice !== undefined && { minPrice: filters.minPrice }),
     ...(filters?.maxPrice !== undefined && { maxPrice: filters.maxPrice }),
-    ...(filters?.sortBy && { sortBy: filters.sortBy }),
+    ...(filters?.sortBy && { sort: API_SORT[filters.sortBy] ?? "recent" }),
   };
 
   return http.get<PaginatedResponse<NftItem>>("/nfts", { params });

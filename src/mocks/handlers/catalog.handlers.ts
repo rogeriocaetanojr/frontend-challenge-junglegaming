@@ -203,7 +203,8 @@ export const catalogHandlers = [
 
     const rawSort =
       url.searchParams.get("sort") || url.searchParams.get("sortBy") || "recent";
-    const normalizedSort = rawSort.replace("-", "_");
+    // Aceita hífen ou underscore; valores desconhecidos caem em "recent" sem zerar a lista
+    const normalizedSort = rawSort.replace(/-/g, "_");
 
     let sort: NftSortOption = "recent";
     if (

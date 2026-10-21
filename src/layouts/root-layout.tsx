@@ -137,6 +137,7 @@ export function RootLayout() {
       search: (prev) =>
         pathname === "/" ? { ...prev, q: term, page: undefined } : { q: term },
       replace: true,
+      resetScroll: false,
     });
   };
 

@@ -46,6 +46,7 @@ export function HomePage() {
       void navigate({
         search: (prev) => compactHomeSearch({ ...prev, page: 1, ...patch }),
         replace: options?.replace,
+        resetScroll: false,
       });
     },
     [navigate],
@@ -85,7 +86,7 @@ export function HomePage() {
 
   /** Limpa filtros, aba, ordenação e página, preservando apenas o termo de busca. */
   const handleResetFilters = () => {
-    void navigate({ search: (prev) => ({ q: prev.q }) });
+    void navigate({ search: (prev) => ({ q: prev.q }), resetScroll: false });
   };
 
   const handlePageChange = (newPage: number) => {
