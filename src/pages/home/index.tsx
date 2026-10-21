@@ -51,17 +51,18 @@ export function HomePage() {
     [navigate],
   );
 
+  const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
 
   // Página fora do intervalo (ex.: URL editada): volta para a última página existente
   React.useEffect(() => {
-    if (data && data.totalPages > 0 && page > data.totalPages) {
+    if (data && (data.totalPages ?? 0) > 0 && page > (data.totalPages ?? 0)) {
       updateSearch({ page: data.totalPages }, { replace: true });
     }
   }, [data, page, updateSearch]);
 
   // Featured NFT: primeiro item retornado ou fallback
-  const featuredNft = data?.items[0];
+  const featuredNft = items[0];
 
   const handleSelectCategory = (category?: NftCategory) => updateSearch({ category });
 
@@ -166,7 +167,7 @@ export function HomePage() {
                   Tentar Novamente
                 </Button>
               </div>
-            ) : data?.items.length === 0 ? (
+            ) : items.length === 0 ? (
               /* Estado Vazio */
               <div className="max-w-md mx-auto text-center py-16 space-y-5 bg-[#140D0A] border border-[#2A2421] rounded-2xl p-8 shadow-xl">
                 <div className="size-16 mx-auto rounded-full bg-[#1C110C] border border-[#2A2421] flex items-center justify-center text-neutral-400">
@@ -191,7 +192,7 @@ export function HomePage() {
             ) : (
               /* Malha de NFTs em 3 colunas no desktop */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-md:gap-x-4 max-md:gap-y-5 max-md:pb-10 max-md:[&>*:nth-child(even)]:mt-8">
-                {data?.items.map((nft) => (
+                {items.map((nft) => (
                   <NftCard key={nft.id} nft={nft} />
                 ))}
               </div>
