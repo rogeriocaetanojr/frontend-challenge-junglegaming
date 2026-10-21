@@ -11,7 +11,7 @@ export interface AuthModalProps {
 }
 
 const FORM_CLASS =
-  "max-w-none border-0 bg-transparent p-0 shadow-none sm:p-0 [&_h2]:hidden";
+  "flex-1 min-h-0 max-w-none border-0 bg-transparent p-0 shadow-none sm:p-0 [&_h2]:hidden";
 
 const TAB_BASE = "transition-colors cursor-pointer";
 const TAB_ACTIVE = "text-[#D28A4C]";
@@ -33,7 +33,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
       aria-labelledby="auth-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-[480px] sm:max-w-[490px] max-h-[90vh] overflow-y-auto rounded-2xl bg-[#1A120E] border border-[#2E1A13] shadow-2xl font-mono text-[#F5F1EB] animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[420px] h-[640px] max-h-[95vh] overflow-hidden rounded-2xl bg-[#1A120E] border border-[#2E1A13] shadow-2xl font-mono text-[#F5F1EB] animate-in zoom-in-95 duration-200">
         <button
           type="button"
           onClick={onClose}
@@ -43,10 +43,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           <X className="size-4" />
         </button>
 
-        <div className="pt-8 pb-7 px-6 sm:px-10">
+        <div className="flex h-full flex-col p-6 pb-4">
           <div
             id="auth-modal-title"
-            className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-5"
+            className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0"
           >
             <button
               type="button"

@@ -147,7 +147,7 @@ describe("Formulário de Cadastro (src/features/auth/RegisterForm.tsx)", () => {
     expect(confirmPasswordInput.getAttribute("aria-invalid")).toBe("false");
 
     expect(submitButton).not.toBeNull();
-    expect(submitButton.textContent).toContain("Cadastrar");
+    expect(submitButton.textContent).toContain("Criar conta");
 
     expect(loginLink).not.toBeNull();
   });

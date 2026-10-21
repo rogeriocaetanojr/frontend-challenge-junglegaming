@@ -15,6 +15,7 @@ import type { ApiErrorBody } from "@/contracts/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/http";
+import { PasswordInput, SocialAuth } from "./AuthExtras";
 import { type LoginFormData, loginFormSchema } from "./schemas";
 import { useLogin } from "./useLogin";
 
@@ -97,21 +98,21 @@ export function LoginForm({
 
   return (
     <div
-      className={`w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
+      className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-6 space-y-1.5 text-center">
+      <div className="mb-2 text-center">
         <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
           Entrar no Marketplace
         </h2>
-        <p className="text-xs text-text-muted sm:text-sm">
-          Insira suas credenciais para gerenciar seus NFTs e transações.
+        <p className="text-xs leading-snug text-text-muted">
+          Entre para gerenciar sua carteira, coleção e perfil de criador.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="space-y-4"
+        className="flex flex-1 flex-col justify-between gap-3"
         aria-label="Formulário de Login"
       >
         {errors.root && (
@@ -125,10 +126,10 @@ export function LoginForm({
         )}
 
         {/* Campo E-mail */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="login-email"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             E-mail
           </label>
@@ -136,7 +137,8 @@ export function LoginForm({
             id="login-email"
             type="email"
             autoComplete="email"
-            placeholder="exemplo@junglegaming.com"
+            placeholder="Digite seu e-mail"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={errors.email ? "login-email-error" : undefined}
@@ -154,18 +156,18 @@ export function LoginForm({
         </div>
 
         {/* Campo Senha */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="login-password"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Senha
           </label>
-          <Input
+          <PasswordInput
             id="login-password"
-            type="password"
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="Senha"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.password ? "true" : "false"}
             aria-describedby={errors.password ? "login-password-error" : undefined}
@@ -180,12 +182,20 @@ export function LoginForm({
               {errors.password.message}
             </p>
           )}
+          <div className="text-right">
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline cursor-pointer"
+            >
+              Esqueceu a senha?
+            </button>
+          </div>
         </div>
 
         {/* Botão de Submissão */}
         <Button
           type="submit"
-          className="w-full mt-2"
+          className="w-full h-9 mt-1 text-xs font-semibold"
           disabled={isPending}
           aria-busy={isPending}
         >
@@ -202,8 +212,10 @@ export function LoginForm({
           )}
         </Button>
 
+        <SocialAuth compact />
+
         {/* Link para Registro */}
-        <div className="pt-2 text-center text-xs text-text-muted">
+        <div className="text-center text-xs text-text-muted">
           Não tem uma conta?{" "}
           <a
             href={registerHref}

@@ -16,6 +16,7 @@ import type { ApiErrorBody } from "@/contracts/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/http";
+import { PasswordInput, SocialAuth } from "./AuthExtras";
 import { type RegisterFormData, registerFormSchema } from "./schemas";
 import { useRegister } from "./useRegister";
 
@@ -133,21 +134,21 @@ export function RegisterForm({
 
   return (
     <div
-      className={`w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
+      className={`flex flex-col w-full max-w-md rounded-card border border-border bg-surface-dark p-6 sm:p-8 shadow-card ${className}`}
     >
-      <div className="mb-6 space-y-1.5 text-center">
+      <div className="mb-2 text-center">
         <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
           Criar sua Conta
         </h2>
-        <p className="text-xs text-text-muted sm:text-sm">
-          Junte-se ao marketplace e comece a colecionar NFTs exclusivos.
+        <p className="text-xs leading-snug text-text-muted">
+          Crie seu perfil de colecionador e conecte uma carteira quando quiser.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="space-y-4"
+        className="flex flex-1 flex-col justify-between gap-2"
         aria-label="Formulário de Cadastro"
       >
         {errors.root && (
@@ -161,10 +162,10 @@ export function RegisterForm({
         )}
 
         {/* Campo Nome */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="register-name"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Nome Completo
           </label>
@@ -172,7 +173,8 @@ export function RegisterForm({
             id="register-name"
             type="text"
             autoComplete="name"
-            placeholder="Seu Nome"
+            placeholder="Nome de usuário"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.name ? "true" : "false"}
             aria-describedby={errors.name ? "register-name-error" : undefined}
@@ -190,10 +192,10 @@ export function RegisterForm({
         </div>
 
         {/* Campo E-mail */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="register-email"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             E-mail
           </label>
@@ -201,7 +203,8 @@ export function RegisterForm({
             id="register-email"
             type="email"
             autoComplete="email"
-            placeholder="seu.email@exemplo.com"
+            placeholder="Digite seu e-mail"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={errors.email ? "register-email-error" : undefined}
@@ -219,18 +222,18 @@ export function RegisterForm({
         </div>
 
         {/* Campo Senha */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="register-password"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Senha
           </label>
-          <Input
+          <PasswordInput
             id="register-password"
-            type="password"
             autoComplete="new-password"
-            placeholder="Mínimo de 8 caracteres"
+            placeholder="Senha"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.password ? "true" : "false"}
             aria-describedby={errors.password ? "register-password-error" : undefined}
@@ -248,18 +251,18 @@ export function RegisterForm({
         </div>
 
         {/* Campo Confirmar Senha */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label
             htmlFor="register-confirm-password"
-            className="block text-xs font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Confirmar Senha
           </label>
-          <Input
+          <PasswordInput
             id="register-confirm-password"
-            type="password"
             autoComplete="new-password"
-            placeholder="Repita a senha"
+            placeholder="Confirmar senha"
+            className="h-9 px-3 py-1.5 text-xs"
             disabled={isPending}
             aria-invalid={errors.confirmPassword ? "true" : "false"}
             aria-describedby={
@@ -281,7 +284,7 @@ export function RegisterForm({
         {/* Botão de Submissão */}
         <Button
           type="submit"
-          className="w-full mt-2"
+          className="w-full h-9 mt-1 text-xs font-semibold"
           disabled={isPending}
           aria-busy={isPending}
         >
@@ -294,12 +297,14 @@ export function RegisterForm({
               <span>Criando conta...</span>
             </span>
           ) : (
-            "Cadastrar"
+            "Criar conta"
           )}
         </Button>
 
+        <SocialAuth compact />
+
         {/* Link para Login */}
-        <div className="pt-2 text-center text-xs text-text-muted">
+        <div className="text-center text-xs text-text-muted">
           Já tem uma conta?{" "}
           <a
             href={loginHref}
