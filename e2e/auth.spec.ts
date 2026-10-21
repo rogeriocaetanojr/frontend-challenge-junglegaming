@@ -1,16 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+const DEMO_EMAIL = "demo@jungle.com";
+const DEMO_PASSWORD = "Password123!";
+
 /**
- * Suíte de Testes End-to-End (E2E) para o Modal Unificado de Autenticação (AuthModal).
- *
- * Cobertura:
- * 1. Abertura do modal via botão 'Entrar' no cabeçalho e login com credenciais válidas.
- * 2. Validação de erro amigável ao tentar submeter com campos em branco.
- * 3. Alternância suave entre as abas 'Entrar' e 'Criar conta' dentro do modal.
- * 4. Validação de senhas divergentes na aba de criação de conta e auto-login pós-cadastro.
- * 5. Fechamento do modal através do botão de fechar (X).
+ * Autenticação integrada à API simulada (MSW) via AuthModal, que reutiliza
+ * LoginForm e RegisterForm. Credenciais inválidas não autenticam.
  */
-test.describe("Autenticação via Modal Unificado (E2E)", () => {
+test.describe("Autenticação via Modal (E2E)", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
@@ -20,145 +17,106 @@ test.describe("Autenticação via Modal Unificado (E2E)", () => {
     await page.reload();
   });
 
-  test("deve abrir o AuthModal pelo cabeçalho, realizar login com sucesso e atualizar perfil no header", async ({
-    page,
-  }) => {
-    // 1. Localiza e clica no botão "Entrar" no cabeçalho
-    const loginHeaderButton = page
+  const openModal = async (page: import("@playwright/test").Page) => {
+    await page
       .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i });
-    await expect(loginHeaderButton).toBeVisible();
-    await loginHeaderButton.click();
-
-    // 2. Valida abertura do diálogo modal acessível
+      .getByRole("button", { name: /^entrar$/i })
+      .click();
     const modal = page.getByRole("dialog");
     await expect(modal).toBeVisible();
-    await expect(modal).toContainText("Entre para gerenciar sua carteira");
+    return modal;
+  };
 
-    // 3. Preenche formulário de login
-    const emailInput = modal.locator('input[type="email"]');
-    const passwordInput = modal.locator('input[type="password"]');
-    const submitButton = modal.locator('button[type="submit"]');
+  test("deve autenticar com credenciais válidas e refletir a sessão no cabeçalho", async ({
+    page,
+  }) => {
+    const modal = await openModal(page);
+    await modal.getByLabel(/e-mail/i).fill(DEMO_EMAIL);
+    await modal.getByLabel(/senha/i).fill(DEMO_PASSWORD);
+    await modal.locator('button[type="submit"]').click();
 
-    await emailInput.fill("alex.vance@marketplace.local");
-    await passwordInput.fill("Password123!");
+    await expect(modal).not.toBeVisible();
+    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
 
-    // 4. Submete o login
-    await submitButton.click();
+    // A sessão sobrevive ao refresh
+    await page.reload();
+    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
+  });
 
-    // 5. Valida que o modal foi fechado
+  test("deve rejeitar credenciais inválidas sem autenticar", async ({ page }) => {
+    const modal = await openModal(page);
+    await modal.getByLabel(/e-mail/i).fill(DEMO_EMAIL);
+    await modal.getByLabel(/senha/i).fill("SenhaErrada999");
+    await modal.locator('button[type="submit"]').click();
+
+    await expect(modal.getByRole("alert").first()).toBeVisible();
+    await expect(modal).toBeVisible();
+    await expect(
+      page.getByRole("banner").getByRole("button", { name: /^entrar$/i }),
+    ).toBeVisible();
+  });
+
+  test("deve validar campos obrigatórios do login", async ({ page }) => {
+    const modal = await openModal(page);
+    await modal.locator('button[type="submit"]').click();
+
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText(/obrigatório/i);
+  });
+
+  test("deve alternar entre as abas 'Entrar' e 'Criar conta'", async ({ page }) => {
+    const modal = await openModal(page);
+
+    await modal.getByRole("button", { name: "Criar conta" }).click();
+    await expect(modal.getByLabel("Nome", { exact: false }).first()).toBeVisible();
+    await expect(modal.getByLabel(/confirm/i)).toBeVisible();
+
+    await modal.getByRole("button", { name: "Entrar", exact: true }).click();
+    await expect(modal.getByLabel(/^senha/i)).toBeVisible();
+  });
+
+  test("deve concluir o cadastro com autenticação automática", async ({ page }) => {
+    const modal = await openModal(page);
+    await modal.getByRole("button", { name: "Criar conta" }).click();
+
+    await modal.getByLabel("Nome", { exact: false }).first().fill("CryptoCollector");
+    await modal.getByLabel(/e-mail/i).fill("collector@kurio.art");
+    await modal.locator("#register-password").fill("MinhaSenha123!");
+    await modal.locator("#register-confirm-password").fill("MinhaSenha123!");
+    await modal.locator('button[type="submit"]').click();
+
+    await expect(modal).not.toBeVisible();
+    await expect(page.getByRole("banner").getByTitle("Ver meu perfil")).toBeVisible();
+  });
+
+  test("deve encerrar a sessão ao sair e voltar a exigir login em rota privada", async ({
+    page,
+  }) => {
+    const modal = await openModal(page);
+    await modal.getByLabel(/e-mail/i).fill(DEMO_EMAIL);
+    await modal.getByLabel(/senha/i).fill(DEMO_PASSWORD);
+    await modal.locator('button[type="submit"]').click();
     await expect(modal).not.toBeVisible();
 
-    // 6. Valida que o cabeçalho agora exibe o perfil do usuário logado
-    const profileButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /alex\.vance|alex|perfil/i });
-    await expect(profileButton).toBeVisible();
-  });
+    await page.getByRole("banner").getByTitle("Ver meu perfil").click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await page
+      .getByRole("button", { name: /sair|logout/i })
+      .first()
+      .click();
 
-  test("deve exibir validação ao tentar submeter login sem preencher campos", async ({
-    page,
-  }) => {
-    const loginHeaderButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i });
-    await loginHeaderButton.click();
-
-    const modal = page.getByRole("dialog");
-    await expect(modal).toBeVisible();
-
-    const submitButton = modal.locator('button[type="submit"]');
-    await submitButton.click();
-
-    // Valida que o modal continua visível e com foco de interação mantido
-    await expect(modal).toBeVisible();
-  });
-
-  test("deve alternar entre as abas 'Entrar' e 'Criar conta' dentro do modal", async ({
-    page,
-  }) => {
-    const loginHeaderButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i });
-    await loginHeaderButton.click();
-
-    const modal = page.getByRole("dialog");
-    await expect(modal).toBeVisible();
-
-    // Clica na aba 'Criar conta'
-    const registerTabButton = modal.locator(
-      'button[type="button"]:has-text("Criar conta")',
-    );
-    await registerTabButton.click();
-
-    // Valida mensagem descritiva da aba de cadastro
-    await expect(modal).toContainText("Crie seu perfil de colecionador");
-    await expect(modal.locator('input[placeholder="Nome de usuário"]')).toBeVisible();
-    await expect(modal.locator('input[placeholder="Confirmar senha"]')).toBeVisible();
-
-    // Volta para a aba 'Entrar'
-    const loginTabButton = modal.locator('button[type="button"]:has-text("Entrar")');
-    await loginTabButton.click();
-
-    await expect(modal).toContainText("Entre para gerenciar sua carteira");
-  });
-
-  test("deve validar senhas divergentes no cadastro e concluir registro com auto-login", async ({
-    page,
-  }) => {
-    const loginHeaderButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i });
-    await loginHeaderButton.click();
-
-    const modal = page.getByRole("dialog");
-    const registerTabButton = modal.locator(
-      'button[type="button"]:has-text("Criar conta")',
-    );
-    await registerTabButton.click();
-
-    const userInput = modal.locator('input[placeholder="Nome de usuário"]');
-    const emailInput = modal.locator('input[placeholder="Digite seu e-mail"]');
-    const passwordInputs = modal.locator('input[type="password"]');
-    const submitButton = modal.locator('button[type="submit"]');
-
-    // 1. Preenche dados com senhas divergentes
-    await userInput.fill("CryptoCollector");
-    await emailInput.fill("collector@kurio.art");
-    await passwordInputs.nth(0).fill("MinhaSenha123!");
-    await passwordInputs.nth(1).fill("SenhaDiferente456!");
-
-    await submitButton.click();
-
-    // Valida mensagem de erro exibida no modal
-    await expect(modal).toContainText("As senhas não coincidem.");
-
-    // 2. Corrige a confirmação de senha
-    await passwordInputs.nth(1).fill("MinhaSenha123!");
-    await submitButton.click();
-
-    // Valida fechamento do modal e perfil ativo no header
-    await expect(modal).not.toBeVisible();
-    const profileButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /CryptoCollector|perfil/i });
-    await expect(profileButton).toBeVisible();
+    await expect(
+      page.getByRole("banner").getByRole("button", { name: /^entrar$/i }),
+    ).toBeVisible();
+    await page.goto("/profile");
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fprofile/);
   });
 
   test("deve permitir fechar o modal através do botão de fechar (X)", async ({
     page,
   }) => {
-    const loginHeaderButton = page
-      .getByRole("banner")
-      .getByRole("button", { name: /^entrar$/i });
-    await loginHeaderButton.click();
-
-    const modal = page.getByRole("dialog");
-    await expect(modal).toBeVisible();
-
-    const closeButton = modal.getByRole("button", { name: /fechar modal/i });
-    await closeButton.click();
-
+    const modal = await openModal(page);
+    await modal.getByRole("button", { name: /fechar modal/i }).click();
     await expect(modal).not.toBeVisible();
   });
 });

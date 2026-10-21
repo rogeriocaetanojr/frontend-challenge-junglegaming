@@ -19,12 +19,19 @@ import { type LoginFormData, loginFormSchema } from "./schemas";
 import { useLogin } from "./useLogin";
 
 export interface LoginFormProps {
-  redirectPath?: string;
+  redirectPath?: string | null;
   onSuccess?: () => void;
+  /** Quando informado (uso em modal), troca de formulário sem navegar. */
+  onSwitchForm?: () => void;
   className?: string;
 }
 
-export function LoginForm({ redirectPath, onSuccess, className = "" }: LoginFormProps) {
+export function LoginForm({
+  redirectPath,
+  onSuccess,
+  onSwitchForm,
+  className = "",
+}: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -200,6 +207,14 @@ export function LoginForm({ redirectPath, onSuccess, className = "" }: LoginForm
           Não tem uma conta?{" "}
           <a
             href={registerHref}
+            onClick={
+              onSwitchForm
+                ? (event) => {
+                    event.preventDefault();
+                    onSwitchForm();
+                  }
+                : undefined
+            }
             className="font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
           >
             Cadastre-se

@@ -11,7 +11,6 @@ import { LoginForm } from "@/features/auth/LoginForm";
 import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { hasValidSession } from "@/lib/auth/session-store";
 import type { RouterContext } from "@/router";
-import { useAuthStore } from "@/store/auth-store";
 
 export interface LoginSearchParams {
   redirect?: string;
@@ -28,9 +27,7 @@ export const Route = createFileRoute("/login")({
   beforeLoad: ({ context, search }) => {
     const routerContext = context as unknown as Partial<RouterContext>;
     const isAuthenticated = Boolean(
-      routerContext?.auth?.isAuthenticated ||
-      hasValidSession() ||
-      useAuthStore.getState().isAuthenticated,
+      routerContext?.auth?.isAuthenticated || hasValidSession(),
     );
 
     if (isAuthenticated) {

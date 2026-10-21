@@ -129,23 +129,19 @@ test.describe("Regressão Visual (E2E)", () => {
         version: 0,
       };
       localStorage.setItem("@nft-marketplace:cart", JSON.stringify(cartState));
-
-      const authState = {
-        state: {
-          user: {
-            id: "usr_mock_001",
-            name: "Alex Vance",
-            email: "alex.vance@marketplace.local",
-            walletAddress: "0x71C8364437a9C27779976872A42F340a6B233921",
-            balanceEth: 4.5,
-            token: "mock-jwt-token-session-web3",
-          },
-          isAuthenticated: true,
-        },
-        version: 0,
-      };
-      localStorage.setItem("@nft-marketplace:auth", JSON.stringify(authState));
     });
+
+    // Autentica pela API simulada (a rota de pagamento é privada)
+    await page.reload();
+    await page
+      .getByRole("banner")
+      .getByRole("button", { name: /^entrar$/i })
+      .click();
+    const modal = page.getByRole("dialog");
+    await modal.getByLabel(/e-mail/i).fill("demo@jungle.com");
+    await modal.getByLabel(/senha/i).fill("Password123!");
+    await modal.locator('button[type="submit"]').click();
+    await expect(modal).not.toBeVisible();
 
     await page.goto("/checkout");
     await page.waitForLoadState("networkidle");

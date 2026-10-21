@@ -23,7 +23,7 @@ type TabId =
 export function ProfilePage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const login = useAuthStore((state) => state.login);
+  const updateUser = useAuthStore((state) => state.updateUser);
   const logout = useAuthStore((state) => state.logout);
 
   const [activeTab, setActiveTab] = useState<TabId>("dados");
@@ -80,8 +80,7 @@ export function ProfilePage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    login({
-      ...user,
+    updateUser({
       name: displayName,
       email: email,
       avatarUrl: avatarUrl,

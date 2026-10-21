@@ -19,7 +19,8 @@ import { http } from "@/lib/http";
 import { queryKeys } from "@/lib/query/keys";
 
 export interface UseLoginOptions {
-  redirectPath?: string;
+  /** `null` mantém o usuário na página atual (uso em modal). */
+  redirectPath?: string | null;
   onSuccess?: (session: Session) => void;
   onError?: (error: unknown) => void;
 }
@@ -49,6 +50,11 @@ export function useLogin(options?: UseLoginOptions) {
         userId: data.user.id,
         token: data.token,
       });
+
+      if (options?.redirectPath === null) {
+        options.onSuccess?.(data);
+        return;
+      }
 
       // 4. Redirecionamento seguro para evitar Open Redirects
       const safePath = sanitizeReturnTo(options?.redirectPath, "/");

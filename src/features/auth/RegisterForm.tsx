@@ -20,14 +20,17 @@ import { type RegisterFormData, registerFormSchema } from "./schemas";
 import { useRegister } from "./useRegister";
 
 export interface RegisterFormProps {
-  redirectPath?: string;
+  redirectPath?: string | null;
   onSuccess?: () => void;
+  /** Quando informado (uso em modal), troca de formulário sem navegar. */
+  onSwitchForm?: () => void;
   className?: string;
 }
 
 export function RegisterForm({
   redirectPath,
   onSuccess,
+  onSwitchForm,
   className = "",
 }: RegisterFormProps) {
   const {
@@ -300,6 +303,14 @@ export function RegisterForm({
           Já tem uma conta?{" "}
           <a
             href={loginHref}
+            onClick={
+              onSwitchForm
+                ? (event) => {
+                    event.preventDefault();
+                    onSwitchForm();
+                  }
+                : undefined
+            }
             className="font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
           >
             Faça login

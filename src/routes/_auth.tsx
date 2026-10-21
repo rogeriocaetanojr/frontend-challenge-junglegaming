@@ -13,7 +13,6 @@ import { sanitizeReturnTo } from "@/lib/auth/return-to";
 import { clearSession, hasValidSession } from "@/lib/auth/session-store";
 import { queryClient as defaultQueryClient } from "@/lib/query-client";
 import type { RouterContext } from "@/router";
-import { useAuthStore } from "@/store/auth-store";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async ({ context, location }) => {
@@ -34,11 +33,6 @@ export const Route = createFileRoute("/_auth")({
         search: { redirect: safePath },
       });
     };
-
-    // 0. Sessão de carteira/modal mantida pelo auth-store (transitória até a unificação com a API)
-    if (useAuthStore.getState().isAuthenticated) {
-      return;
-    }
 
     // 1. Se já autenticado no contexto em memória com dados do usuário, permite acesso imediato
     if (routerContext?.auth?.isAuthenticated && routerContext.auth.user) {
