@@ -129,7 +129,7 @@ export function LoginForm({
         <div className="space-y-1">
           <label
             htmlFor="login-email"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             E-mail
           </label>
@@ -159,7 +159,7 @@ export function LoginForm({
         <div className="space-y-1">
           <label
             htmlFor="login-password"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Senha
           </label>

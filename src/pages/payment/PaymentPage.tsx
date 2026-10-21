@@ -4,6 +4,9 @@ import { ChevronDown, Tag, X } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { TransactionSuccessModal } from "@/features/cart/TransactionSuccessModal";
+import { MobilePageHeader } from "@/components/mobile-page-header";
+import { ConnectedWalletPicker } from "@/features/checkout/ConnectedWalletPicker";
+import { useWallets } from "@/features/wallets/api";
 import { useCheckout } from "@/features/checkout/useCheckout";
 import { useQuoteChangeNotice } from "@/features/cart/useQuoteChangeNotice";
 import { formatEthFixed } from "@/lib/money";
@@ -40,6 +43,7 @@ export function PaymentPage() {
     "0x71C8364437a9C27779976872A42F340a6B233921",
   );
   const [secondaryWallet, setSecondaryWallet] = useState("");
+  const { wallets } = useWallets();
   const [walletType, setWalletType] = useState("coinbase");
   const [referralCode, setReferralCode] = useState("");
   const [email, setEmail] = useState(user?.email || "rogerio@gmail.com");
@@ -154,7 +158,8 @@ export function PaymentPage() {
     >
       <div className="min-h-[calc(100vh-140px)] flex flex-col justify-start space-y-6">
         {/* Breadcrumb limpo: Início / Mercado / Pagamento */}
-        <nav aria-label="Navegação estrutural" className="pt-2">
+        <MobilePageHeader backTo="/cart" title="Pagamento com carteira" />
+        <nav aria-label="Navegação estrutural" className="pt-2 max-md:hidden">
           <ol className="flex items-center gap-2 text-xs sm:text-sm font-medium text-[#F5F1EB]">
             <li>
               <Link to="/" className="hover:text-[#D28A4C] transition-colors">
@@ -190,7 +195,7 @@ export function PaymentPage() {
 
             <div className="space-y-4">
               {/* Linha 1: Nome de exibição* & Nome de usuário* */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="pay-displayName"
@@ -227,7 +232,7 @@ export function PaymentPage() {
               </div>
 
               {/* Linha 2: Rede * & Nome do perfil* */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="pay-network"
@@ -281,7 +286,7 @@ export function PaymentPage() {
               </div>
 
               {/* Linha 3: Endereço da carteira* & ENS ou carteira secundária (opcional) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="pay-walletAddress"
@@ -318,7 +323,7 @@ export function PaymentPage() {
               </div>
 
               {/* Linha 4: Tipo de carteira* & Código de indicação* */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="pay-walletType"
@@ -375,7 +380,7 @@ export function PaymentPage() {
               </div>
 
               {/* Linha 5: E-mail* & Nome ENS * */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="pay-email"
@@ -426,7 +431,7 @@ export function PaymentPage() {
                       value={ensName}
                       onChange={(e) => setEnsName(e.target.value)}
                       placeholder=""
-                      className="flex-1 bg-[#140D0A] border border-[#2B1B14] focus:border-[#D28A4C] rounded-lg px-3.5 py-2.5 text-xs sm:text-sm text-[#F5F1EB] placeholder:text-[#5A453A] focus:outline-none transition-colors"
+                      className="flex-1 min-w-0 bg-[#140D0A] border border-[#2B1B14] focus:border-[#D28A4C] rounded-lg px-3.5 py-2.5 text-xs sm:text-sm text-[#F5F1EB] placeholder:text-[#5A453A] focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -603,14 +608,23 @@ export function PaymentPage() {
             </div>
 
             {/* Total */}
-            <div className="flex justify-between items-center pt-2 border-t border-[#2E1A13] text-sm sm:text-base font-bold">
+            <div className="flex justify-between items-center pt-2 border-t border-[#2E1A13] text-sm sm:text-base max-md:text-lg max-md:border-t-0 max-md:justify-end max-md:gap-6 font-bold">
               <span className="text-[#F5F1EB]">Total</span>
               <span className="text-[#D28A4C] font-mono">{displayTotal} ETH</span>
             </div>
 
+            <ConnectedWalletPicker
+              wallets={wallets}
+              selectedAddress={walletAddress}
+              onSelect={(wallet) => {
+                setWalletAddress(wallet.address);
+                setNetwork(wallet.network);
+              }}
+            />
+
             {/* Seção: Carteira e rede */}
-            <div className="space-y-2 pt-2">
-              <h3 className="text-xs sm:text-sm font-bold text-center text-[#F5F1EB] tracking-wide mb-2">
+            <div className="space-y-2 pt-2 max-md:space-y-3">
+              <h3 className="text-xs sm:text-sm font-bold text-center max-md:text-left text-[#F5F1EB] tracking-wide mb-2">
                 Carteira e rede
               </h3>
 
@@ -618,10 +632,10 @@ export function PaymentPage() {
               <button
                 type="button"
                 onClick={() => setSelectedWalletOption("all")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                className={`w-full flex items-center gap-3 p-3 max-md:p-4 max-md:rounded-2xl rounded-xl border text-left transition-colors cursor-pointer ${
                   selectedWalletOption === "all"
                     ? "bg-[#1A120E] border-[#D28A4C]"
-                    : "bg-[#140D0A] border-[#2E1A13] hover:border-[#3F2319]"
+                    : "bg-[#140D0A] max-md:bg-[#1E1410] border-[#2E1A13] max-md:border-transparent hover:border-[#3F2319]"
                 }`}
               >
                 <span
@@ -644,10 +658,10 @@ export function PaymentPage() {
               <button
                 type="button"
                 onClick={() => setSelectedWalletOption("metamask")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                className={`w-full flex items-center gap-3 p-3 max-md:p-4 max-md:rounded-2xl rounded-xl border text-left transition-colors cursor-pointer ${
                   selectedWalletOption === "metamask"
                     ? "bg-[#1A120E] border-[#D28A4C]"
-                    : "bg-[#140D0A] border-[#2E1A13] hover:border-[#3F2319]"
+                    : "bg-[#140D0A] max-md:bg-[#1E1410] border-[#2E1A13] max-md:border-transparent hover:border-[#3F2319]"
                 }`}
               >
                 <span
@@ -670,10 +684,10 @@ export function PaymentPage() {
               <button
                 type="button"
                 onClick={() => setSelectedWalletOption("coinbase")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                className={`w-full flex items-center gap-3 p-3 max-md:p-4 max-md:rounded-2xl rounded-xl border text-left transition-colors cursor-pointer ${
                   selectedWalletOption === "coinbase"
                     ? "bg-[#1A120E] border-[#D28A4C]"
-                    : "bg-[#140D0A] border-[#2E1A13] hover:border-[#3F2319]"
+                    : "bg-[#140D0A] max-md:bg-[#1E1410] border-[#2E1A13] max-md:border-transparent hover:border-[#3F2319]"
                 }`}
               >
                 <span
@@ -714,7 +728,7 @@ export function PaymentPage() {
                 onClick={handleConfirmPurchase}
                 disabled={isProcessing || items.length === 0}
                 aria-busy={isProcessing}
-                className="disabled:opacity-60 disabled:cursor-not-allowed w-full bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-sm sm:text-base py-3 sm:py-3.5 rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
+                className="disabled:opacity-60 disabled:cursor-not-allowed w-full bg-[#D28A4C] hover:bg-[#c47b3e] active:scale-[0.99] text-[#0E0907] font-bold text-sm sm:text-base py-3 sm:py-3.5 max-md:h-14 max-md:rounded-full max-md:bg-linear-to-r max-md:from-[#D28A4C] max-md:to-[#A9703F] rounded-lg transition-all shadow-md shadow-[#D28A4C]/20 cursor-pointer"
               >
                 {isProcessing ? "Processando..." : "Confirmar compra"}
               </button>

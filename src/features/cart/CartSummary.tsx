@@ -55,7 +55,7 @@ export function CartSummary({
 
   return (
     <div
-      className="max-w-[360px] ml-auto space-y-4.5 font-mono select-none"
+      className="max-w-[360px] max-md:max-w-none max-md:-mx-6 max-md:rounded-t-[28px] max-md:bg-[#1E1410] max-md:border-t max-md:border-[#2E1A13] max-md:px-6 max-md:py-6 ml-auto space-y-4.5 font-mono select-none"
       data-testid="cart-summary"
     >
       {priceNotice && (

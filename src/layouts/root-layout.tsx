@@ -6,7 +6,16 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
-import { LogOut, Search, ShoppingCart, User as UserIcon, X } from "lucide-react";
+import {
+  Heart,
+  House,
+  LogOut,
+  ScanLine,
+  Search,
+  ShoppingCart,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useCartCount } from "@/features/cart/api";
@@ -158,8 +167,8 @@ export function RootLayout() {
         Pular para o conteúdo principal
       </a>
 
-      {/* Header Oficial KURIO */}
-      <header className="sticky top-0 z-40 w-full bg-[#140D0A]/95 backdrop-blur-md">
+      {/* Header Oficial KURIO (oculto no mobile conforme layout do Figma) */}
+      <header className="max-md:hidden sticky top-0 z-40 w-full bg-[#140D0A]/95 backdrop-blur-md">
         {/* Container externo com o mesmo padding lateral do Hero */}
         <div className="w-full max-w-[1420px] mx-auto px-6 sm:px-8">
           {/* Linha divisória laranja delimitando exatamente do início da logo até o fim do botão Entrar */}
@@ -333,7 +342,9 @@ export function RootLayout() {
       <div className="flex-1 flex flex-col w-full" style={{ zoom: 0.9 }}>
         <main
           id="main-content"
-          className="w-full max-w-[1420px] mx-auto px-6 sm:px-8 flex-1"
+          className={`w-full max-w-[1420px] mx-auto px-6 sm:px-8 flex-1 ${
+            pathname === "/" ? "max-md:pb-28" : ""
+          }`}
           tabIndex={-1}
         >
           <Outlet />
@@ -342,6 +353,57 @@ export function RootLayout() {
         {/* Footer Oficial KURIO (oculto na página de perfil) */}
         {pathname !== "/profile" && <Footer />}
       </div>
+
+      {/* Bottom Navigation mobile (frame Início do Figma) */}
+      {pathname === "/" && (
+        <nav
+          aria-label="Navegação inferior"
+          className="md:hidden fixed inset-x-0 bottom-0 z-30 h-[72px] pb-[env(safe-area-inset-bottom)] rounded-t-[28px] bg-[#1E1410]/90 backdrop-blur-md border-t border-[#2E1A13] shadow-[0_-8px_24px_rgba(0,0,0,0.45)] grid grid-cols-5 items-center font-mono"
+        >
+          <Link
+            to="/"
+            aria-label="Início"
+            aria-current="page"
+            className="flex justify-center text-[#D28A4C]"
+          >
+            <House className="size-5 stroke-[1.6]" />
+          </Link>
+          <Link
+            to="/profile"
+            aria-label="Favoritos"
+            className="flex justify-center text-[#CFB28C] hover:text-[#D28A4C]"
+          >
+            <Heart className="size-5 fill-current" />
+          </Link>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={scrollToCatalog}
+              aria-label="Explorar catálogo"
+              className="-mt-10 size-16 rounded-full bg-linear-to-br from-[#E09A5C] to-[#A9703F] border-[6px] border-[#140D0A] text-[#F5F1EB] flex items-center justify-center shadow-[0_10px_24px_rgba(210,138,76,0.45)] active:scale-95 transition-transform cursor-pointer"
+            >
+              <ScanLine className="size-6 stroke-[1.6]" />
+            </button>
+          </div>
+          <Link
+            to="/cart"
+            aria-label="Abrir carrinho"
+            className="flex justify-center text-[#CFB28C] hover:text-[#D28A4C]"
+          >
+            <ShoppingCart className="size-5 stroke-[1.6]" />
+          </Link>
+          <button
+            type="button"
+            onClick={() =>
+              isAuthenticated ? navigate({ to: "/profile" }) : setIsAuthModalOpen(true)
+            }
+            aria-label="Minha conta"
+            className="flex justify-center text-[#CFB28C] hover:text-[#D28A4C] cursor-pointer"
+          >
+            <UserIcon className="size-5 fill-current" />
+          </button>
+        </nav>
+      )}
 
       {/* Modal de Autenticação (Entrar / Criar Conta) */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

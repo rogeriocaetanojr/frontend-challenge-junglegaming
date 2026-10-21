@@ -11,6 +11,7 @@ import { CatalogTabsBar, type CatalogTab } from "./components/catalog-tabs-bar";
 import { FeaturedBanners } from "./components/featured-banners";
 import { HeroSection } from "./components/hero-section";
 import { MintingJournalSection } from "./components/minting-journal-section";
+import { MobileExploreBar } from "./components/mobile-explore-bar";
 import { NftCard } from "./components/nft-card";
 import { NftGridSkeleton } from "./components/nft-grid-skeleton";
 import {
@@ -95,7 +96,17 @@ export function HomePage() {
   };
 
   return (
-    <div className="space-y-16 pb-12">
+    <div className="space-y-16 max-md:space-y-5 pb-12">
+      {/* 0. Busca e coleções (frame mobile) */}
+      <MobileExploreBar
+        query={search.q === undefined ? "" : String(search.q)}
+        onQueryChange={(value) =>
+          updateSearch({ q: value.trim() ? value : undefined }, { replace: true })
+        }
+        selectedCategory={search.category}
+        onSelectCategory={handleSelectCategory}
+      />
+
       {/* 1. Hero Section Oficial KURIO */}
       <HeroSection featuredNft={featuredNft} />
 
@@ -103,7 +114,10 @@ export function HomePage() {
       <section id="catalog-section" className="scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Barra Lateral Esquerda (col-span-3) */}
-          <div className="lg:col-span-3">
+          <div
+            id="catalog-filters"
+            className="lg:col-span-3 max-md:order-last scroll-mt-24"
+          >
             <CatalogSidebar
               key={`${search.minPrice ?? ""}-${search.maxPrice ?? ""}`}
               selectedCategory={search.category}
@@ -176,7 +190,7 @@ export function HomePage() {
               </div>
             ) : (
               /* Malha de NFTs em 3 colunas no desktop */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-md:gap-x-4 max-md:gap-y-5 max-md:pb-10 max-md:[&>*:nth-child(even)]:mt-8">
                 {data?.items.map((nft) => (
                   <NftCard key={nft.id} nft={nft} />
                 ))}

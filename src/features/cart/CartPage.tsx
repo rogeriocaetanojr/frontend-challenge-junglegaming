@@ -5,6 +5,7 @@ import { useCouponStore } from "./couponStore";
 import { CartItemList } from "./CartItemList";
 import { CartSummary } from "./CartSummary";
 import { CollectorsAlsoSaw } from "./CollectorsAlsoSaw";
+import { MobilePageHeader } from "@/components/mobile-page-header";
 
 export function CartPage() {
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ export function CartPage() {
       {/* Container principal do Carrinho */}
       <div className="min-h-[calc(100vh-140px)] flex flex-col justify-start space-y-6">
         {/* Breadcrumb limpo conforme imagem de referência: Início  /  Mercado  /  Carrinho */}
-        <nav aria-label="Navegação estrutural" className="pt-2">
+        <MobilePageHeader backTo="/" title="Carrinho de NFTs" />
+        <nav aria-label="Navegação estrutural" className="pt-2 max-md:hidden">
           <ol className="flex items-center gap-2 text-sm sm:text-base font-medium text-[#F5F1EB]">
             <li>
               <Link to="/" className="hover:text-[#D28A4C] transition-colors">

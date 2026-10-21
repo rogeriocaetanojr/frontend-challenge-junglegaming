@@ -165,7 +165,7 @@ export function RegisterForm({
         <div className="space-y-1">
           <label
             htmlFor="register-name"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Nome Completo
           </label>
@@ -195,7 +195,7 @@ export function RegisterForm({
         <div className="space-y-1">
           <label
             htmlFor="register-email"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             E-mail
           </label>
@@ -225,7 +225,7 @@ export function RegisterForm({
         <div className="space-y-1">
           <label
             htmlFor="register-password"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Senha
           </label>
@@ -254,7 +254,7 @@ export function RegisterForm({
         <div className="space-y-1">
           <label
             htmlFor="register-confirm-password"
-            className="block mb-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
+            className="block mb-0.5 max-md:sr-only text-[11px] font-mono font-semibold uppercase tracking-wider text-text-muted"
           >
             Confirmar Senha
           </label>

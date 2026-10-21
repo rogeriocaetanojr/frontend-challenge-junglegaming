@@ -35,9 +35,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 max-md:p-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-[420px] h-[640px] max-h-[95vh] overflow-hidden rounded-2xl bg-[#1A120E] border border-[#2E1A13] shadow-2xl font-mono text-[#F5F1EB] animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[420px] h-[640px] max-h-[95vh] max-md:max-w-none max-md:h-full max-md:max-h-none max-md:rounded-none max-md:border-0 max-md:bg-[#140D0A] overflow-hidden rounded-2xl bg-[#1A120E] border border-[#2E1A13] shadow-2xl font-mono text-[#F5F1EB] animate-in zoom-in-95 duration-200">
         <button
           type="button"
           onClick={onClose}
@@ -47,7 +47,13 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           <X className="size-4" />
         </button>
 
-        <div className="flex h-full flex-col p-6 pb-4">
+        <div className="flex h-full flex-col p-6 pb-4 max-md:overflow-y-auto max-md:[scrollbar-width:none]">
+          <p
+            className="md:hidden text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] mt-8 mb-6 select-none"
+            aria-hidden="true"
+          >
+            KURIO
+          </p>
           <div
             id="auth-modal-title"
             className="flex items-center justify-center gap-3 text-lg sm:text-xl font-bold tracking-tight mb-2 shrink-0"

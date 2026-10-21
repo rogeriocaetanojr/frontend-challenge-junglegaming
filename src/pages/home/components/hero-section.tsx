@@ -1,3 +1,5 @@
+import { ArrowRight } from "lucide-react";
+
 import type { NftItem } from "@/types/nft";
 
 interface HeroSectionProps {
@@ -16,12 +18,53 @@ export function HeroSection({ featuredNft }: HeroSectionProps) {
 
   return (
     <section
-      className="pt-4 sm:pt-5 lg:pt-7 pb-8 sm:pb-10 lg:pb-[50px] relative"
+      className="pt-4 sm:pt-5 lg:pt-7 pb-8 sm:pb-10 lg:pb-[50px] max-md:pt-2! max-md:pb-0! relative"
       style={{ zoom: 1.12 }}
       aria-label="Apresentação Kurio"
     >
+      {/* Mobile (Figma): card compacto com texto à esquerda, arte à direita e dots */}
+      <div className="md:hidden relative overflow-hidden rounded-[22px] bg-[#241612] border border-[#3F2319] p-4 pb-7 flex items-center gap-3">
+        <div className="flex-1 min-w-0 space-y-2 font-mono">
+          <p className="text-[11px] text-white">Bem-vindo à Kurio</p>
+          <h1 className="text-[17px] font-bold text-white uppercase leading-snug tracking-tight">
+            Seja dono da cultura digital
+          </h1>
+          <p className="text-[11px] leading-relaxed text-[#CFB28C]">
+            Descubra NFTs selecionados de criadores do mundo todo.
+          </p>
+          <button
+            type="button"
+            onClick={handleScrollToCatalog}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#D28A4C] cursor-pointer"
+          >
+            Explorar <ArrowRight className="size-3.5" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="relative w-[124px] shrink-0">
+          <img
+            src={heroImage}
+            alt={featuredNft?.name || "Emerald Ape KURIO"}
+            className="aspect-square w-full rounded-[16px] object-cover"
+          />
+          <img
+            src="/images/nfts/sage-nomad.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute -bottom-2 -left-3 size-12 rounded-xl border-2 border-[#241612] object-cover"
+          />
+        </div>
+        <div
+          className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5"
+          aria-hidden="true"
+        >
+          <span className="size-1.5 rounded-full bg-[#D28A4C]" />
+          <span className="size-1.5 rounded-full bg-[#D28A4C]/60" />
+          <span className="size-1.5 rounded-full bg-[#D28A4C]/60" />
+        </div>
+      </div>
+
       {/* Container com a grid e os 3 pontinhos posicionados acima da linha final da foto */}
-      <div className="w-full relative">
+      <div className="w-full relative max-md:hidden">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Coluna da Esquerda (span 7): Subtítulo, Título, Descrição, Botão EXPLORAR subido sutilmente */}
           <div className="lg:col-span-7 space-y-6 text-left -translate-y-2 lg:-translate-y-4">

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import type { NftCategory, NftNetwork } from "@/types/nft";
+import { COLLECTIONS } from "../collections";
 
 interface CatalogSidebarProps {
   selectedCategory?: string;
@@ -13,29 +14,11 @@ interface CatalogSidebarProps {
   appliedMaxPrice?: number;
 }
 
-interface CollectionItem {
-  id: NftCategory;
-  name: string;
-  count: number;
-}
-
 interface NetworkItem {
   id: NftNetwork;
   name: string;
   count: number;
 }
-
-const COLLECTIONS: CollectionItem[] = [
-  { id: "art", name: "Arte digital", count: 33 },
-  { id: "photography", name: "Fotografia", count: 12 },
-  { id: "music", name: "Música", count: 55 },
-  { id: "3d-art", name: "Arte 3D", count: 39 },
-  { id: "collectibles", name: "Colecionáveis", count: 23 },
-  { id: "generative", name: "Generativo", count: 17 },
-  { id: "gaming", name: "Jogos", count: 15 },
-  { id: "memberships", name: "Assinaturas", count: 10 },
-  { id: "utility", name: "Utilidade", count: 16 },
-];
 
 const NETWORKS: NetworkItem[] = [
   { id: "ethereum", name: "Ethereum", count: 119 },

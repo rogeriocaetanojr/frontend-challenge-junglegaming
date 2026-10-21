@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, ArrowLeft, Mail, Star } from "lucide-react";
+import { AlertCircle, ArrowLeft, Heart, Mail, Star } from "lucide-react";
 
+import { MobilePageHeader } from "@/components/mobile-page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -205,11 +206,25 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
   const editionOptions = ["1/1", "1/10", "1/50", "ABERTA"];
 
   return (
-    <div className="w-full py-6 sm:py-8 space-y-6 font-mono text-[#F5F1EB]">
+    <div className="w-full py-6 sm:py-8 max-md:pb-52 space-y-6 font-mono text-[#F5F1EB]">
       {/* Breadcrumb alinhado perfeitamente com a logo do topo */}
+      <MobilePageHeader
+        backTo="/"
+        action={
+          <button
+            type="button"
+            onClick={handleFavoriteChange}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? "Desfavoritar NFT" : "Favoritar NFT"}
+            className="size-9 rounded-full bg-[#2A1A13] border border-[#3F2319] flex items-center justify-center text-[#D28A4C] cursor-pointer"
+          >
+            <Heart className={cn("size-4", isFavorite && "fill-[#D28A4C]")} />
+          </button>
+        }
+      />
       <nav
         aria-label="Navegação estrutural"
-        className="font-mono text-base sm:text-[18px] lg:text-[19px] tracking-tight font-bold"
+        className="max-md:hidden font-mono text-base sm:text-[18px] lg:text-[19px] tracking-tight font-bold"
       >
         <ol className="flex items-center gap-2.5 text-[#F5F1EB]">
           <li>
@@ -232,7 +247,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
       {/* Grid Principal: Esquerda (Galeria) | Direita (Detalhes e Ações) */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start pt-2">
         {/* Painel Esquerdo: Galeria com 4 miniaturas e imagem principal com zoom */}
-        <div className="shrink-0 flex justify-start">
+        <div className="shrink-0 flex justify-start max-md:w-full">
           <NftImageGallery
             images={currentNft.images}
             title={currentNft.title}
@@ -345,6 +360,7 @@ export function NftDetailPage({ nftId = "1", initialData }: NftDetailPageProps) 
 
           {/* Controles de Quantidade & Botões de Ação COMPRAR / Favoritar */}
           <NftActionPanel
+            price={currentNft.price}
             onBuy={handleBuy}
             initialFavorite={isFavorite}
             onFavoriteChange={handleFavoriteChange}

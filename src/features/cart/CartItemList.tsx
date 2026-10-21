@@ -97,28 +97,28 @@ export function CartItemList({
             <div
               key={`${item.id}:${item.editionId}`}
               role="listitem"
-              className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center p-1.5 sm:p-2 rounded-xl bg-[#1C130E] border border-[#2B1B14] hover:border-[#3F2319] transition-colors"
+              className="grid grid-cols-[96px_1fr_auto] md:grid-cols-12 gap-x-3 gap-y-0.5 md:gap-3.5 items-center max-md:p-0 max-md:pr-3 max-md:overflow-hidden max-md:rounded-2xl p-1.5 sm:p-2 rounded-xl bg-[#1C130E] border border-[#2B1B14] hover:border-[#3F2319] transition-colors"
             >
               {/* Coluna 1: NFT (Thumb mais compacta + Sombra reduzida aparecendo só para a direita na altura exata da foto) */}
-              <div className="md:col-span-5 flex items-center gap-3.5 min-w-0">
-                <div className="relative shrink-0 pr-[3px]">
+              <div className="max-md:contents md:col-span-5 flex items-center gap-3.5 min-w-0">
+                <div className="relative shrink-0 pr-[3px] max-md:row-span-2 max-md:self-stretch max-md:pr-0">
                   {/* Sombra reduzida de trás: na mesma altura da foto, aparecendo apenas 3px à direita */}
                   <div
-                    className="absolute inset-y-0 right-0 w-[6px] rounded-r-xl bg-[#090503] border-r border-y border-[#20120B] pointer-events-none"
+                    className="max-md:hidden absolute inset-y-0 right-0 w-[6px] rounded-r-xl bg-[#090503] border-r border-y border-[#20120B] pointer-events-none"
                     aria-hidden="true"
                   />
                   {/* Card frontal da imagem no tamanho ideal compacto */}
-                  <div className="relative size-16 sm:size-[68px] rounded-xl bg-[#140D0A] p-0.5 overflow-hidden flex items-center justify-center border border-[#2B1B14] z-10">
+                  <div className="relative size-16 sm:size-[68px] max-md:size-full max-md:min-h-24 max-md:rounded-none max-md:p-0 max-md:border-0 rounded-xl bg-[#140D0A] p-0.5 overflow-hidden flex items-center justify-center border border-[#2B1B14] z-10">
                     <img
                       src={item.image || "/images/nfts/emerald-ape.png"}
                       alt={item.title || "NFT"}
-                      className="size-full object-cover rounded-lg"
+                      className="size-full object-cover rounded-lg max-md:rounded-none"
                       loading="lazy"
                     />
                   </div>
                 </div>
 
-                <div className="min-w-0 space-y-0.5">
+                <div className="min-w-0 space-y-0.5 max-md:col-start-2 max-md:row-start-1 max-md:self-end max-md:pt-3">
                   <h3 className="text-sm font-bold text-[#F5F1EB] truncate">
                     {item.title}
                   </h3>
@@ -129,7 +129,7 @@ export function CartItemList({
               </div>
 
               {/* Coluna 2: Preço Unitário */}
-              <div className="md:col-span-2 flex items-center justify-between md:justify-start">
+              <div className="max-md:hidden md:col-span-2 flex items-center justify-between md:justify-start">
                 <span className="md:hidden text-xs text-[#8C6D58]">Preço:</span>
                 <span className="text-sm sm:text-base font-medium text-[#F5F1EB]">
                   {formattedPrice} ETH
@@ -137,8 +137,8 @@ export function CartItemList({
               </div>
 
               {/* Coluna 3: Edições (Controles circulares laranjas) */}
-              <div className="md:col-span-2 flex items-center justify-between md:justify-center">
-                <span className="md:hidden text-xs text-[#8C6D58]">Edições:</span>
+              <div className="max-md:col-start-3 max-md:row-start-1 max-md:self-end md:col-span-2 flex items-center justify-between md:justify-center">
+                <span className="hidden text-xs text-[#8C6D58]">Edições:</span>
                 <div className="flex items-center gap-2.5">
                   <button
                     type="button"
@@ -166,15 +166,15 @@ export function CartItemList({
               </div>
 
               {/* Coluna 4: Total da Linha */}
-              <div className="md:col-span-2 flex items-center justify-between md:justify-start">
-                <span className="md:hidden text-xs text-[#8C6D58]">Total:</span>
-                <span className="text-sm sm:text-base font-bold text-[#D28A4C]">
+              <div className="max-md:col-start-2 max-md:row-start-2 max-md:self-start max-md:pb-3 md:col-span-2 flex items-center justify-between md:justify-start">
+                <span className="hidden text-xs text-[#8C6D58]">Total:</span>
+                <span className="text-sm sm:text-base max-md:text-lg font-bold text-[#D28A4C]">
                   {subtotalItem} ETH
                 </span>
               </div>
 
               {/* Coluna 5: Lixeira */}
-              <div className="md:col-span-1 flex items-center justify-end">
+              <div className="max-md:col-start-3 max-md:row-start-2 max-md:self-start md:col-span-1 flex items-center justify-end">
                 <button
                   type="button"
                   onClick={() => onRemove(item)}

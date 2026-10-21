@@ -82,7 +82,8 @@ export function ScenarioSwitcher() {
   const scenarioKeys = Object.keys(SCENARIO_REGISTRY) as ScenarioName[];
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 font-sans">
+    // No mobile, compacto e acima das barras fixas (bottom nav / barra de compra)
+    <div className="fixed bottom-4 right-4 max-md:bottom-[184px] max-md:right-2 z-50 font-sans">
       {/* Botão de Disparo Flutuante (Launcher) */}
       {!isOpen && (
         <button
@@ -90,13 +91,13 @@ export function ScenarioSwitcher() {
           onClick={handleOpen}
           data-testid="scenario-switcher-toggle"
           aria-label="Abrir painel de depuração de cenários"
-          className="flex items-center gap-2.5 rounded-full border border-zinc-700/80 bg-zinc-900/90 px-4 py-2.5 text-xs font-semibold text-zinc-100 shadow-xl backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:shadow-2xl active:scale-95"
+          className="flex items-center gap-2.5 rounded-full border border-zinc-700/80 bg-zinc-900/90 px-4 py-2.5 max-md:p-2.5 text-xs font-semibold text-zinc-100 shadow-xl backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:shadow-2xl active:scale-95"
         >
           <SlidersHorizontal className="h-4 w-4 text-emerald-400" />
-          <span>Mocks DevTools</span>
+          <span className="max-md:sr-only">Mocks DevTools</span>
           <span
             data-testid="scenario-badge"
-            className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30"
+            className="max-md:sr-only rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30"
           >
             {activeScenario.name}
           </span>

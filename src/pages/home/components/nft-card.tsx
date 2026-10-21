@@ -1,4 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Heart } from "lucide-react";
+
+import { useFavorites } from "@/features/favorites/api";
+import { useAuthStore } from "@/store/auth-store";
 
 import { formatEth } from "@/lib/formatters";
 import type { NftItem } from "@/types/nft";
@@ -23,6 +27,19 @@ export function NftCard({ nft }: NftCardProps) {
   const image = rawNft.images?.[0]?.url ?? rawNft.image ?? "";
   const price = rawNft.priceEth ?? rawNft.price ?? "0";
 
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(String(nft.id));
+
+  const handleFavorite = () => {
+    if (!isAuthenticated) {
+      void navigate({ to: "/login", search: { redirect: "/" } });
+      return;
+    }
+    toggleFavorite({ id: String(nft.id), title, price: String(price), image });
+  };
+
   return (
     <article className="group flex flex-col space-y-3 text-left">
       {/* Moldura ao redor da imagem com o mesmo fundo do card de coleções (#241612) e sombra elegante */}
@@ -41,6 +58,17 @@ export function NftCard({ nft }: NftCardProps) {
               loading="lazy"
             />
           </Link>
+
+          {/* Favorito rápido (frame mobile) */}
+          <button
+            type="button"
+            onClick={handleFavorite}
+            aria-pressed={favorite}
+            aria-label={favorite ? `Desfavoritar ${title}` : `Favoritar ${title}`}
+            className="md:hidden absolute top-2 right-2 size-8 rounded-full bg-[#140D0A]/80 backdrop-blur-sm border border-[#3F2319] flex items-center justify-center text-[#D28A4C] cursor-pointer"
+          >
+            <Heart className={`size-4 ${favorite ? "fill-[#D28A4C]" : ""}`} />
+          </button>
         </div>
       </div>
 

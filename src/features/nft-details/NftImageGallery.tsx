@@ -75,13 +75,13 @@ export function NftImageGallery({ images, title, className }: NftImageGalleryPro
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-stretch gap-4 sm:gap-5 w-full",
+        "flex flex-col sm:flex-row max-md:flex-col! items-stretch gap-4 sm:gap-5 w-full",
         className,
       )}
     >
       {/* 1. Coluna de 4 miniaturas verticais alinhadas à esquerda */}
       <div
-        className="flex sm:flex-col gap-3.5 sm:gap-4 w-full sm:w-auto shrink-0 justify-between sm:justify-start overflow-x-auto sm:overflow-visible pb-1 sm:pb-0"
+        className="max-md:hidden! flex sm:flex-col gap-3.5 sm:gap-4 w-full sm:w-auto shrink-0 justify-between sm:justify-start overflow-x-auto sm:overflow-visible pb-1 sm:pb-0"
         aria-label="Miniaturas de fotos do NFT"
       >
         {currentList.map((img, idx) => (
@@ -102,7 +102,7 @@ export function NftImageGallery({ images, title, className }: NftImageGalleryPro
       </div>
 
       {/* 2. Moldura escura (sombra/box) com a MESMA ALTURA das 4 fotos em cima e em baixo, centralizando a imagem maior no meio vertical */}
-      <div className="relative shrink-0 w-full sm:w-[480px] md:w-[500px] lg:w-[512px] self-stretch rounded-[24px] sm:rounded-[28px] bg-[#140D0A] border border-[#2E1A13]/85 p-3.5 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden">
+      <div className="relative shrink-0 w-full sm:w-[480px] md:w-[500px] lg:w-[512px] max-md:w-full! max-md:p-0! max-md:border-0! max-md:rounded-[28px]! self-stretch rounded-[24px] sm:rounded-[28px] bg-[#140D0A] border border-[#2E1A13]/85 p-3.5 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden">
         {/* Placeholder / Skeleton de Carregamento */}
         {!imgLoaded && !imgFailed && (
           <div
