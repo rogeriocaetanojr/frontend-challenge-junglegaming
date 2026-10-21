@@ -47,9 +47,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           <X className="size-4" />
         </button>
 
-        <div className="flex h-full flex-col p-6 pb-4 max-md:overflow-y-auto max-md:[scrollbar-width:none] max-md:px-6 max-md:pt-12">
+        <div className="flex h-full flex-col p-6 pb-4 max-md:overflow-hidden max-md:px-6 max-md:pt-6 max-md:pb-3 max-md:h-[100dvh]">
           <p
-            className="md:hidden text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] mt-8 mb-6 select-none"
+            className="md:hidden text-center text-[26px] font-bold tracking-[0.18em] text-[#F5F1EB] mt-6 mb-5 select-none"
             aria-hidden="true"
           >
             KURIO
@@ -57,7 +57,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = "login" }: AuthModalPr
           <div id="auth-modal-title">
             {/* Mobile: título simples refletindo a aba ativa */}
             <h2
-              className="hidden max-md:flex w-full justify-center items-center text-center text-base font-bold text-[#F5F1EB] mt-6 mb-2 whitespace-nowrap"
+              className="hidden max-md:flex w-full justify-center items-center text-center text-base font-bold text-[#F5F1EB] mt-5 mb-1 whitespace-nowrap"
               aria-live="polite"
             >
               {activeTab === "login" ? "Entrar" : "Criar perfil de colecionador"}

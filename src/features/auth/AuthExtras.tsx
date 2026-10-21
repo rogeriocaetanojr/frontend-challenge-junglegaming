@@ -41,9 +41,9 @@ export function SocialAuth({ compact = false }: { compact?: boolean }) {
         .replace("gap-2", "gap-1.5")
     : SOCIAL_BTN;
   return (
-    <div className={compact ? "space-y-1.5" : "space-y-3"}>
+    <div className={compact ? "space-y-1.5 max-md:space-y-1" : "space-y-3"}>
       <div
-        className={`flex items-center gap-3 text-text-muted ${compact ? "my-1.5 text-[11px]" : "text-xs"}`}
+        className={`flex items-center gap-3 text-text-muted ${compact ? "my-1.5 text-[11px] max-md:my-0.5" : "text-xs"}`}
       >
         <span className="h-px flex-1 bg-border" />
         Ou continue com

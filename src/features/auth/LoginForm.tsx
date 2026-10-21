@@ -112,7 +112,7 @@ export function LoginForm({
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-1 flex-col justify-between gap-3 max-md:justify-start max-md:gap-3 max-md:w-full max-md:mt-8"
+        className="flex flex-1 flex-col justify-between gap-3 max-md:justify-start max-md:gap-2.5 max-md:w-full max-md:mt-3"
         aria-label="Formulário de Login"
       >
         {errors.root && (
