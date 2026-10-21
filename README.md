@@ -166,7 +166,41 @@ pnpm exec playwright show-report        # relatório HTML (playwright-report/)
 pnpm lighthouse
 ```
 
-Audita `/` e `/nfts/1` sobre o `pnpm preview`, com 3 execuções por página e perfil (desktop e mobile). Os relatórios HTML/JSON vão para `lighthouse-reports/desktop` e `lighthouse-reports/mobile`, e as medianas consolidadas para `lighthouse-reports/summary.json`.
+Audita `/` e `/nfts/1` sobre o build otimizado (`pnpm preview`), com o cenário padrão dos mocks e 3 execuções por página e perfil (desktop e mobile). Os dois perfis rodam até o fim mesmo quando uma meta reprova, e o comando sai com código 1 nesse caso.
+
+- **Execuções completas** (12 relatórios HTML/JSON): `lighthouse-reports/`, não versionado.
+- **Versionado em [`reports/lighthouse/`](reports/lighthouse/):** `summary.json` com as medianas, versões e condições de execução, além do relatório HTML/JSON da execução mediana de cada página e perfil.
+
+#### Resultados (mediana de 3 execuções)
+
+Lighthouse 12.6.1, LHCI 0.15.1, Chrome 155, Node 24.18 e Windows 11 (Intel i5-10500H), com throttling simulado. Desktop: RTT de 40 ms, 10 Mbps, CPU 1×. Mobile: RTT de 150 ms, 1,6 Mbps, CPU 4×, viewport de 412 px.
+
+| Perfil  | Página    | Performance | Acessibilidade | Boas práticas |    SEO | LCP    | CLS   | TBT   |
+| :------ | :-------- | ----------: | -------------: | ------------: | -----: | :----- | :---- | :---- |
+| Desktop | `/`       |      **97** |         _92_ ✗ |       **100** | _83_ ✗ | 1,08 s | 0,002 | 0 ms  |
+| Desktop | `/nfts/1` |      **97** |         **97** |       **100** | _83_ ✗ | 1,08 s | 0,043 | 0 ms  |
+| Mobile  | `/`       |      _74_ ✗ |         _92_ ✗ |       **100** | _83_ ✗ | 4,35 s | 0     | 83 ms |
+| Mobile  | `/nfts/1` |      _76_ ✗ |        **100** |       **100** | _83_ ✗ | 4,34 s | 0     | 58 ms |
+
+Metas do edital: Performance ≥ 90, Acessibilidade ≥ 95, Boas práticas ≥ 95, SEO ≥ 90. ✗ indica abaixo da meta.
+
+#### Causas dos resultados abaixo da meta
+
+- **SEO 83 (todas as páginas):**
+  - `index.html` não tem `<meta name="description">`.
+  - Não existe `public/robots.txt`. Por causa do rewrite de SPA, `/robots.txt` devolve o próprio `index.html`, que o Lighthouse marca como inválido.
+  - O documento também declara `lang="en"`, com conteúdo em português.
+- **Acessibilidade 92 na Home:**
+  - Contraste insuficiente nos textos `text-[#CFB28C]/60`.
+  - Um `aria-label` proibido no indicador de slides do hero.
+  - Títulos fora de ordem (`h3` sem `h2` antes).
+  - No mobile, os controles do filtro de preço têm área de toque pequena.
+  - No detalhe desktop (97), as estrelas de avaliação também ficam abaixo do tamanho mínimo de toque.
+- **Performance mobile (74–76):** quase todo o LCP de 4,3 s é atraso de renderização. O primeiro conteúdo só aparece em cerca de 3,8 s porque:
+  - o app só renderiza depois que o MSW e a sessão são inicializados, de propósito, para que nenhuma requisição escape dos mocks, e a auditoria inclui os mocks, como o edital exige;
+  - o JavaScript sai num bundle único de 703 kB (250 kB gzip), sem divisão por rota, o que pesa sob CPU 4× (o Lighthouse estima 125 KiB de JS não usado);
+  - na Home, a imagem de LCP (primeiro card do catálogo) tem `loading="lazy"`.
+- **Desktop:** Performance 97 e Boas práticas 100 em ambas as páginas. A rede e a CPU sem throttling absorvem o custo de inicialização.
 
 ---
 

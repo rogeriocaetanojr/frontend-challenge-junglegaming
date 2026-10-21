@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-10-21T10:53:10.543Z",
+  "target": "pnpm build + pnpm preview (cenário padrão dos mocks)",
+  "aggregation": "mediana de 3 execuções por página e perfil",
+  "tools": {
+    "lighthouse": "12.6.1",
+    "lhci": "0.15.1",
+    "chrome": "Chrome/155.0.0.0",
+    "node": "v24.18.0"
+  },
+  "environment": {
+    "os": "win32 10.0.26300 (x64)",
+    "cpu": "Intel(R) Core(TM) i5-10500H CPU @ 2.50GHz"
+  },
+  "profiles": {
+    "desktop": {
+      "pages": {
+        "/": {
+          "runs": 3,
+          "performance": 97,
+          "accessibility": 92,
+          "bestPractices": 100,
+          "seo": 83,
+          "lcpMs": 1080,
+          "cls": 0.002,
+          "tbtMs": 0,
+          "report": "desktop-home.report.html"
+        },
+        "/nfts/1": {
+          "runs": 3,
+          "performance": 97,
+          "accessibility": 97,
+          "bestPractices": 100,
+          "seo": 83,
+          "lcpMs": 1075,
+          "cls": 0.043,
+          "tbtMs": 0,
+          "report": "desktop-nfts-1.report.html"
+        }
+      },
+      "conditions": {
+        "formFactor": "desktop",
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "benchmarkIndex": 2201.5
+      },
+      "lighthouseVersion": "12.6.1",
+      "chrome": "Chrome/155.0.0.0"
+    },
+    "mobile": {
+      "pages": {
+        "/": {
+          "runs": 3,
+          "performance": 74,
+          "accessibility": 92,
+          "bestPractices": 100,
+          "seo": 83,
+          "lcpMs": 4354,
+          "cls": 0,
+          "tbtMs": 83,
+          "report": "mobile-home.report.html"
+        },
+        "/nfts/1": {
+          "runs": 3,
+          "performance": 76,
+          "accessibility": 100,
+          "bestPractices": 100,
+          "seo": 83,
+          "lcpMs": 4342,
+          "cls": 0,
+          "tbtMs": 58,
+          "report": "mobile-nfts-1.report.html"
+        }
+      },
+      "conditions": {
+        "formFactor": "mobile",
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "benchmarkIndex": 2236.5
+      },
+      "lighthouseVersion": "12.6.1",
+      "chrome": "Chrome/155.0.0.0"
+    }
+  }
+}

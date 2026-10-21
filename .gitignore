@@ -51,8 +51,7 @@ playwright-report/
 playwright/.cache/
 
 # Relatórios do Lighthouse
-reports/lighthouse/*
-!reports/lighthouse/README.md
+# Versionados: summary.json e o relatório HTML/JSON da execução mediana (reports/lighthouse)
 .lighthouseci/
 lighthouse-reports/
 

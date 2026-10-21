@@ -1,37 +1,23 @@
-# Auditoria de Performance e Qualidade com Lighthouse (Seção 10 do Edital)
+# Auditoria Lighthouse
 
-Este diretório armazena os metadados, baselines e configurações da auditoria contínua de qualidade de ponta a ponta da aplicação **KURIO NFT Marketplace**.
+Artefatos versionados da auditoria da seção 10 do edital. A tabela de resultados e a análise das causas estão no [README principal](../../README.md#lighthouse).
 
----
+| Arquivo                   | Conteúdo                                                                                       |
+| :------------------------ | :--------------------------------------------------------------------------------------------- |
+| `summary.json`            | Medianas por página e perfil (categorias, LCP, CLS, TBT), versões das ferramentas e condições. |
+| `desktop-home.report.*`   | Relatório HTML/JSON da execução mediana de `/` no perfil desktop.                              |
+| `desktop-nfts-1.report.*` | Relatório HTML/JSON da execução mediana de `/nfts/1` no perfil desktop.                        |
+| `mobile-home.report.*`    | Relatório HTML/JSON da execução mediana de `/` no perfil mobile.                               |
+| `mobile-nfts-1.report.*`  | Relatório HTML/JSON da execução mediana de `/nfts/1` no perfil mobile.                         |
 
-### 1. Metas e Critérios de Aceite (SLOs)
-
-Conforme estipulado no edital de avaliação técnica, o projeto possui as seguintes metas mínimas de qualidade:
-
-| Categoria                 | Meta Mínima (Score) | Severidade da Asserção |
-| :------------------------ | :-----------------: | :--------------------: |
-| **Performance**           |    >= 0.90 (90%)    |         `warn`         |
-| **Acessibilidade (a11y)** |    >= 0.95 (95%)    |        `error`         |
-| **Boas Práticas**         |    >= 0.95 (95%)    |        `error`         |
-| **SEO**                   |    >= 0.90 (90%)    |         `warn`         |
-
----
-
-### 2. Configuração do Lighthouse CI
-
-A configuração automatizada reside na raiz do projeto em `lighthouserc.json` e monitora:
-
-- **Home / Catálogo Geral:** Fluxo de carregamento dos banners, filtros combinados, lista de coleções e malha responsiva de NFTs.
-- **Página de Detalhes do NFT:** Exibição das artes, histórico de lances, abas técnicas com atributos acessíveis (ARIA) e painel de compra.
-
----
-
-### 3. Como Executar a Auditoria
+## Como reproduzir
 
 ```bash
-# Executa o build de produção e a auditoria via script do projeto:
 pnpm lighthouse
-
-# Ou executar diretamente via CLI do LHCI:
-npx @lhci/cli autorun
 ```
+
+1. Gera o build otimizado (`pnpm build`).
+2. Roda o LHCI com `lighthouserc.desktop.json` e `lighthouserc.mobile.json`, cada um sobre o `pnpm preview` e com 3 execuções por página.
+3. Executa `scripts/lighthouse-summary.mjs`, que calcula as medianas e copia para esta pasta os relatórios da execução representativa marcada pelo LHCI.
+
+As 12 execuções completas ficam em `lighthouse-reports/`, que não é versionado.

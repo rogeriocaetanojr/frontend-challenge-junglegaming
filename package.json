@@ -20,7 +20,7 @@
     "lighthouse:desktop": "lhci autorun --config=./lighthouserc.desktop.json",
     "lighthouse:mobile": "lhci autorun --config=./lighthouserc.mobile.json",
     "lighthouse:summary": "node scripts/lighthouse-summary.mjs",
-    "lighthouse": "pnpm build && pnpm lighthouse:desktop && pnpm lighthouse:mobile && pnpm lighthouse:summary",
+    "lighthouse": "pnpm build && node scripts/lighthouse-run.mjs",
     "prepare": "husky"
   },
   "dependencies": {
