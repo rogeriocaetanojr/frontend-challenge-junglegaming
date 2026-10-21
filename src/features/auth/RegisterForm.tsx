@@ -295,6 +295,9 @@ export function RegisterForm({
           Já tem uma conta?{" "}
           <a
             href={loginHref}
+            // Mantém o foco no campo atual: o blur dispararia a validação, e a mensagem de
+            // erro deslocaria este link para baixo do ponto tocado (o toque se perderia)
+            onMouseDown={onSwitchForm ? (event) => event.preventDefault() : undefined}
             onClick={
               onSwitchForm
                 ? (event) => {

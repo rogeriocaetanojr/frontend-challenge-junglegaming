@@ -6,6 +6,7 @@ import {
   isMobileViewport,
   openLoginModal,
   openProfileFromNav,
+  switchAuthForm,
 } from "./helpers";
 
 const DEMO_EMAIL = "demo@jungle.com";
@@ -74,17 +75,17 @@ test.describe("Autenticação via Modal (E2E)", () => {
   test("deve alternar entre as abas 'Entrar' e 'Criar conta'", async ({ page }) => {
     const modal = await openModal(page);
 
-    await modal.getByRole("button", { name: "Criar conta" }).click();
+    await switchAuthForm(page, "register");
     await expect(modal.getByLabel("Nome", { exact: false }).first()).toBeVisible();
     await expect(modal.getByLabel(/confirm/i)).toBeVisible();
 
-    await modal.getByRole("button", { name: "Entrar", exact: true }).click();
+    await switchAuthForm(page, "login");
     await expect(modal.getByLabel(/^senha/i)).toBeVisible();
   });
 
   test("deve concluir o cadastro com autenticação automática", async ({ page }) => {
     const modal = await openModal(page);
-    await modal.getByRole("button", { name: "Criar conta" }).click();
+    await switchAuthForm(page, "register");
 
     await modal.getByLabel("Nome", { exact: false }).first().fill("CryptoCollector");
     await modal.getByLabel(/e-mail/i).fill("collector@kurio.art");
@@ -121,7 +122,12 @@ test.describe("Autenticação via Modal (E2E)", () => {
     page,
   }) => {
     const modal = await openModal(page);
-    await modal.getByRole("button", { name: /fechar modal/i }).click();
+    if (isMobileViewport(page)) {
+      // No mobile o modal ocupa a tela inteira e o botão X é oculto; o fechamento é por Escape
+      await page.keyboard.press("Escape");
+    } else {
+      await modal.getByRole("button", { name: /fechar modal/i }).click();
+    }
     await expect(modal).not.toBeVisible();
   });
 });

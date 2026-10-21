@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 
 import {
   addNftToCart,
-  getCartLink,
   isMobileViewport,
   loginViaModal,
   resetScenarioState,
@@ -24,11 +23,9 @@ test.describe("Carrinho integrado à API simulada (E2E)", () => {
 
     await page.reload();
     await expect(page.getByRole("list", { name: "Itens do carrinho" })).toBeVisible();
-    await expect(getCartLink(page)).toBeVisible();
+    // O contador do carrinho vive no cabeçalho desktop; no mobile o Figma não exibe badge
     if (!isMobileViewport(page)) {
-      await expect(getCartLink(page)).toHaveAccessibleName(
-        /Carrinho de compras com 1 itens/,
-      );
+      await expect(page.getByLabel(/Carrinho de compras com 1 itens/)).toBeVisible();
     }
   });
 
@@ -36,7 +33,11 @@ test.describe("Carrinho integrado à API simulada (E2E)", () => {
     await addNftToCart(page);
 
     await page.getByRole("button", { name: /Aumentar quantidade/ }).click();
-    await expect(page.getByText("2", { exact: true }).first()).toBeVisible();
+    await expect(
+      page
+        .getByRole("list", { name: "Itens do carrinho" })
+        .getByText("2", { exact: true }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: /Remover .* do carrinho/ }).click();
     await expect(page.getByText("Seu Carrinho está Vazio")).toBeVisible();
