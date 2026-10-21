@@ -17,7 +17,10 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
-    "lighthouse": "pnpm build && echo \"Auditoria Lighthouse configurada via lighthouserc.json. Para rodar a suite completa: npx @lhci/cli autorun\"",
+    "lighthouse:desktop": "lhci autorun --config=./lighthouserc.desktop.json",
+    "lighthouse:mobile": "lhci autorun --config=./lighthouserc.mobile.json",
+    "lighthouse:summary": "node scripts/lighthouse-summary.mjs",
+    "lighthouse": "pnpm build && pnpm lighthouse:desktop && pnpm lighthouse:mobile && pnpm lighthouse:summary",
     "prepare": "husky"
   },
   "dependencies": {
