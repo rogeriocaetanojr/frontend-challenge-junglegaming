@@ -95,6 +95,11 @@ export default tseslint.config(
       ],
     },
   },
+  // Scripts Node (ex.: scripts/lighthouse-summary.mjs)
+  {
+    files: ["scripts/**/*.{js,mjs}"],
+    languageOptions: { globals: globals.node },
+  },
   // Permissão de MSW apenas dentro de src/mocks/**
   {
     files: ["src/mocks/**", "**/src/mocks/**"],

@@ -202,6 +202,6 @@ describe("ScenarioSwitcher (src/mocks/ui/scenario-switcher.tsx)", () => {
     expect(scenarioEngine.getScenario().name).toBe("default");
 
     const statusMsg = container!.querySelector('[data-testid="status-message"]');
-    expect(statusMsg?.textContent).toContain("sucesso");
+    expect(statusMsg?.textContent).toContain("resetados");
   });
 });

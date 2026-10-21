@@ -23,7 +23,7 @@ Aplicação completa desenvolvida para o desafio técnico de frontend da Jungle 
 | **Estilização**   | Tailwind CSS v4 + Design Tokens | Engine Oxide de alta performance baseada nos tokens extraídos do Figma.                      |
 | **Componentes**   | shadcn/ui + Radix UI Primitives | Primitivos acessíveis em conformidade com WCAG 2.1 AA (WAI-ARIA).                            |
 | **Mocking**       | Mock Service Worker (MSW v3)    | Interceptação em nível de rede para REST e WebSocket com banco em memória.                   |
-| **Testes**        | Vitest + Playwright             | 394 testes automatizados de integração/contratos e suíte E2E em Chromium.                    |
+| **Testes**        | Vitest + Playwright             | 389 testes automatizados de integração/contratos e suíte E2E em Chromium.                    |
 | **Auditoria**     | Lighthouse CI (`@lhci/cli`)     | Metas de qualidade rigorosas versionadas em `lighthouserc.json`.                             |
 
 ---
@@ -39,6 +39,12 @@ pnpm install
 
 # 2. Execução em desenvolvimento local (porta 5173)
 pnpm dev
+
+# 3. Build de produção (tsc -b + vite build)
+pnpm build
+
+# 4. Prévia local do build (dist/)
+pnpm preview
 ```
 
 ---
@@ -85,8 +91,11 @@ A aplicação conta com um banco em memória relacional determinístico (`src/mo
    - Aplica atraso artificial de `2000ms` a `4000ms`, permitindo avaliar os **skeletons com shimmer effect**.
 4. **Cenário `network-error` (Falhas HTTP 500)**:
    - Simula indisponibilidade de servidor para testar o fallback de erro com botão de repetição.
-5. **Reset de Estado**:
-   - O botão flutuante em desenvolvimento (ou recarregar limpando o `localStorage`) restaura instantaneamente as fixtures limpas.
+5. **Acesso ao painel**:
+   - Em `pnpm dev` o painel é sempre exibido.
+   - Em produção/preview, acrescente `?scenarios=1` (ou `?scenarios=true`) à URL, ex.: `http://localhost:4173/?scenarios=1`.
+6. **Reset completo**:
+   - No painel, clique em **"Reset Database & Cenários"** (`data-testid="reset-db-button"`): restaura o banco em memória (`resetDb`), volta o cenário para `default` e limpa os dados locais, recarregando a página.
 
 ---
 
@@ -113,10 +122,50 @@ A aplicação conta com um banco em memória relacional determinístico (`src/mo
 
 ## 8. Scripts e Comandos Operacionais
 
-- `pnpm dev`: Inicia o servidor local de desenvolvimento (com HMR).
-- `pnpm build`: Executa checagem de tipos (`tsc -b`) e compila a aplicação para produção.
-- `pnpm preview`: Executa prévia local do build gerado em `dist/`.
-- `pnpm check`: Executa validação unificada estrita (`tsc -b && eslint . --max-warnings 0`).
-- `pnpm test`: Executa 394 testes unitários e de integração com Vitest.
-- `pnpm test:e2e`: Executa a suíte de testes de ponta a ponta com Playwright.
-- `pnpm lighthouse`: Executa o build e exibe as diretrizes da auditoria Lighthouse (`lighthouserc.json`).
+| Comando           | Descrição                                                           |
+| :---------------- | :------------------------------------------------------------------ |
+| `pnpm install`    | Instala as dependências.                                            |
+| `pnpm dev`        | Servidor de desenvolvimento com HMR.                                |
+| `pnpm build`      | Checagem de tipos (`tsc -b`) + build de produção em `dist/`.        |
+| `pnpm preview`    | Prévia local do build.                                              |
+| `pnpm typecheck`  | `tsc -b`.                                                           |
+| `pnpm lint`       | ESLint com `--max-warnings 0`.                                      |
+| `pnpm test`       | 389 testes unitários/integração (Vitest).                           |
+| `pnpm test:e2e`   | Suíte E2E Playwright.                                               |
+| `pnpm lighthouse` | Build + auditoria Lighthouse desktop e mobile + resumo consolidado. |
+
+### E2E (Playwright)
+
+```bash
+pnpm exec playwright install chromium   # primeira execução
+pnpm test:e2e                           # roda a suíte (desktop + mobile)
+pnpm playwright show-report             # abre o relatório HTML (playwright-report/)
+```
+
+Traces e artefatos de falha ficam em `test-results/`.
+
+### Lighthouse
+
+```bash
+pnpm lighthouse
+```
+
+Executa 3 runs por perfil (mediana) para desktop e mobile. Relatórios completos em `lighthouse-reports/desktop` e `lighthouse-reports/mobile`; resumo consolidado em **`lighthouse-reports/summary.json`**.
+
+---
+
+## 9. Requisitos Atendidos
+
+**P0**
+
+- **Roteamento tipado**: TanStack Router file-based, search params validados com Zod, loaders e guarda de rotas privadas.
+- **Autenticação**: instância Axios com interceptor de token, sessão persistida e auto-logout/modal em `401`.
+- **Checkout idempotente**: `Idempotency-Key` (UUID v4) por tentativa; replay retorna o mesmo pedido, payload divergente retorna `409`.
+- **Carrinho**: persistido e sincronizado via API, com merge do carrinho anônimo após login.
+
+**P1**
+
+- **Tempo real**: cliente socket.io real conectado ao binding MSW (`nft.updated`, `order.updated`) com envelopes versionados.
+- **Favoritos**: mutação otimista via TanStack Query com rollback em erro.
+- **Perfil e carteiras**: integrados à API com estados de loading/erro tratados.
+- **Qualidade**: E2E Playwright nos cenários críticos, Lighthouse automatizado, painel de cenários (`?scenarios=1`) com reset completo.

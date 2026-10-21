@@ -54,3 +54,4 @@ playwright/.cache/
 reports/lighthouse/*
 !reports/lighthouse/README.md
 .lighthouseci/
+lighthouse-reports/
